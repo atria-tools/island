@@ -1,0 +1,74 @@
+language: cpp
+
+#sudo: false
+sudo: required
+dist: trusty
+
+branches:
+  only:
+    - master
+    - dev
+
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+    packages:
+      - g++-4.9
+      - expect
+      - binutils-mingw-w64-i686 # 32bit MinGW
+      - gcc-mingw-w64-i686
+      - g++-mingw-w64-i686
+      - binutils-mingw-w64-x86-64 # 64bit MinGW
+      - gcc-mingw-w64-x86-64
+      - g++-mingw-w64-x86-64
+
+matrix:
+  include:
+    - os: linux
+      env: CONF=release BUILDER=gcc TARGET=Linux TAG=Linux COMPILATOR_OPTION="--compilator-version=4.9"
+      compiler: gcc
+    - os: linux
+      env: CONF=debug BUILDER=clang TARGET=Linux
+      compiler: clang
+    - os: linux
+      env: CONF=release BUILDER=gcc TARGET=Windows TAG=Mingw
+      compiler: x86_64-w64-mingw32-gcc
+    - os: linux
+      env: CONF=release BUILDER=gcc TARGET=Android TAG=Android DISABLE_PACKAGE=-p
+      compiler: gcc
+    - os: osx
+      env: CONF=release BUILDER=clang TARGET=MacOs TAG=MacOs
+      compiler: clang
+    - os: osx
+      env: CONF=release BUILDER=clang TARGET=IOs TAG=IOs
+      compiler: clang
+
+install:
+  - ./setup.py build
+  - export PYTHONPATH=$PYTHONPATH:./lutin/build/lib.linux-x86_64-2.7/:./lutin/build/lib.linux-x86_64-2.7/lutin/:./lutin/build/lib:./lutin/build/lib/lutin/
+  - cd ..
+  # download NDK
+  - if [ "$TAG" == "Android" ]; then
+        git clone --depth 1 --branch master https://github.com/HeeroYui/android-download-tool;
+        ./android-download-tool/dl-android.sh;
+    fi
+  - git clone --depth 1 --branch master https://github.com/atria-soft/ci.git
+  - cd -
+
+before_script:
+  - cd ..
+  - pwd
+  - ls -l
+  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then
+        export PATH=$PATH:/Users/travis/Library/Python/2.7/bin/;
+    fi
+  - ./ci/build_send.py --tag=$TAG --status=START;
+
+script:
+  - ./lutin/build/scripts-2.7/lutin -w -j4 -C -P -t $TARGET -c $BUILDER $COMPILATOR_OPTION $BUS -m $CONF $GCOV $DISABLE_PACKAGE test-c; STATUS=$?
+  - ./ci/build_send.py --tag=$TAG --status="$STATUS";
+
+notifications:
+  email:
+    - yui.heero@gmail.com
