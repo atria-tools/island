@@ -20,12 +20,17 @@ import maestro.env as env
 import maestro.tools as tools
 import maestro.host as maestroHost
 import maestro.tools as maestroTools
+import maestro.actions as actions
 
 myArgs = arguments.maestroArg()
 myArgs.add_section("option", "Can be set one time in all case")
 myArgs.add("h", "help", desc="Display this help")
 myArgs.add("v", "verbose", list=[["0","None"],["1","error"],["2","warning"],["3","info"],["4","debug"],["5","verbose"],["6","extreme_verbose"]], desc="display debug level (verbose) default =2")
 myArgs.add("c", "color", desc="Display message in color")
+# for init only
+#myArgs.add("h", "help", desc="Help of this action")
+myArgs.add("b", "branch", haveParam=True, desc="Select branch to display")
+myArgs.add("m", "manifest", haveParam=True, desc="Name of the manifest")
 """
 myArgs.add("j", "jobs", haveParam=True, desc="Specifies the number of jobs (commands) to run simultaneously")
 myArgs.add("d", "depth", haveParam=True, desc="Depth to clone all the repository")
@@ -42,12 +47,17 @@ def usage():
 	# generic argument displayed : 
 	myArgs.display()
 	print("		Action availlable" )
+	list_actions = actions.get_list_of_action();
+	for elem in list_actions:
+		print("		" + color['green'] + elem + color['default'])
+	"""
 	print("		" + color['green'] + "init" + color['default'])
 	print("			initialize a 'maestro' interface with a manifest in a git ")
 	print("		" + color['green'] + "sync" + color['default'])
 	print("			Syncronise the currect environement")
 	print("		" + color['green'] + "status" + color['default'])
 	print("			Dump the status of the environement")
+	"""
 	print("	ex: " + sys.argv[0] + " -c init http://github.com/atria-soft/manifest.git")
 	print("	ex: " + sys.argv[0] + " sync")
 	exit(0)
@@ -163,32 +173,26 @@ if len(new_argument_list) == 0:
 	debug.warning("--------------------------------------")
 	usage()
 
-list_of_action_availlable=["init","sync","status"]
+
+# TODO : move tin in actions ...
+list_actions = actions.get_list_of_action();
 
 action_to_do = new_argument_list[0].get_arg()
 new_argument_list = new_argument_list[1:]
-if action_to_do not in list_of_action_availlable:
+if action_to_do not in list_actions:
 	debug.warning("--------------------------------------")
-	debug.warning("Wrong action type : '" + str(action_to_do) + "' availlable list: " + str(list_of_action_availlable) )
+	debug.warning("Wrong action type : '" + str(action_to_do) + "' availlable list: " + str(list_actions) )
 	debug.warning("--------------------------------------")
 	usage()
 
+# todo : Remove this
 if     action_to_do != "init" \
    and os.path.exists("." + env.get_system_base_name()) == False:
 	debug.error("Can not execute a maestro cmd if we have not initialize a config: '" + str("." + env.get_system_base_name()) + "'")
 	exit(-1)
 
-if action_to_do == "init":
-	debug.info("action: init");
-	
-elif action_to_do == "sync":
-	debug.info("action: sync");
-	
-elif action_to_do == "status":
-	debug.info("action: status");
-	
-else:
-	debug.error("Can not do the action...")
+
+actions.execute(action_to_do, new_argument_list)
 
 # stop all started threads;
 #multiprocess.un_init()

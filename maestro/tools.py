@@ -29,12 +29,17 @@ def get_run_path():
 def get_current_path(file):
 	return os.path.dirname(os.path.realpath(file))
 
-def create_directory_of_file(file):
-	path = os.path.dirname(file)
+
+def create_directory(path):
 	try:
 		os.stat(path)
 	except:
 		os.makedirs(path)
+
+def create_directory_of_file(file):
+	path = os.path.dirname(file)
+	create_directory(path)
+
 
 def get_list_sub_path(path):
 	# TODO : os.listdir(path)
