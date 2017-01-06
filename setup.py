@@ -37,6 +37,9 @@ setup(name='maestro',
       #data_file=[
       #    ('/etc/bash_completion.d', ['bash-autocompletion/lutin']),
       #],
+      install_requires=[
+          'lxml',
+      ],
       include_package_data = True,
       zip_safe=False)
 

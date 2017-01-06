@@ -33,7 +33,7 @@ def import_path_local(path):
 	debug.verbose("maestro files: " + str(path) + " [START]")
 	list_files = os.listdir(path)
 	# filter elements:
-	tmp_list_maestro_file = filter_name_and_file(path, list_files, "*.py")
+	tmp_list_maestro_file = filter_name_and_file(path, list_files, env.get_system_base_name() + "*.py")
 	debug.verbose("maestro files: " + str(path) + " : " + str(tmp_list_maestro_file))
 	# Import the module:
 	for filename in tmp_list_maestro_file:

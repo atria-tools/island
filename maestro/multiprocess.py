@@ -21,16 +21,33 @@ from . import tools
 from . import env
 
 
-##
-## @brief Execute the command and ruturn generate data
-##
-def run_command_direct(cmd_line):
+def run_command_direct_shell(cmd_line, cwd=None, shell=False):
 	# prepare command line:
 	args = shlex.split(cmd_line)
 	debug.verbose("cmd = " + str(args))
+	subprocess.check_call(args, shell=shell)
+	return ""
+##
+## @brief Execute the command and ruturn generate data
+##
+def run_command_direct(cmd_line, cwd=None):
+	# prepare command line:
+	args = shlex.split(cmd_line)
+	debug.verbose("cmd = " + str(args))
+	"""
+	if True:
+		subprocess.check_call(args)
+		return ""
+	"""
 	try:
 		# create the subprocess
-		p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+		#p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+		#p = subprocess.check_call(args)
+		"""
+		if cwd != None:
+			debug.info("path = " + cwd)
+		"""
+		p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=cwd)
 	except subprocess.CalledProcessError as e:
 		debug.error("subprocess.CalledProcessError : " + str(args))
 	except:
@@ -49,3 +66,26 @@ def run_command_direct(cmd_line):
 		return False
 
 
+
+def run_command(cmd_line, cwd=None):
+	# prepare command line:
+	args = shlex.split(cmd_line)
+	debug.verbose("cmd = " + str(args))
+	try:
+		# create the subprocess
+		"""
+		if cwd != None:
+			debug.info("path = " + cwd)
+		"""
+		p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=cwd)
+	except subprocess.CalledProcessError as e:
+		debug.error("subprocess.CalledProcessError : " + str(args))
+	except:
+		debug.error("Exception on : " + str(args))
+	# launch the subprocess:
+	output, err = p.communicate()
+	if sys.version_info >= (3, 0):
+		output = output.decode("utf-8")
+		err = err.decode("utf-8")
+	# Check error :
+	return [p.returncode, output[:-1], err[:-1]]

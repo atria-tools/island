@@ -49,22 +49,19 @@ def execute(arguments):
 	
 	
 	# check if .XXX exist (create it if needed)
-	base_path = os.path.join(tools.get_run_path(), "." + env.get_system_base_name())
-	base_config = os.path.join(base_path, "config.txt")
-	base_manifest_repo = os.path.join(base_path, "manifest")
-	if     os.path.exists(base_path) == True \
-	   and os.path.exists(base_config) == True \
-	   and os.path.exists(base_manifest_repo) == True:
-		debug.error("System already init: path already exist: '" + str(base_path) + "'")
-	tools.create_directory(base_path)
+	if     os.path.exists(env.get_maestro_path()) == True \
+	   and os.path.exists(env.get_maestro_path_config()) == True \
+	   and os.path.exists(env.get_maestro_path_manifest()) == True:
+		debug.error("System already init: path already exist: '" + str(env.get_maestro_path()) + "'")
+	tools.create_directory(env.get_maestro_path())
 	# check if the git of the manifest if availlable
 	
 	# create the file configuration:
 	data = "repo=" + address_manifest + "\nbranch=" + branch + "\nfile=" + manifest_name
-	tools.file_write_data(base_config, data)
+	tools.file_write_data(env.get_maestro_path_config(), data)
 	
 	#clone the manifest repository
-	cmd = "git clone " + address_manifest + " --branch " + branch + " " + base_manifest_repo
+	cmd = "git clone " + address_manifest + " --branch " + branch + " " + env.get_maestro_path_manifest()
 	
 	debug.info("clone the manifest")
 	ret = multiprocess.run_command_direct(cmd)

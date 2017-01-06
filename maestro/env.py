@@ -11,68 +11,7 @@
 # Local import
 from . import debug
 
-
-
-force_mode=False
-
-def set_force_mode(val):
-	global force_mode
-	if val==1:
-		force_mode = 1
-	else:
-		force_mode = 0
-
-def get_force_mode():
-	global force_mode
-	return force_mode
-
-force_optimisation=False
-
-def set_force_optimisation(val):
-	global force_optimisation
-	if val==1:
-		force_optimisation = 1
-	else:
-		force_optimisation = 0
-
-def get_force_optimisation():
-	global force_optimisation
-	return force_optimisation
-
-isolate_system=False
-
-def set_isolate_system(val):
-	global isolate_system
-	if val==1:
-		isolate_system = 1
-	else:
-		isolate_system = 0
-
-def get_isolate_system():
-	global isolate_system
-	return isolate_system
-
-parse_depth = 9999999
-
-def set_parse_depth(val):
-	global parse_depth
-	parse_depth = val
-	debug.debug("Set depth search element: " + str(parse_depth))
-
-def get_parse_depth():
-	global parse_depth
-	return parse_depth
-
-exclude_search_path = []
-
-def set_exclude_search_path(val):
-	global exclude_search_path
-	exclude_search_path = val
-	debug.debug("Set depth search element: " + str(exclude_search_path))
-
-def get_exclude_search_path():
-	global exclude_search_path
-	return exclude_search_path
+import os
 
 
 system_base_name = "maestro"
@@ -85,4 +24,32 @@ def set_system_base_name(val):
 def get_system_base_name():
 	global system_base_name
 	return system_base_name
+
+
+
+maestro_root_path = os.path.join(os.getcwd())
+maestro_path = os.path.join(maestro_root_path, "." + get_system_base_name())
+maestro_path_config = os.path.join(maestro_path, "config.txt")
+maestro_path_manifest = os.path.join(maestro_path, "manifest")
+
+##
+## @brief to use later to know where the ".maestro" parent path is ...
+## @return the parent path of the ".maestro"
+##
+def get_maestro_root_path():
+	global maestro_root_path
+	return maestro_root_path
+
+def get_maestro_path():
+	global maestro_path
+	return maestro_path
+
+def get_maestro_path_config():
+	global maestro_path_config
+	return maestro_path_config
+
+def get_maestro_path_manifest():
+	global maestro_path_manifest
+	return maestro_path_manifest
+
 
