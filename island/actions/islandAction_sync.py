@@ -8,11 +8,11 @@
 ## @license MPL v2.0 (see license file)
 ##
 
-from maestro import debug
-from maestro import tools
-from maestro import env
-from maestro import multiprocess
-from maestro import manifest
+from island import debug
+from island import tools
+from island import env
+from island import multiprocess
+from island import manifest
 import os
 
 
@@ -31,20 +31,20 @@ def execute(arguments):
 		debug.error("Sync have not parameter")
 	
 	# check if .XXX exist (create it if needed)
-	if    os.path.exists(env.get_maestro_path()) == False \
-	   or os.path.exists(env.get_maestro_path_config()) == False \
-	   or os.path.exists(env.get_maestro_path_manifest()) == False:
-		debug.error("System already init have an error: missing data: '" + str(env.get_maestro_path()) + "'")
+	if    os.path.exists(env.get_island_path()) == False \
+	   or os.path.exists(env.get_island_path_config()) == False \
+	   or os.path.exists(env.get_island_path_manifest()) == False:
+		debug.error("System already init have an error: missing data: '" + str(env.get_island_path()) + "'")
 	
 	
 	configuration = manifest.load_config()
 	
-	debug.info("update manifest : '" + str(env.get_maestro_path_manifest()) + "'")
+	debug.info("update manifest : '" + str(env.get_island_path_manifest()) + "'")
 	# update manifest
 	cmd = "git fetch --all"
-	multiprocess.run_command_direct(cmd, cwd=env.get_maestro_path_manifest())
+	multiprocess.run_command_direct(cmd, cwd=env.get_island_path_manifest())
 	
-	file_source_manifest = os.path.join(env.get_maestro_path_manifest(), configuration["file"])
+	file_source_manifest = os.path.join(env.get_island_path_manifest(), configuration["file"])
 	if os.path.exists(file_source_manifest) == False:
 		debug.error("Missing manifest file : '" + str(file_source_manifest) + "'")
 	
@@ -57,7 +57,7 @@ def execute(arguments):
 		id_element += 1
 		debug.info("sync : " + str(id_element) + "/" + str(len(all_project)) + " : " + str(elem.name))
 		#debug.debug("elem : " + str(elem))
-		git_repo_path = os.path.join(env.get_maestro_root_path(), elem.path)
+		git_repo_path = os.path.join(env.get_island_root_path(), elem.path)
 		if os.path.exists(git_repo_path) == False:
 			# this is a new clone ==> this is easy ...
 			#clone the manifest repository

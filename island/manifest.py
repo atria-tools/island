@@ -20,7 +20,7 @@ from lxml import etree
 
 
 def load_config():
-	config_property = tools.file_read_data(env.get_maestro_path_config())
+	config_property = tools.file_read_data(env.get_island_path_config())
 	element_config = config_property.split("\n")
 	if len(element_config) != 3:
 		debug.error("error in configuration property")

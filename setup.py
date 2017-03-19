@@ -15,16 +15,16 @@ def readme():
 		return f.read()
 
 # https://pypi.python.org/pypi?%3Aaction=list_classifiers
-setup(name='maestro',
+setup(name='island',
       version='0.1.0',
-      description='Maestro generic source manager (like repo in simple mode)',
+      description='island generic source manager (like repo in simple mode)',
       long_description=readme(),
-      url='http://github.com/HeeroYui/maestro',
+      url='http://github.com/HeeroYui/island',
       author='Edouard DUPIN',
       author_email='yui.heero@gmail.com',
       license='MPL-2',
-      packages=['maestro',
-                'maestro/actions'],
+      packages=['island',
+                'island/actions'],
       classifiers=[
         'Development Status :: 2 - Pre-Alpha',
         'License :: OSI Approved :: Mozilla Public License 2.0 (MPL 2.0)',
@@ -32,7 +32,7 @@ setup(name='maestro',
         'Topic :: Software Development :: Build Tools'
       ],
       keywords='source manager repo qisrc lutin',
-      scripts=['bin/maestro'],
+      scripts=['bin/island'],
       # Does not work on MacOs
       #data_file=[
       #    ('/etc/bash_completion.d', ['bash-autocompletion/lutin']),

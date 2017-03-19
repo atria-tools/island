@@ -218,7 +218,7 @@ class ArgSection:
 ##
 ## @brief Class to define the agmument list availlable for a program
 ##
-class maestroArg:
+class islandArg:
 	##
 	## @brief Constructor.
 	## @param[in] self Class handle

@@ -8,10 +8,10 @@
 ## @license MPL v2.0 (see license file)
 ##
 
-from maestro import debug
-from maestro import tools
-from maestro import env
-from maestro import multiprocess
+from island import debug
+from island import tools
+from island import env
+from island import multiprocess
 import os
 
 def help():
@@ -49,19 +49,19 @@ def execute(arguments):
 	
 	
 	# check if .XXX exist (create it if needed)
-	if     os.path.exists(env.get_maestro_path()) == True \
-	   and os.path.exists(env.get_maestro_path_config()) == True \
-	   and os.path.exists(env.get_maestro_path_manifest()) == True:
-		debug.error("System already init: path already exist: '" + str(env.get_maestro_path()) + "'")
-	tools.create_directory(env.get_maestro_path())
+	if     os.path.exists(env.get_island_path()) == True \
+	   and os.path.exists(env.get_island_path_config()) == True \
+	   and os.path.exists(env.get_island_path_manifest()) == True:
+		debug.error("System already init: path already exist: '" + str(env.get_island_path()) + "'")
+	tools.create_directory(env.get_island_path())
 	# check if the git of the manifest if availlable
 	
 	# create the file configuration:
 	data = "repo=" + address_manifest + "\nbranch=" + branch + "\nfile=" + manifest_name
-	tools.file_write_data(env.get_maestro_path_config(), data)
+	tools.file_write_data(env.get_island_path_config(), data)
 	
 	#clone the manifest repository
-	cmd = "git clone " + address_manifest + " --branch " + branch + " " + env.get_maestro_path_manifest()
+	cmd = "git clone " + address_manifest + " --branch " + branch + " " + env.get_island_path_manifest()
 	
 	debug.info("clone the manifest")
 	ret = multiprocess.run_command_direct(cmd)

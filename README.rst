@@ -1,25 +1,25 @@
 Lutin
 =====
 
-`maestro` is a generic source downloader and syncronizer is a FREE software tool.
+`island` is a generic source downloader and syncronizer is a FREE software tool.
 
 
-.. image:: https://badge.fury.io/py/maestro.png
-    :target: https://pypi.python.org/pypi/maestro
+.. image:: https://badge.fury.io/py/island.png
+    :target: https://pypi.python.org/pypi/island
 
 Release (master)
 ----------------
 
-.. image:: https://travis-ci.org/HeeroYui/maestro.svg?branch=master
-    :target: https://travis-ci.org/HeeroYui/maestro
+.. image:: https://travis-ci.org/HeeroYui/island.svg?branch=master
+    :target: https://travis-ci.org/HeeroYui/island
 
 
 
 Developement (dev)
 ------------------
 
-.. image:: https://travis-ci.org/HeeroYui/maestro.svg?branch=dev
-    :target: https://travis-ci.org/HeeroYui/maestro
+.. image:: https://travis-ci.org/HeeroYui/island.svg?branch=dev
+    :target: https://travis-ci.org/HeeroYui/island
 
 
 Instructions
@@ -27,18 +27,18 @@ Instructions
 
 This is a tool to download ```git``` source repositiry in a versatile worktree
 
-Maestro is under a FREE license that can be found in the LICENSE file.
+island is under a FREE license that can be found in the LICENSE file.
 Any contribution is more than welcome ;)
 
 git repository
 --------------
 
-http://github.com/HeeroYui/maestro/
+http://github.com/HeeroYui/island/
 
 Documentation
 -------------
 
-http://HeeroYui.github.io/maestro/
+http://HeeroYui.github.io/island/
 
 Installation
 ------------
@@ -47,7 +47,7 @@ Requirements: ``Python >= 2.7`` and ``pip``
 
 Just run:
 
-  pip install maestro
+  pip install island
 
 Install pip on debian/ubuntu:
 
@@ -65,7 +65,7 @@ Install pip on MacOs:
 License (MPL v2.0)
 ---------------------
 
-Copyright maestro Edouard DUPIN
+Copyright island Edouard DUPIN
 
 Licensed under the Mozilla Public License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.

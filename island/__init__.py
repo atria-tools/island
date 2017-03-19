@@ -32,13 +32,13 @@ def filter_name_and_file(root, list_files, filter):
 
 def import_path_local(path):
 	out = []
-	debug.verbose("maestro files: " + str(path) + " [START]")
+	debug.verbose("island files: " + str(path) + " [START]")
 	list_files = os.listdir(path)
 	# filter elements:
-	tmp_list_maestro_file = filter_name_and_file(path, list_files, env.get_system_base_name() + "*.py")
-	debug.verbose("maestro files: " + str(path) + " : " + str(tmp_list_maestro_file))
+	tmp_list_island_file = filter_name_and_file(path, list_files, env.get_system_base_name() + "*.py")
+	debug.verbose("island files: " + str(path) + " : " + str(tmp_list_island_file))
 	# Import the module:
-	for filename in tmp_list_maestro_file:
+	for filename in tmp_list_island_file:
 		out.append(os.path.join(path, filename))
 		debug.verbose("     Find a file : '" + str(out[-1]) + "'")
 	return out
@@ -48,14 +48,14 @@ def init():
 	global is_init;
 	if is_init == True:
 		return
-	list_of_maestro_files = import_path_local(os.path.join(tools.get_current_path(__file__), 'actions'))
+	list_of_island_files = import_path_local(os.path.join(tools.get_current_path(__file__), 'actions'))
 	
-	actions.init(list_of_maestro_files)
+	actions.init(list_of_island_files)
 	
 	is_init = True
 
 
-myArgs = arguments.maestroArg()
+myArgs = arguments.islandArg()
 myArgs.add_section("option", "Can be set one time in all case")
 myArgs.add("h", "help", desc="Display this help")
 myArgs.add("v", "verbose", list=[["0","None"],["1","error"],["2","warning"],["3","info"],["4","debug"],["5","verbose"],["6","extreme_verbose"]], desc="display debug level (verbose) default =2")
@@ -85,7 +85,7 @@ def usage():
 		print("		" + color['green'] + elem + color['default'])
 	"""
 	print("		" + color['green'] + "init" + color['default'])
-	print("			initialize a 'maestro' interface with a manifest in a git ")
+	print("			initialize a 'island' interface with a manifest in a git ")
 	print("		" + color['green'] + "sync" + color['default'])
 	print("			Syncronise the currect environement")
 	print("		" + color['green'] + "status" + color['default'])
@@ -134,8 +134,8 @@ def parseGenericArg(argument, active):
 	return False
 
 """
-# open configuration of maestro:
-config_file_name = "maestroConfig.py"
+# open configuration of island:
+config_file_name = "islandConfig.py"
 config_file = os.path.join(tools.get_run_path(), config_file_name)
 if os.path.isfile(config_file) == True:
 	sys.path.append(os.path.dirname(config_file))
@@ -221,7 +221,7 @@ if action_to_do not in list_actions:
 # todo : Remove this
 if     action_to_do != "init" \
    and os.path.exists("." + env.get_system_base_name()) == False:
-	debug.error("Can not execute a maestro cmd if we have not initialize a config: '" + str("." + env.get_system_base_name()) + "'")
+	debug.error("Can not execute a island cmd if we have not initialize a config: '" + str("." + env.get_system_base_name()) + "'")
 	exit(-1)
 
 
