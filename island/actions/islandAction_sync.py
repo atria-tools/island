@@ -66,13 +66,37 @@ def execute(arguments):
 			cmd = "git clone " + elem.select_remote["fetch"] + "/" + elem.name + " --branch " + elem.branch + " --origin " + elem.select_remote["name"] + " " + git_repo_path
 			debug.info("clone the repo")
 			ret = multiprocess.run_command_direct(cmd)
-			if ret == "":
-				continue
-			if ret == False:
+			if     ret != "" \
+			   and ret != False:
 				# all is good, ready to get the system work corectly
+				debug.info("'" + ret + "'")
+				debug.error("Clone repository does not work ... ")
 				continue
-			debug.info("'" + ret + "'")
-			debug.error("Clone repository does not work ... ")
+			#debug.info("plop " + str(elem.select_remote.keys()))
+			# check submodule if requested:
+			if     elem.select_remote["sync"] == True \
+			   and os.path.exists(os.path.join(git_repo_path, ".gitmodules")) == True:
+				debug.info("    ==> update submodule")
+				cmd = "git submodule init"
+				ret = multiprocess.run_command_direct(cmd, cwd=git_repo_path)
+				if     ret != "" \
+				   and ret != False:
+					# all is good, ready to get the system work corectly
+					debug.info("'" + ret + "'")
+					debug.error("Can not init submodules ... ")
+					continue
+				cmd = "git submodule update"
+				ret = multiprocess.run_command_direct(cmd, cwd=git_repo_path)
+				if ret[:16] == "Submodule path '":
+					#all is good ...
+					debug.info("    " + ret)
+				elif     ret != "" \
+				     and ret != False:
+					# all is good, ready to get the system work corectly
+					debug.info("'" + ret + "'")
+					debug.error("Can not init submodules ... ")
+					continue
+				
 			continue
 		
 		if os.path.exists(os.path.join(git_repo_path,".git")) == False:
@@ -123,4 +147,36 @@ def execute(arguments):
 			continue
 		
 		debug.info("select branch = '" + select_branch + "' is modify : " + str(is_modify) + "     track: '" + str(ret_track[1]) + "'")
-		
+		# check submodule if requested:
+		if     elem.select_remote["sync"] == True \
+		   and os.path.exists(os.path.join(git_repo_path, ".gitmodules")) == True:
+			debug.info("    ==> sync submodule")
+			cmd = "git submodule sync"
+			ret = multiprocess.run_command_direct(cmd, cwd=git_repo_path)
+			if     ret != "" \
+			   and ret != False:
+				# all is good, ready to get the system work corectly
+				debug.info("'" + ret + "'")
+				debug.error("Can not sync submodules ... ")
+				continue
+			"""
+			cmd = "git submodule init"
+			ret = multiprocess.run_command_direct(cmd, cwd=git_repo_path)
+			if     ret != "" \
+			   and ret != False:
+				# all is good, ready to get the system work corectly
+				debug.info("'" + ret + "'")
+				debug.error("Can not init submodules ... ")
+				continue
+			cmd = "git submodule update"
+			ret = multiprocess.run_command_direct(cmd, cwd=git_repo_path)
+			if ret[:16] == "Submodule path '":
+				#all is good ...
+				debug.info("    " + ret)
+			elif     ret != "" \
+			     and ret != False:
+				# all is good, ready to get the system work corectly
+				debug.info("'" + ret + "'")
+				debug.error("Can not init submodules ... ")
+				continue
+			"""

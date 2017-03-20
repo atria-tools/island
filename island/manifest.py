@@ -83,6 +83,10 @@ class Manifest():
 						name = child.attrib[attr]
 					elif attr == "fetch":
 						fetch = child.attrib[attr]
+						while     len(fetch) > 1 \
+						      and (    fetch[-1] == "\\" \
+						            or fetch[-1] == "/") :
+							fetch = fetch[:-1]
 					else:
 						debug.error("(l:" + str(child.sourceline) + ") Parsing the manifest : Unknow '" + child.tag + "'  attibute : '" + attr + "', availlable:[name,fetch]")
 				debug.debug("(l:" + str(child.sourceline) + ")     find '" + child.tag + "' : name='" + name + "' fetch='" + fetch + "'");
@@ -118,7 +122,7 @@ class Manifest():
 						remote = child.attrib[attr]
 					elif attr == "revision":
 						revision = child.attrib[attr]
-					elif attr == "sync-s":
+					elif attr == "sync-s": # synchronize submodule ... automaticaly
 						sync = child.attrib[attr]
 						if    sync.lower() == "true" \
 						   or sync == "1" \
@@ -218,8 +222,12 @@ class Manifest():
 			debug.debug("    remotes count: " + str(len(conf.remotes)))
 			for remote in conf.remotes:
 				debug.debug("    Ckeck remote : " + remote["name"] + " == " + default["remote"])
+				debug.verbose("          remote=" + str(remote))
+				debug.verbose("          default=" + str(default))
 				if remote["name"] == default["remote"]:
-					conf.select_remote = remote
+					conf.select_remote = copy.deepcopy(remote)
+					# copy the submodule synchronisation
+					conf.select_remote["sync"] = default["sync"]
 					break
 			if conf.select_remote == None:
 				debug.error("missing remote for project: " + str(conf.name))
