@@ -28,7 +28,7 @@ def execute(arguments):
 	for elem in arguments:
 		debug.info("    '" + str(elem.get_arg()) + "'")
 	if len(arguments) != 0:
-		debug.error("Sync have not parameter")
+		debug.error("status have not parameter")
 	
 	# check if .XXX exist (create it if needed)
 	if    os.path.exists(env.get_island_path()) == False \
