@@ -69,7 +69,7 @@ def execute(arguments):
 			if     ret != "" \
 			   and ret != False:
 				# all is good, ready to get the system work corectly
-				debug.info("'" + ret + "'")
+				debug.info("'" + str(ret) + "'")
 				debug.error("Clone repository does not work ... ")
 				continue
 			#debug.info("plop " + str(elem.select_remote.keys()))
@@ -82,7 +82,7 @@ def execute(arguments):
 				if     ret != "" \
 				   and ret != False:
 					# all is good, ready to get the system work corectly
-					debug.info("'" + ret + "'")
+					debug.info("'" + str(ret) + "'")
 					debug.error("Can not init submodules ... ")
 					continue
 				cmd = "git submodule update"
@@ -93,7 +93,7 @@ def execute(arguments):
 				elif     ret != "" \
 				     and ret != False:
 					# all is good, ready to get the system work corectly
-					debug.info("'" + ret + "'")
+					debug.info("'" + str(ret) + "'")
 					debug.error("Can not init submodules ... ")
 					continue
 				
