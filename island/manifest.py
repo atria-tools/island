@@ -15,6 +15,7 @@ import copy
 from . import debug
 from . import tools
 from . import env
+from . import multiprocess
 
 from lxml import etree
 
@@ -83,6 +84,29 @@ class Manifest():
 						name = child.attrib[attr]
 					elif attr == "fetch":
 						fetch = child.attrib[attr]
+						if     len(fetch) >= 2 \
+						   and fetch[:2] == "..":
+							# we have a relative island manifest ==> use local manifest origin to get the full origin
+							cmd = "git remote get-url origin"
+							debug.verbose("execute : " + cmd)
+							base_origin = multiprocess.run_command(cmd, cwd=env.get_island_path_manifest())
+							debug.verbose("base_origin=" + base_origin[1])
+							base_origin = base_origin[1]
+							while     len(fetch) >= 2 \
+							      and fetch[:2] == "..":
+								fetch = fetch[2:]
+								while      len(fetch) >= 1 \
+								       and (    fetch[0] == "/" \
+								             or fetch[0] == "\\"):
+									fetch = fetch[1:]
+								base_origin = base_origin[:base_origin.rfind('/')]
+							debug.verbose("new base_origin=" + base_origin)
+							debug.verbose("tmp fetch=" + fetch)
+							if fetch != "":
+								fetch = base_origin + "/" + fetch
+							else:
+								fetch = base_origin
+							debug.verbose("new fetch=" + fetch)
 						while     len(fetch) > 1 \
 						      and (    fetch[-1] == "\\" \
 						            or fetch[-1] == "/") :
@@ -90,11 +114,41 @@ class Manifest():
 					else:
 						debug.error("(l:" + str(child.sourceline) + ") Parsing the manifest : Unknow '" + child.tag + "'  attibute : '" + attr + "', availlable:[name,fetch]")
 				debug.debug("(l:" + str(child.sourceline) + ")     find '" + child.tag + "' : name='" + name + "' fetch='" + fetch + "'");
+				# parse the sub global mirror list
+				mirror_list = []
+				for child_2 in child:
+					if child_2.tag == "mirror":
+						# find a new mirror
+						mirror_name = ""
+						mirror_fetch = ""
+						for attr_2 in child_2.attrib:
+							if attr_2 == "name":
+								mirror_name = child.attrib[attr_2]
+							elif attr_2 == "fetch":
+								mirror_fetch = child.attrib[attr_2]
+								while     len(mirror_fetch) > 1 \
+								      and (    mirror_fetch[-1] == "\\" \
+								            or mirror_fetch[-1] == "/") :
+									mirror_fetch = mirror_fetch[:-1]
+							else:
+								debug.error("(l:" + str(child_2.sourceline) + ") Parsing the manifest : Unknow '" + child_2.tag + "'  attibute : '" + attr_2 + "', availlable:[name,fetch]")
+						if mirror_name == "":
+							debug.error("(l:" + str(child_2.sourceline) + ") Missing mirrot 'name'")
+						if mirror_fetch == "":
+							debug.error("(l:" + str(child_2.sourceline) + ") Missing mirror 'fetch'")
+						mirror_list.append({
+						    "name":mirror_name,
+						    "fetch":mirror_fetch,
+						    })
+					else:
+						debug.error("(l:" + str(child_2.sourceline) + ") Parsing the manifest : Unknow '" + child_2.tag + "', availlable:[mirror]")
 				self.remotes.append({
 				    "name":name,
-				    "fetch":fetch
+				    "fetch":fetch,
+				    "mirror":mirror_list
 				    })
 				continue
+				
 			if child.tag == "include":
 				name = ""
 				for attr in child.attrib:
@@ -228,6 +282,7 @@ class Manifest():
 					conf.select_remote = copy.deepcopy(remote)
 					# copy the submodule synchronisation
 					conf.select_remote["sync"] = default["sync"]
+					conf.select_remote["mirror"] = copy.deepcopy(default["mirror"])
 					break
 			if conf.select_remote == None:
 				debug.error("missing remote for project: " + str(conf.name))
