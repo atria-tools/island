@@ -16,7 +16,7 @@ def readme():
 
 # https://pypi.python.org/pypi?%3Aaction=list_classifiers
 setup(name='island',
-      version='0.3.0',
+      version='0.3.2',
       description='island generic source manager (like repo in simple mode)',
       long_description=readme(),
       url='http://github.com/HeeroYui/island',

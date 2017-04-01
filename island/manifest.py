@@ -123,15 +123,16 @@ class Manifest():
 						mirror_fetch = ""
 						for attr_2 in child_2.attrib:
 							if attr_2 == "name":
-								mirror_name = child.attrib[attr_2]
+								mirror_name = child_2.attrib[attr_2]
 							elif attr_2 == "fetch":
-								mirror_fetch = child.attrib[attr_2]
+								mirror_fetch = child_2.attrib[attr_2]
 								while     len(mirror_fetch) > 1 \
 								      and (    mirror_fetch[-1] == "\\" \
 								            or mirror_fetch[-1] == "/") :
 									mirror_fetch = mirror_fetch[:-1]
 							else:
 								debug.error("(l:" + str(child_2.sourceline) + ") Parsing the manifest : Unknow '" + child_2.tag + "'  attibute : '" + attr_2 + "', availlable:[name,fetch]")
+						debug.debug("mirror: '" + mirror_name + "' '" + mirror_fetch + "'")
 						if mirror_name == "":
 							debug.error("(l:" + str(child_2.sourceline) + ") Missing mirrot 'name'")
 						if mirror_fetch == "":
@@ -254,18 +255,22 @@ class Manifest():
 				tmp_default = copy.deepcopy(self.default)
 			else:
 				tmp_default = copy.deepcopy(self.default_base)
+		# debug.error(" self.default=" + str(self.default))
 		# add all local project
 		for elem in self.projects:
+			debug.verbose("parse element " + str(elem))
 			conf = RepoConfig()
 			conf.name = elem["name"]
 			conf.path = self._create_path_with_elem(elem)
 			
 			# add default remote for the project (search in herited element)
 			for remote in self.remotes:
+				debug.verbose("    Local Remote: " + str(remote))
 				if remote["name"] == default["remote"]:
 					conf.remotes.append(remote)
 			if len(conf.remotes) == 0:
 				for remote in upper_remotes:
+					debug.verbose("    upper Remote: " + str(remote))
 					if remote["name"] == default["remote"]:
 						conf.remotes.append(remote)
 			if len(conf.remotes) == 0:
@@ -275,14 +280,16 @@ class Manifest():
 			conf.select_remote = None
 			debug.debug("    remotes count: " + str(len(conf.remotes)))
 			for remote in conf.remotes:
+				debug.debug("    remote=" + str(remote))
 				debug.debug("    Ckeck remote : " + remote["name"] + " == " + default["remote"])
 				debug.verbose("          remote=" + str(remote))
 				debug.verbose("          default=" + str(default))
 				if remote["name"] == default["remote"]:
 					conf.select_remote = copy.deepcopy(remote)
+					debug.debug("    copy select=" + str(conf.select_remote))
+					
 					# copy the submodule synchronisation
 					conf.select_remote["sync"] = default["sync"]
-					conf.select_remote["mirror"] = copy.deepcopy(default["mirror"])
 					break
 			if conf.select_remote == None:
 				debug.error("missing remote for project: " + str(conf.name))

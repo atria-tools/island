@@ -72,6 +72,18 @@ def execute(arguments):
 				debug.info("'" + str(ret) + "'")
 				debug.error("Clone repository does not work ... ")
 				continue
+			# add global mirror list
+			for mirror in elem.select_remote["mirror"]:
+				debug.verbose("Add global mirror: " + str(mirror))
+				cmd = "git remote add " + mirror["name"] + " " + mirror["fetch"] + "/" + elem.name 
+				ret = multiprocess.run_command_direct(cmd, cwd=git_repo_path)
+				if     ret != "" \
+				   and ret != False:
+					# all is good, ready to get the system work corectly
+					debug.info("'" + str(ret) + "'")
+					debug.warning("Can not add global mirror ... ")
+					continue
+				debug.verbose("Add global mirror: " + str(mirror) + " (done)")
 			#debug.info("plop " + str(elem.select_remote.keys()))
 			# check submodule if requested:
 			if     elem.select_remote["sync"] == True \
@@ -153,8 +165,11 @@ def execute(arguments):
 			debug.info("    ==> sync submodule")
 			cmd = "git submodule sync"
 			ret = multiprocess.run_command_direct(cmd, cwd=git_repo_path)
-			if     ret != "" \
-			   and ret != False:
+			if ret[:31] == "Synchronizing submodule url for":
+				#all is good ...
+				debug.info("    " + ret)
+			elif     ret != "" \
+			     and ret != False:
 				# all is good, ready to get the system work corectly
 				debug.info("'" + ret + "'")
 				debug.error("Can not sync submodules ... ")
