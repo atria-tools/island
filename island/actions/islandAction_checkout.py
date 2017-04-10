@@ -11,6 +11,7 @@
 from island import debug
 from island import tools
 from island import env
+from island import config
 from island import multiprocess
 from island import manifest
 import os
@@ -44,9 +45,13 @@ def execute(arguments):
 	   or os.path.exists(env.get_island_path_manifest()) == False:
 		debug.error("System already init have an error: missing data: '" + str(env.get_island_path()) + "'")
 	
-	configuration = manifest.load_config()
+	configuration = config.Config()
 	
-	file_source_manifest = os.path.join(env.get_island_path_manifest(), configuration["file"])
+	# update the local configuration file:
+	configuration.set_branch(branch_to_checkout)
+	configuration.store()
+	
+	file_source_manifest = os.path.join(env.get_island_path_manifest(), configuration.get_manifest_name())
 	if os.path.exists(file_source_manifest) == False:
 		debug.error("Missing manifest file : '" + str(file_source_manifest) + "'")
 	
@@ -89,11 +94,9 @@ def execute(arguments):
 		list_branch2 = []
 		select_branch = ""
 		for elem_branch in list_branch:
+			list_branch2.append(elem_branch[2:])
 			if elem_branch[:2] == "* ":
-				list_branch2.append([elem_branch[2:], True])
 				select_branch = elem_branch[2:]
-			else:
-				list_branch2.append([elem_branch[2:], False])
 		
 		
 		# check if we are on the good branch:
@@ -102,23 +105,36 @@ def execute(arguments):
 			continue
 		
 		# check if we have already checkout the branch before
+		debug.verbose("      check : " + branch_to_checkout + "    in " + str(list_branch2))
 		if branch_to_checkout in list_branch2:
 			cmd = "git checkout " + branch_to_checkout
 			debug.verbose("execute : " + cmd)
 			ret = multiprocess.run_command(cmd, cwd=git_repo_path)
-			if     ret[1] != "" \
+			if     ret[0] != 0 \
+			   and ret[1] != "" \
 			   and ret != False:
-				debug.info("'" + ret + "'")
-				debug.error("checkout " + str(id_element) + "/" + str(len(all_project)) + " : " + str(elem.name) + " ==> Can not checkout to the corest branch")
+				debug.info("'" + str(ret) + "'")
+				debug.error("checkout " + str(id_element) + "/" + str(len(all_project)) + " : " + str(elem.name) + " ==> Can not checkout to the correct branch")
 				continue
 			debug.info("checkout " + str(id_element) + "/" + str(len(all_project)) + " : " + str(elem.name) + " ==> switch branch")
 			# TODO : Check the number of commit to the origin/XXX branch ....
-			
 			continue
-			
 		
-		# TODO: Check if the remote branch exist ...
-		
+		# Check if the remote branch exist ...
+		cmd = "git branch -a"
+		debug.verbose("execute : " + cmd)
+		ret_branch_all = multiprocess.run_command(cmd, cwd=git_repo_path)
+		list_branch_all = ret_branch_all[1].split('\n')
+		exist = False
+		for elem_branch in list_branch_all:
+			debug.verbose(" check : '" + elem_branch + "' == '" + "  remotes/" + elem.select_remote["name"] + "/" + branch_to_checkout + "'")
+			if elem_branch == "  remotes/" + elem.select_remote["name"] + "/" + branch_to_checkout:
+				exist = True
+				debug.info("    ==> find ...")
+				break
+		if exist == False:
+			debug.info("checkout " + str(id_element) + "/" + str(len(all_project)) + " : " + str(elem.name) + " ==> NO remote branch")
+			continue
 		
 		# checkout the new branch:
 		cmd = "git checkout --quiet " + elem.select_remote["name"] + "/" + branch_to_checkout + " -b " + branch_to_checkout

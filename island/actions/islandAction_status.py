@@ -12,6 +12,7 @@ from island import debug
 from island import tools
 from island import env
 from island import multiprocess
+from island import config
 from island import manifest
 import os
 
@@ -36,9 +37,9 @@ def execute(arguments):
 	   or os.path.exists(env.get_island_path_manifest()) == False:
 		debug.error("System already init have an error: missing data: '" + str(env.get_island_path()) + "'")
 	
-	configuration = manifest.load_config()
+	configuration = config.Config()
 	
-	file_source_manifest = os.path.join(env.get_island_path_manifest(), configuration["file"])
+	file_source_manifest = os.path.join(env.get_island_path_manifest(), configuration.get_manifest_name())
 	if os.path.exists(file_source_manifest) == False:
 		debug.error("Missing manifest file : '" + str(file_source_manifest) + "'")
 	
@@ -90,8 +91,31 @@ def execute(arguments):
 		
 		debug.verbose("select branch = '" + select_branch + "' is modify : " + str(is_modify) + "     track: '" + str(ret_track[1]) + "'")
 		
+		cmd = "git rev-list " + select_branch
+		debug.verbose("execute : " + cmd)
+		ret_current_branch_sha1 = multiprocess.run_command(cmd, cwd=git_repo_path)[1].split('\n')
+		cmd = "git rev-list " + ret_track[1]
+		debug.verbose("execute : " + cmd)
+		ret_track_branch_sha1 = multiprocess.run_command(cmd, cwd=git_repo_path)[1].split('\n')
+		# remove all identical sha1 ==> not needed for this
+		in_forward = 0
+		for elem_sha1 in ret_current_branch_sha1:
+			if elem_sha1 not in ret_track_branch_sha1:
+				in_forward += 1
+		in_behind = 0
+		for elem_sha1 in ret_track_branch_sha1:
+			if elem_sha1 not in ret_current_branch_sha1:
+				in_behind += 1
+		
+		behind_forward_comment = ""
+		if in_forward != 0:
+			behind_forward_comment += "forward=" + str(in_forward)
+		if in_behind != 0:
+			behind_forward_comment += "behind=" + str(in_behind)
+		if behind_forward_comment != "":
+			behind_forward_comment = "\r\t\t\t\t\t\t\t\t\t\t\t\t[" + behind_forward_comment + "]"
 		#debug.info("" + str(id_element) + "/" + str(len(all_project)) + " : " + str(elem.name) + "\r\t\t\t\t\t\t\t" + modify_status + "(" + select_branch + " -> " + ret_track[1] + " -> " + elem.select_remote["name"] + "/" + elem.branch + ")")
-		debug.info("" + str(id_element) + "/" + str(len(all_project)) + " : " + str(elem.name) + "\r\t\t\t\t\t\t\t" + modify_status + "(" + select_branch + " -> " + ret_track[1] + ")")
+		debug.info("" + str(id_element) + "/" + str(len(all_project)) + " : " + str(elem.name) + "\r\t\t\t\t\t\t\t" + modify_status + "(" + select_branch + " -> " + ret_track[1] + ")" + behind_forward_comment)
 		if is_modify == True:
 			cmd = "git status --short"
 			debug.verbose("execute : " + cmd)

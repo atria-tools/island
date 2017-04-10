@@ -11,6 +11,7 @@
 from island import debug
 from island import tools
 from island import env
+from island import config
 from island import multiprocess
 from island import manifest
 import os
@@ -37,14 +38,14 @@ def execute(arguments):
 		debug.error("System already init have an error: missing data: '" + str(env.get_island_path()) + "'")
 	
 	
-	configuration = manifest.load_config()
+	configuration = config.Config()
 	
 	debug.info("update manifest : '" + str(env.get_island_path_manifest()) + "'")
 	# update manifest
 	cmd = "git fetch --all"
 	multiprocess.run_command_direct(cmd, cwd=env.get_island_path_manifest())
 	
-	file_source_manifest = os.path.join(env.get_island_path_manifest(), configuration["file"])
+	file_source_manifest = os.path.join(env.get_island_path_manifest(), configuration.get_manifest_name())
 	if os.path.exists(file_source_manifest) == False:
 		debug.error("Missing manifest file : '" + str(file_source_manifest) + "'")
 	
@@ -153,11 +154,11 @@ def execute(arguments):
 		if is_modify == True:
 			debug.warning("[" + elem.name + "] Not update ==> the repository is modified")
 			continue
-		
+		""" # TODO: this does not work ...
 		if ret_track[1] != elem.select_remote["name"] + "/" + elem.branch:
 			debug.warning("[" + elem.name + "] Not update ==> the current branch does not track the correct branch : track '" + ret_track[1] + "' instead of '" + elem.select_remote["name"] + "/" + elem.branch + "'")
 			continue
-		
+		"""
 		debug.info("select branch = '" + select_branch + "' is modify : " + str(is_modify) + "     track: '" + str(ret_track[1]) + "'")
 		# check submodule if requested:
 		if     elem.select_remote["sync"] == True \

@@ -19,27 +19,6 @@ from . import multiprocess
 
 from lxml import etree
 
-
-def load_config():
-	config_property = tools.file_read_data(env.get_island_path_config())
-	element_config = config_property.split("\n")
-	if len(element_config) != 3:
-		debug.error("error in configuration property")
-	if element_config[0][:5] != "repo=":
-		debug.error("error in configuration property (2)")
-	if element_config[1][:7] != "branch=":
-		debug.error("error in configuration property (3)")
-	if element_config[2][:5] != "file=":
-		debug.error("error in configuration property (4)")
-	configuration = {
-	    "repo":element_config[0][5:],
-	    "branch":element_config[1][7:],
-	    "file":element_config[2][5:]
-	    }
-	debug.info("configuration property: " + str(configuration))
-	return configuration
-
-
 class RepoConfig():
 	def __init__(self):
 		self.name = ""

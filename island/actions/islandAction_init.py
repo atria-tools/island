@@ -11,6 +11,7 @@
 from island import debug
 from island import tools
 from island import env
+from island import config
 from island import multiprocess
 import os
 
@@ -57,8 +58,11 @@ def execute(arguments):
 	# check if the git of the manifest if availlable
 	
 	# create the file configuration:
-	data = "repo=" + address_manifest + "\nbranch=" + branch + "\nfile=" + manifest_name
-	tools.file_write_data(env.get_island_path_config(), data)
+	conf = config.Config()
+	conf.set_manifest(address_manifest)
+	conf.set_branch(branch)
+	conf.set_manifest_name(manifest_name)
+	conf.store()
 	
 	#clone the manifest repository
 	cmd = "git clone " + address_manifest + " --branch " + branch + " " + env.get_island_path_manifest()
