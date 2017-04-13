@@ -34,8 +34,8 @@ class Config():
 		config_property = tools.file_read_data(env.get_island_path_config())
 		element_config = config_property.split("\n")
 		for line in element_config:
-			if    line[0] == "#" \
-			   or len(line) == 0:
+			if    len(line) == 0 \
+			   or line[0] == "#":
 				# simple comment line ==> pass
 				pass
 			elif line[:5] == "repo=":

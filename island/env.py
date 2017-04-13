@@ -30,7 +30,6 @@ def get_system_base_name():
 island_root_path = os.path.join(os.getcwd())
 if os.path.exists(os.path.join(island_root_path, "." + get_system_base_name())) == True:
 	# all is good ...
-	debug.error("plop: " + os.path.join(island_root_path, "." + get_system_base_name()))
 	pass
 elif os.path.exists(os.path.join(island_root_path, "..", "." + get_system_base_name())) == True:
 	island_root_path = os.path.join(os.getcwd(), "..")
@@ -45,7 +44,8 @@ elif os.path.exists(os.path.join(island_root_path, "..", "..", "..", "..", "." +
 elif os.path.exists(os.path.join(island_root_path, "..", "..", "..", "..", "..", "." + get_system_base_name())) == True:
 	island_root_path = os.path.join(os.getcwd(), "..", "..", "..", "..", "..")
 else:
-	debug.error("the root path of " + get_system_base_name() + " must not be upper that 6 parent path")
+	#debug.error("the root path of " + get_system_base_name() + " must not be upper that 6 parent path")
+	pass
 island_path = os.path.join(island_root_path, "." + get_system_base_name())
 island_path_config = os.path.join(island_path, "config.txt")
 island_path_manifest = os.path.join(island_path, "manifest")

@@ -231,9 +231,9 @@ class Manifest():
 		out = []
 		if default == None:
 			if self.default != None:
-				tmp_default = copy.deepcopy(self.default)
+				default = copy.deepcopy(self.default)
 			else:
-				tmp_default = copy.deepcopy(self.default_base)
+				default = copy.deepcopy(self.default_base)
 		# debug.error(" self.default=" + str(self.default))
 		# add all local project
 		for elem in self.projects:
