@@ -119,6 +119,7 @@ def execute(arguments):
 		# simply update the repository ...
 		debug.verbose("Fetching project: ")
 		# fetch the repository
+		
 		cmd = "git fetch " + elem.select_remote["name"]
 		debug.verbose("execute : " + cmd)
 		multiprocess.run_command_direct(cmd, cwd=git_repo_path)
@@ -159,7 +160,21 @@ def execute(arguments):
 			debug.warning("[" + elem.name + "] Not update ==> the current branch does not track the correct branch : track '" + ret_track[1] + "' instead of '" + elem.select_remote["name"] + "/" + elem.branch + "'")
 			continue
 		"""
-		debug.info("select branch = '" + select_branch + "' is modify : " + str(is_modify) + "     track: '" + str(ret_track[1]) + "'")
+		cmd = "git pull"
+		debug.verbose("execute : " + cmd)
+		ret_pull = multiprocess.run_command(cmd, cwd=git_repo_path)
+		if ret_pull[0] == 0:
+			if ret_pull[1] == "Already up-to-date.":
+				pass
+			elif ret_pull[1] != "":
+				debug.info(ret_pull[1])
+		else:
+			if ret_pull[1] != "":
+				debug.warning("ERROR GIT: " + ret_pull[1])
+			else:
+				debug.warning("ERROR GIT: in pull")
+		
+		debug.verbose("select branch = '" + select_branch + "' is modify : " + str(is_modify) + "     track: '" + str(ret_track[1]) + "'")
 		# check submodule if requested:
 		if     elem.select_remote["sync"] == True \
 		   and os.path.exists(os.path.join(git_repo_path, ".gitmodules")) == True:
