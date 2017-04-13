@@ -220,8 +220,8 @@ if action_to_do not in list_actions:
 
 # todo : Remove this
 if     action_to_do != "init" \
-   and os.path.exists("." + env.get_system_base_name()) == False:
-	debug.error("Can not execute a island cmd if we have not initialize a config: '" + str("." + env.get_system_base_name()) + "'")
+   and os.path.exists(env.get_island_path()) == False:
+	debug.error("Can not execute a island cmd if we have not initialize a config: '" + str("." + env.get_system_base_name()) + "' in upper 6 parent path")
 	exit(-1)
 
 
