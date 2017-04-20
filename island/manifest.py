@@ -281,7 +281,7 @@ class Manifest():
 			upper_remotes_forward.append(remote)
 		# add all include project
 		for elem in self.includes:
-			list_project = elem["manifest"].get_all_configs(tmp_default, upper_remotes_forward)
+			list_project = elem["manifest"].get_all_configs(default, upper_remotes_forward)
 			for elem_proj in list_project:
 				out.append(elem_proj)
 		return out
