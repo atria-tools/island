@@ -37,12 +37,12 @@ elif os.path.exists(os.path.join(island_root_path, "..", "..", "." + get_system_
 	island_root_path = os.path.join(os.getcwd(), "..", "..")
 elif os.path.exists(os.path.join(island_root_path, "..", "..", "..", "." + get_system_base_name())) == True:
 	island_root_path = os.path.join(os.getcwd(), "..", "..", "..")
-elif os.path.exists(os.path.join(island_root_path, "..", "..", "..", "." + get_system_base_name())) == True:
-	island_root_path = os.path.join(os.getcwd(), "..", "..", "..")
 elif os.path.exists(os.path.join(island_root_path, "..", "..", "..", "..", "." + get_system_base_name())) == True:
 	island_root_path = os.path.join(os.getcwd(), "..", "..", "..", "..")
 elif os.path.exists(os.path.join(island_root_path, "..", "..", "..", "..", "..", "." + get_system_base_name())) == True:
 	island_root_path = os.path.join(os.getcwd(), "..", "..", "..", "..", "..")
+elif os.path.exists(os.path.join(island_root_path, "..", "..", "..", "..", "..", "..", "." + get_system_base_name())) == True:
+	island_root_path = os.path.join(os.getcwd(), "..", "..", "..", "..", "..", "..")
 else:
 	#debug.error("the root path of " + get_system_base_name() + " must not be upper that 6 parent path")
 	pass
