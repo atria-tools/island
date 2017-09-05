@@ -26,9 +26,15 @@ def help():
 
 def execute(arguments):
 	debug.info("execute:")
+	origin_name = ""
 	for elem in arguments:
 		debug.info("    '" + str(elem.get_arg()) + "'")
-	if len(arguments) != 0:
+	if len(arguments) == 0:
+		pass
+	elif len(arguments) == 1:
+		origin_name = arguments[0].get_arg()
+		debug.info("try fetch remote if exist: '" + str(origin_name) + "'")
+	else:
 		debug.error("Sync have not parameter")
 	
 	# check if .XXX exist (create it if needed)
@@ -40,10 +46,11 @@ def execute(arguments):
 	
 	configuration = config.Config()
 	
-	debug.info("update manifest : '" + str(env.get_island_path_manifest()) + "'")
-	# update manifest
-	cmd = "git fetch --all"
-	multiprocess.run_command_direct(cmd, cwd=env.get_island_path_manifest())
+	if env.get_fetch_manifest() == True:
+		debug.info("update manifest : '" + str(env.get_island_path_manifest()) + "'")
+		# update manifest
+		cmd = "git fetch --all"
+		multiprocess.run_command_direct(cmd, cwd=env.get_island_path_manifest())
 	
 	file_source_manifest = os.path.join(env.get_island_path_manifest(), configuration.get_manifest_name())
 	if os.path.exists(file_source_manifest) == False:
@@ -69,7 +76,10 @@ def execute(arguments):
 		# simply update the repository ...
 		debug.verbose("Fetching project: ")
 		# fetch the repository
-		cmd = "git fetch " + elem.select_remote["name"]
+		if origin_name == "":
+			cmd = "git fetch " + elem.select_remote["name"]
+		else:
+			cmd = "git fetch " + origin_name
 		debug.verbose("execute : " + cmd)
 		multiprocess.run_command_direct(cmd, cwd=git_repo_path)
 		

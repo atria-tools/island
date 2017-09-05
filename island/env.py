@@ -26,6 +26,16 @@ def get_system_base_name():
 	return system_base_name
 
 
+fetch_manifest = True
+
+def set_fetch_manifest(val):
+	global fetch_manifest
+	fetch_manifest = val
+
+def get_fetch_manifest():
+	global fetch_manifest
+	return fetch_manifest
+
 
 island_root_path = os.path.join(os.getcwd())
 if os.path.exists(os.path.join(island_root_path, "." + get_system_base_name())) == True:

@@ -64,6 +64,7 @@ myArgs.add("c", "color", desc="Display message in color")
 #myArgs.add("h", "help", desc="Help of this action")
 myArgs.add("b", "branch", haveParam=True, desc="Select branch to display")
 myArgs.add("m", "manifest", haveParam=True, desc="Name of the manifest")
+myArgs.add("N", "no-fetch-manifest", haveParam=False, desc="Disable the fetch of the manifest")
 """
 myArgs.add("j", "jobs", haveParam=True, desc="Specifies the number of jobs (commands) to run simultaneously")
 myArgs.add("d", "depth", haveParam=True, desc="Depth to clone all the repository")
@@ -130,6 +131,10 @@ def parseGenericArg(argument, active):
 				debug.enable_color()
 			else:
 				debug.disable_color()
+		return True
+	elif argument.get_option_name() == "no-fetch-manifest":
+		if active == False:
+			env.set_fetch_manifest(False)
 		return True
 	return False
 

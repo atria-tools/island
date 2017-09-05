@@ -21,15 +21,18 @@ def help():
 	return "plop"
 
 
-
-
-
 def execute(arguments):
 	debug.info("execute:")
+	origin_name = ""
 	for elem in arguments:
 		debug.info("    '" + str(elem.get_arg()) + "'")
-	if len(arguments) != 0:
-		debug.error("status have not parameter")
+	if len(arguments) == 0:
+		pass
+	elif len(arguments) == 1:
+		origin_name = arguments[0].get_arg()
+		debug.info("try fetch remote if exist: '" + str(origin_name) + "'")
+	else:
+		debug.error("Sync have not parameter")
 	
 	# check if .XXX exist (create it if needed)
 	if    os.path.exists(env.get_island_path()) == False \
@@ -62,14 +65,9 @@ def execute(arguments):
 		debug.verbose("execute : " + cmd)
 		ret_diff = multiprocess.run_command(cmd, cwd=git_repo_path)
 		# get local branch
-		cmd = "git branch"
+		cmd = "git branch -a"
 		debug.verbose("execute : " + cmd)
 		ret_branch = multiprocess.run_command(cmd, cwd=git_repo_path)
-		
-		# get  tracking branch
-		cmd = "git rev-parse --abbrev-ref --symbolic-full-name @{u}"
-		debug.verbose("execute : " + cmd)
-		ret_track = multiprocess.run_command(cmd, cwd=git_repo_path)
 		
 		is_modify = True
 		if ret_diff[0] == 0:
@@ -77,13 +75,32 @@ def execute(arguments):
 		
 		list_branch = ret_branch[1].split('\n')
 		list_branch2 = []
+		list_branch3 = []
 		select_branch = ""
 		for elem_branch in list_branch:
+			if len(elem_branch.split(" -> ")) != 1:
+				continue
+			if elem_branch[2:10] == "remotes/":
+				elem_branch = elem_branch[:2] + elem_branch[10:]
 			if elem_branch[:2] == "* ":
 				list_branch2.append([elem_branch[2:], True])
 				select_branch = elem_branch[2:]
 			else:
 				list_branch2.append([elem_branch[2:], False])
+			list_branch3.append(elem_branch[2:])
+		debug.verbose("List all branch: " + str(list_branch3))
+		# get tracking branch
+		if origin_name == "":
+			cmd = "git rev-parse --abbrev-ref --symbolic-full-name @{u}"
+			debug.verbose("execute : " + cmd)
+			ret_track = multiprocess.run_command(cmd, cwd=git_repo_path)
+		else:
+			debug.extreme_verbose("check if exist " + origin_name + "/" + select_branch + " in " + str(list_branch3))
+			if origin_name + "/" + select_branch not in list_branch3:
+				debug.info("" + str(id_element) + "/" + str(len(all_project)) + " : " + str(elem.name) + "\r\t\t\t\t\t\t\t     (NO BRANCH)")
+				continue;
+			else:
+				ret_track = [True, origin_name + "/" + select_branch]
 		
 		modify_status = "     "
 		if is_modify == True:
@@ -111,6 +128,8 @@ def execute(arguments):
 		if in_forward != 0:
 			behind_forward_comment += "forward=" + str(in_forward)
 		if in_behind != 0:
+			if in_forward != 0:
+				behind_forward_comment += " "
 			behind_forward_comment += "behind=" + str(in_behind)
 		if behind_forward_comment != "":
 			behind_forward_comment = "\r\t\t\t\t\t\t\t\t\t\t\t\t[" + behind_forward_comment + "]"
