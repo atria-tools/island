@@ -21,18 +21,18 @@ def help():
 	return "plop"
 
 
+def add_specific_arguments(my_args, section):
+	my_args.add("r", "remote", haveParam=True, desc="Name of the remote server")
+
+
 def execute(arguments):
-	debug.info("execute:")
-	origin_name = ""
+	argument_remote_name = ""
 	for elem in arguments:
-		debug.info("    '" + str(elem.get_arg()) + "'")
-	if len(arguments) == 0:
-		pass
-	elif len(arguments) == 1:
-		origin_name = arguments[0].get_arg()
-		debug.info("try fetch remote if exist: '" + str(origin_name) + "'")
-	else:
-		debug.error("Sync have not parameter")
+		if elem.get_option_name() == "remote":
+			debug.info("find remote name: '" + elem.get_arg() + "'")
+			argument_remote_name = elem.get_arg()
+		else:
+			debug.error("Wrong argument: '" + elem.get_option_name() + "' '" + elem.get_arg() + "'")
 	
 	# check if .XXX exist (create it if needed)
 	if    os.path.exists(env.get_island_path()) == False \
@@ -90,17 +90,17 @@ def execute(arguments):
 			list_branch3.append(elem_branch[2:])
 		debug.verbose("List all branch: " + str(list_branch3))
 		# get tracking branch
-		if origin_name == "":
+		if argument_remote_name == "":
 			cmd = "git rev-parse --abbrev-ref --symbolic-full-name @{u}"
 			debug.verbose("execute : " + cmd)
 			ret_track = multiprocess.run_command(cmd, cwd=git_repo_path)
 		else:
-			debug.extreme_verbose("check if exist " + origin_name + "/" + select_branch + " in " + str(list_branch3))
-			if origin_name + "/" + select_branch not in list_branch3:
+			debug.extreme_verbose("check if exist " + argument_remote_name + "/" + select_branch + " in " + str(list_branch3))
+			if argument_remote_name + "/" + select_branch not in list_branch3:
 				debug.info("" + str(id_element) + "/" + str(len(all_project)) + " : " + str(elem.name) + "\r\t\t\t\t\t\t\t     (NO BRANCH)")
 				continue;
 			else:
-				ret_track = [True, origin_name + "/" + select_branch]
+				ret_track = [True, argument_remote_name + "/" + select_branch]
 		
 		modify_status = "     "
 		if is_modify == True:

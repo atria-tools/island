@@ -13,6 +13,7 @@ from . import debug
 import os
 import sys
 from . import env
+from . import arguments
 
 list_actions = []
 
@@ -61,25 +62,58 @@ def get_desc(action_name):
 			sys.path.append(os.path.dirname(elem["path"]))
 			the_action = __import__(__base_action_name + action_name)
 			if "get_desc" not in dir(the_action):
-				debug.error("execute is not implmented for this action ... '" + str(action_name) + "'")
-				return None
+				return ""
 			return the_action.get_desc()
-	return None
+	return ""
 
 
-def execute(action_name, argument_list):
+def usage(arguments, action_name):
+	color = debug.get_color_set()
+	# generic argument displayed for specific action:
+	print("Specific argument for the command: '" + action_name + "'" )
+	print("    " + get_desc(action_name))
+	arguments.display(action_name)
+	exit(0)
+
+def execute(action_name, argument_start_id):
 	global list_actions;
 	# TODO: Move here the check if action is availlable
 	
 	for elem in list_actions:
-		if elem["name"] == action_name:
-			debug.info("action: " + str(elem));
-			# finish the parsing
-			sys.path.append(os.path.dirname(elem["path"]))
-			the_action = __import__(__base_action_name + action_name)
-			if "execute" not in dir(the_action):
-				debug.error("execute is not implmented for this action ... '" + str(action_name) + "'")
+		if elem["name"] != action_name:
+			continue
+		debug.info("action: " + str(elem));
+		# finish the parsing
+		sys.path.append(os.path.dirname(elem["path"]))
+		the_action = __import__(__base_action_name + action_name)
+		my_under_args_parser = arguments.islandArg()
+		my_under_args_parser.add("h", "help", desc="Help of this action")
+		if "add_specific_arguments" in dir(the_action):
+			the_action.add_specific_arguments(my_under_args_parser, elem["name"])
+		my_under_args = my_under_args_parser.parse(argument_start_id)
+		# search help if needed ==> permit to not duplicating code
+		for elem in my_under_args:
+			if elem.get_option_name() == "help":
+				usage(my_under_args_parser, action_name)
 				return False
-			return the_action.execute(argument_list)
+		# now we can execute:
+		if "execute" not in dir(the_action):
+			debug.error("execute is not implmented for this action ... '" + str(action_name) + "'")
+			return False
+		debug.info("execute: " + action_name)
+		for elem in my_under_args:
+			debug.info("    " + str(elem.get_option_name()) + "='" + str(elem.get_arg()) + "'")
+		return the_action.execute(my_under_args)
 	debug.error("Can not do the action...")
 	return False
+
+def get_action_help(action_name):
+	global list_actions;
+	for elem in list_actions:
+		if elem["name"] != action_name:
+			continue
+		sys.path.append(os.path.dirname(elem["path"]))
+		the_action = __import__(__base_action_name + action_name)
+		if "help" in dir(the_action):
+			return the_action.help()
+	return "---"

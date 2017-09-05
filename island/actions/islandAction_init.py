@@ -16,12 +16,14 @@ from island import multiprocess
 import os
 
 def help():
-	return "plop"
+	return "Init a island repository (need 'fetch' after)"
+
+def add_specific_arguments(my_args, section):
+	my_args.add("b", "branch", haveParam=True, desc="Select branch to display")
+	my_args.add("m", "manifest", haveParam=True, desc="Name of the manifest")
+
 
 def execute(arguments):
-	debug.info("execute:")
-	for elem in arguments:
-		debug.info("    '" + str(elem.get_arg()) + "'")
 	if len(arguments) == 0:
 		debug.error("Missing argument to execute the current action ...")
 	

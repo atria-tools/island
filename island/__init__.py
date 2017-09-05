@@ -54,36 +54,33 @@ def init():
 	
 	is_init = True
 
-
-myArgs = arguments.islandArg()
-myArgs.add_section("option", "Can be set one time in all case")
-myArgs.add("h", "help", desc="Display this help")
-myArgs.add("v", "verbose", list=[["0","None"],["1","error"],["2","warning"],["3","info"],["4","debug"],["5","verbose"],["6","extreme_verbose"]], desc="display debug level (verbose) default =2")
-myArgs.add("c", "color", desc="Display message in color")
-# for init only
-#myArgs.add("h", "help", desc="Help of this action")
-myArgs.add("b", "branch", haveParam=True, desc="Select branch to display")
-myArgs.add("m", "manifest", haveParam=True, desc="Name of the manifest")
-myArgs.add("N", "no-fetch-manifest", haveParam=False, desc="Disable the fetch of the manifest")
-"""
-myArgs.add("j", "jobs", haveParam=True, desc="Specifies the number of jobs (commands) to run simultaneously")
-myArgs.add("d", "depth", haveParam=True, desc="Depth to clone all the repository")
-
-"""
-localArgument = myArgs.parse()
+# initialize the system ...
+init()
 
 
-"""
-	display the help of this makefile
-"""
+debug.verbose("List of actions: " + str(actions.get_list_of_action()))
+
+my_args = arguments.islandArg()
+my_args.add_section("option", "Can be set one time in all case")
+my_args.add("h", "help", desc="Display this help")
+my_args.add("v", "verbose", list=[["0","None"],["1","error"],["2","warning"],["3","info"],["4","debug"],["5","verbose"],["6","extreme_verbose"]], desc="display debug level (verbose) default =2")
+my_args.add("c", "color", desc="Display message in color")
+my_args.add("n", "no-fetch-manifest", haveParam=False, desc="Disable the fetch of the manifest")
+my_args.set_stop_at(actions.get_list_of_action())
+local_argument = my_args.parse()
+
+##
+## @brief Display the help of this makefile.
+##
 def usage():
 	color = debug.get_color_set()
 	# generic argument displayed : 
-	myArgs.display()
+	my_args.display()
 	print("		Action availlable" )
 	list_actions = actions.get_list_of_action();
 	for elem in list_actions:
-		print("		" + color['green'] + elem + color['default'])
+		print("			" + color['green'] + elem + color['default'])
+		print("					" + actions.get_action_help(elem))
 	"""
 	print("		" + color['green'] + "init" + color['default'])
 	print("			initialize a 'island' interface with a manifest in a git ")
@@ -191,15 +188,12 @@ if os.path.isfile(config_file) == True:
 """
 
 # parse default unique argument:
-for argument in localArgument:
+for argument in local_argument:
 	parseGenericArg(argument, True)
-
-# initialize the system ...
-init()
 
 # remove all generic arguments:
 new_argument_list = []
-for argument in localArgument:
+for argument in local_argument:
 	if parseGenericArg(argument, False) == True:
 		continue
 	new_argument_list.append(argument)
@@ -230,7 +224,7 @@ if     action_to_do != "init" \
 	exit(-1)
 
 
-actions.execute(action_to_do, new_argument_list)
+actions.execute(action_to_do, my_args.get_last_parsed()+1)
 
 # stop all started threads;
 #multiprocess.un_init()

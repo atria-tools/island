@@ -18,7 +18,8 @@ import os
 
 
 def help():
-	return "plop"
+	return "Push all repository to the upper server"
+
 
 
 
@@ -60,25 +61,47 @@ def execute(arguments):
 	id_element = 0
 	for elem in all_project:
 		id_element += 1
-		debug.info("fetch: " + str(id_element) + "/" + str(len(all_project)) + " : " + str(elem.name))
+		debug.info("push: " + str(id_element) + "/" + str(len(all_project)) + " : " + str(elem.name))
 		#debug.debug("elem : " + str(elem))
 		git_repo_path = os.path.join(env.get_island_root_path(), elem.path)
 		if os.path.exists(git_repo_path) == False:
-			debug.error("can not fetch project that not exist")
+			debug.error("can not push project that not exist")
 			continue
 		
 		if os.path.exists(os.path.join(git_repo_path,".git")) == False:
 			# path already exist but it is not used to as a git repo ==> this is an error
-			debug.error("path '" + git_repo_path + "' is already existing but not used for a git repository. Clean it and restart")
+			debug.error("path '" + git_repo_path + "' exist but not used for a git repository. Clean it and restart")
+		
+		# get the current branch:
+		# get local branch
+		cmd = "git branch -a"
+		debug.verbose("execute : " + cmd)
+		ret_branch = multiprocess.run_command(cmd, cwd=git_repo_path)
+		list_branch = ret_branch[1].split('\n')
+		list_branch2 = []
+		list_branch3 = []
+		select_branch = ""
+		for elem_branch in list_branch:
+			if len(elem_branch.split(" -> ")) != 1:
+				continue
+			if elem_branch[2:10] == "remotes/":
+				elem_branch = elem_branch[:2] + elem_branch[10:]
+			if elem_branch[:2] == "* ":
+				list_branch2.append([elem_branch[2:], True])
+				select_branch = elem_branch[2:]
+			else:
+				list_branch2.append([elem_branch[2:], False])
+			list_branch3.append(elem_branch[2:])
 		
 		# simply update the repository ...
-		debug.verbose("Fetching project: ")
+		debug.verbose("Push project: ")
 		# fetch the repository
-		cmd = "git fetch"
+		cmd = "git push"
 		if argument_remote_name != "":
 			cmd += " " + argument_remote_name
 		else:
 			cmd += " " + elem.select_remote["name"]
+		cmd += " " + elem_branch + ":" + elem_branch
 		debug.verbose("execute : " + cmd)
 		multiprocess.run_command_direct(cmd, cwd=git_repo_path)
 		

@@ -23,11 +23,7 @@ def help():
 
 
 
-
 def execute(arguments):
-	debug.info("execute:")
-	for elem in arguments:
-		debug.info("    '" + str(elem.get_arg()) + "'")
 	if len(arguments) != 0:
 		debug.error("Sync have not parameter")
 	

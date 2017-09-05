@@ -20,21 +20,18 @@ import os
 def help():
 	return "plop"
 
-
-
-
+def add_specific_arguments(my_args, section):
+	my_args.add("r", "remote", haveParam=True, desc="Name of the remote server")
+	my_args.add_arg("branch", optionnal=False, desc="Branch to checkout")
 
 def execute(arguments):
-	debug.info("execute:")
-	for elem in arguments:
-		debug.info("    '" + str(elem.get_arg()) + "'")
-	if len(arguments) != 1:
-		debug.error("checkout: missing argument to select the new branch ...")
+	argument_remote_name = ""
 	branch_to_checkout = ""
 	for elem in arguments:
-		if elem.get_option_name() == "":
-			if branch_to_checkout != "":
-				debug.error("checkout branch already set : '" + branch_to_checkout + "' !!! '" + elem.get_arg() + "'")
+		if elem.get_option_name() == "remote":
+			debug.info("find remote name: '" + elem.get_arg() + "'")
+			argument_remote_name = elem.get_arg()
+		if elem.get_option_name() == "branch":
 			branch_to_checkout = elem.get_arg()
 		else:
 			debug.error("Wrong argument: '" + elem.get_option_name() + "' '" + elem.get_arg() + "'")
