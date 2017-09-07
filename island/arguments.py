@@ -225,7 +225,7 @@ class ArgVolatile:
 	## @return (string) empty string
 	##
 	def get_porperties(self):
-		return "???? WHAT the fuck ????"
+		return " [" + self.dest_option + "]"
 	
 	##
 	## @brief Check if the user added value is correct or not with the list of availlable value
@@ -511,7 +511,7 @@ class islandArg:
 		listOfPropertiesArg = "";
 		for element in self.list_properties :
 			listOfPropertiesArg += element.get_porperties()
-		print("	" + sys.argv[0] + listOfPropertiesArg + " " + action_name + " ...")
+		print("	" + sys.argv[0] + " " + action_name + " " + listOfPropertiesArg + " ...")
 		for element in self.list_properties :
 			element.display()
 

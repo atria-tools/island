@@ -24,34 +24,31 @@ def help():
 
 
 def add_specific_arguments(my_args, section):
-	my_args.add("r", "remote", haveParam=True, desc="Name of the remote server")
-	my_args.add("m", "comment", haveParam=True, desc="Comment to commit data")
+	my_args.add("m", "message", haveParam=True, desc="Message to commit data")
+	my_args.add("a", "all", desc="Commit all elements")
+	my_args.add("", "amend", desc="Ammend data at the previous commit")
 
 
 def execute(arguments):
-	argument_remote_name = ""
-	argument_comment = ""
+	argument_message = ""
+	argument_amend = ""
+	argument_all = ""
 	for elem in arguments:
-		if elem.get_option_name() == "remote":
-			debug.info("find remote name: '" + elem.get_arg() + "'")
-			argument_remote_name = elem.get_arg()
-		if elem.get_option_name() == "comment":
-			debug.info("find comment: '" + elem.get_arg() + "'")
-			argument_comment = elem.get_arg()
+		if elem.get_option_name() == "message":
+			debug.info("find message: '" + elem.get_arg() + "'")
+			argument_message = " --message \"" + elem.get_arg() + "\" ";
+		elif elem.get_option_name() == "all":
+			argument_all = " --all "
+		elif elem.get_option_name() == "amend":
+			argument_amend = " --amend "
 		else:
 			debug.error("Wrong argument: '" + elem.get_option_name() + "' '" + elem.get_arg() + "'")
-	
-	debug.info("commit with argument: ");
-	if argument_comment != "":
-		debug.info("    comment: '" + str(argument_comment) + "'");
-	exit(0);
 	
 	# check if .XXX exist (create it if needed)
 	if    os.path.exists(env.get_island_path()) == False \
 	   or os.path.exists(env.get_island_path_config()) == False \
 	   or os.path.exists(env.get_island_path_manifest()) == False:
 		debug.error("System already init have an error: missing data: '" + str(env.get_island_path()) + "'")
-	
 	
 	configuration = config.Config()
 	
@@ -67,28 +64,25 @@ def execute(arguments):
 	mani = manifest.Manifest(file_source_manifest)
 	
 	all_project = mani.get_all_configs()
-	debug.info("fetch : " + str(len(all_project)) + " projects")
+	debug.info("commit : " + str(len(all_project)) + " projects")
 	id_element = 0
 	for elem in all_project:
 		id_element += 1
-		debug.info("fetch: " + str(id_element) + "/" + str(len(all_project)) + ": " + str(elem.name))
-		#debug.debug("elem : " + str(elem))
+		debug.info("commit: " + str(id_element) + "/" + str(len(all_project)) + ": " + str(elem.name))
 		git_repo_path = os.path.join(env.get_island_root_path(), elem.path)
 		if os.path.exists(git_repo_path) == False:
-			debug.error("can not fetch project that not exist")
+			debug.error("can not commit project that not exist")
 			continue
 		
 		if os.path.exists(os.path.join(git_repo_path,".git")) == False:
 			# path already exist but it is not used to as a git repo ==> this is an error
-			debug.error("path '" + git_repo_path + "' is already existing but not used for a git repository. Clean it and restart")
+			debug.warning("path '" + git_repo_path + "' is already existing but not used for a git repository. Clean it and restart")
+			continue;
 		
 		# simply update the repository ...
-		debug.verbose("Fetching project: ")
+		debug.verbose("commit in project:")
 		# fetch the repository
-		if argument_remote_name == "":
-			cmd = "git fetch " + elem.select_remote["name"]
-		else:
-			cmd = "git fetch " + argument_remote_name
-		debug.verbose("execute : " + cmd)
-		multiprocess.run_command_direct(cmd, cwd=git_repo_path)
+		cmd = "git commit " + argument_amend + argument_all + argument_message
+		debug.info("execute : " + cmd)
+		##multiprocess.run_command_direct(cmd, cwd=git_repo_path)
 		

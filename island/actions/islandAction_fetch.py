@@ -20,11 +20,8 @@ import os
 def help():
 	return "plop"
 
-
-
 def add_specific_arguments(my_args, section):
 	my_args.add("r", "remote", haveParam=True, desc="Name of the remote server")
-
 
 def execute(arguments):
 	argument_remote_name = ""
