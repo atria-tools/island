@@ -101,7 +101,7 @@ def execute(arguments):
 			cmd += " " + argument_remote_name
 		else:
 			cmd += " " + elem.select_remote["name"]
-		cmd += " " + elem_branch + ":" + elem_branch
-		debug.verbose("execute : " + cmd)
+		cmd += " " + select_branch + ":" + select_branch
+		debug.info("execute : " + cmd)
 		multiprocess.run_command_direct(cmd, cwd=git_repo_path)
 		

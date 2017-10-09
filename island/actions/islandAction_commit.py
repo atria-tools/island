@@ -83,6 +83,6 @@ def execute(arguments):
 		debug.verbose("commit in project:")
 		# fetch the repository
 		cmd = "git commit " + argument_amend + argument_all + argument_message
-		debug.info("execute : " + cmd)
-		##multiprocess.run_command_direct(cmd, cwd=git_repo_path)
+		debug.debug("execute : " + cmd)
+		multiprocess.run_command_direct(cmd, cwd=git_repo_path)
 		
