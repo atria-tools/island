@@ -31,7 +31,7 @@ def execute(arguments):
 		if elem.get_option_name() == "remote":
 			debug.info("find remote name: '" + elem.get_arg() + "'")
 			argument_remote_name = elem.get_arg()
-		if elem.get_option_name() == "branch":
+		elif elem.get_option_name() == "branch":
 			branch_to_checkout = elem.get_arg()
 		else:
 			debug.error("Wrong argument: '" + elem.get_option_name() + "' '" + elem.get_arg() + "'")
