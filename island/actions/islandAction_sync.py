@@ -60,7 +60,12 @@ def execute(arguments):
 			#clone the manifest repository
 			address_manifest = ""
 			
-			cmd = "git clone " + elem.select_remote["fetch"] + "/" + elem.name + " --branch " + elem.branch + " --origin " + elem.select_remote["name"] + " " + git_repo_path
+			cmd = "git clone " + elem.select_remote["fetch"]
+			if elem.select_remote["fetch"][0:4] == "git@":
+				cmd += ":"
+			else:
+				cmd += "/"
+			cmd += elem.name + " --branch " + elem.branch + " --origin " + elem.select_remote["name"] + " " + git_repo_path
 			debug.info("clone the repo")
 			ret = multiprocess.run_command_direct(cmd)
 			if     ret != "" \
@@ -72,7 +77,12 @@ def execute(arguments):
 			# add global mirror list
 			for mirror in elem.select_remote["mirror"]:
 				debug.verbose("Add global mirror: " + str(mirror))
-				cmd = "git remote add " + mirror["name"] + " " + mirror["fetch"] + "/" + elem.name 
+				cmd = "git remote add " + mirror["name"] + " " + mirror["fetch"]
+				if mirror["fetch"][0:4] == "git@":
+					cmd += ":"
+				else:
+					cmd += "/"
+				cmd += elem.name
 				ret = multiprocess.run_command_direct(cmd, cwd=git_repo_path)
 				if     ret != "" \
 				   and ret != False:

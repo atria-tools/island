@@ -78,7 +78,12 @@ class Manifest():
 								       and (    fetch[0] == "/" \
 								             or fetch[0] == "\\"):
 									fetch = fetch[1:]
-								base_origin = base_origin[:base_origin.rfind('/')]
+								offset_1 = base_origin.rfind('/')
+								offset_2 = base_origin.rfind(':')
+								if offset_1 > offset_2:
+									base_origin = base_origin[:offset_1]
+								else:
+									base_origin = base_origin[:offset_2]
 							debug.verbose("new base_origin=" + base_origin)
 							debug.verbose("tmp fetch=" + fetch)
 							if fetch != "":
