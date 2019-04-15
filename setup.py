@@ -45,5 +45,9 @@ setup(name='island',
 
 #To developp: sudo ./setup.py install
 #             sudo ./setup.py develop
-#TO register all in pip: ./setup.py register sdist upload
+#TO register all in pip: use external tools:
+#  pip install twine
+#  # create the archive
+#  ./setup.py sdist
+#  twine upload dist/*
 
