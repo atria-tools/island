@@ -57,7 +57,7 @@ def run_command_direct(cmd_line, cwd=None):
 	if sys.version_info >= (3, 0):
 		output = output.decode("utf-8")
 		err = err.decode("utf-8")
-	# Check error :
+	# Check errors:
 	if p.returncode == 0:
 		if output == None:
 			return err[:-1];
