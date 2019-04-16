@@ -21,11 +21,17 @@ def help():
 	return "plop"
 
 
-
+def add_specific_arguments(my_args, section):
+	my_args.add("d", "download", haveParam=False, desc="Just download not download repository")
 
 def execute(arguments):
-	if len(arguments) != 0:
-		debug.error("Sync have not parameter")
+	just_download = False
+	for elem in arguments:
+		if elem.get_option_name() == "download":
+			just_download = True
+			debug.info("find remote name: '" + elem.get_arg() + "'")
+		else:
+			debug.error("SYNC Wrong argument: '" + elem.get_option_name() + "' '" + elem.get_arg() + "'")
 	
 	# check if .XXX exist (create it if needed)
 	if    os.path.exists(env.get_island_path()) == False \
@@ -116,6 +122,10 @@ def execute(arguments):
 					debug.error("Can not init submodules ... ")
 					continue
 				
+			continue
+		
+		if just_download == True:
+			debug.info("SYNC: Already downloaded")
 			continue
 		
 		if os.path.exists(os.path.join(git_repo_path,".git")) == False:
