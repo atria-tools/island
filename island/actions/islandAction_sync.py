@@ -65,9 +65,10 @@ def execute(arguments):
 			# this is a new clone ==> this is easy ...
 			#clone the manifest repository
 			address_manifest = ""
-			
+			### example git@git.plouf.com:basic_folder
 			cmd = "git clone " + elem.select_remote["fetch"]
-			if elem.select_remote["fetch"][0:4] == "git@":
+			if     elem.select_remote["fetch"][0:4] == "git@" \
+			   and len(elem.select_remote["fetch"][4:].split(":")) <= 1:
 				cmd += ":"
 			else:
 				cmd += "/"
