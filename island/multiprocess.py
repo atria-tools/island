@@ -16,7 +16,7 @@ import os
 import subprocess
 import shlex
 # Local import
-from . import debug
+from realog import debug
 from . import tools
 from . import env
 

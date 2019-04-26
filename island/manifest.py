@@ -12,7 +12,7 @@ import sys
 import os
 import copy
 # Local import
-from . import debug
+from realog import debug
 from . import tools
 from . import env
 from . import multiprocess

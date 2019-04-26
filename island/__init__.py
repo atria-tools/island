@@ -14,7 +14,7 @@ import copy
 # Local import
 from . import host
 from . import tools
-from . import debug
+from realog import debug
 from . import env
 from . import actions
 from . import arguments

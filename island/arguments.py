@@ -8,7 +8,7 @@
 ## @license MPL v2.0 (see license file)
 ##
 import sys
-from . import debug
+from realog import debug
 
 ##
 ## @brief Single argument class. It permit to define the getted argument.

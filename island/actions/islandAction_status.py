@@ -8,7 +8,7 @@
 ## @license MPL v2.0 (see license file)
 ##
 
-from island import debug
+from realog import debug
 from island import tools
 from island import env
 from island import multiprocess

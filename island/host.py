@@ -10,7 +10,7 @@
 import platform
 import sys
 # Local import
-from . import debug
+from realog import debug
 
 # print os.name # ==> 'posix'
 if platform.system() == "Linux":

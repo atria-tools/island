@@ -8,7 +8,7 @@
 ## @license MPL v2.0 (see license file)
 ##
 
-from island import debug
+from realog import debug
 from island import tools
 from island import env
 from island import multiprocess
@@ -46,8 +46,7 @@ def execute(arguments):
 	for elem in all_project:
 		debug.info("------------------------------------------")
 		id_element += 1
-		debug.verbose("execute command : " + str(id_element) + "/" + str(len(all_project)) + " : " + str(elem.name))
-		debug.info("in: " + str(elem.name))
+		debug.info("execute command : " + str(id_element) + "/" + str(len(all_project)) + " : " + str(elem.name))
 		#debug.debug("elem : " + str(elem))
 		git_repo_path = os.path.join(env.get_island_root_path(), elem.path)
 		if os.path.exists(git_repo_path) == False:
@@ -57,7 +56,8 @@ def execute(arguments):
 		debug.verbose("execute : " + cmd)
 		ret = multiprocess.run_command(cmd, cwd=git_repo_path)
 		if ret[0] == 0:
-			debug.info(ret[1])
+			debug.info("ret=" + ret[1])
+			debug.info("err=" + ret[2])
 		else:
 			debug.info("Execution ERROR")
 		

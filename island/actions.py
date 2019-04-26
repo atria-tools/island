@@ -9,7 +9,7 @@
 ##
 
 # Local import
-from . import debug
+from realog import debug
 import os
 import sys
 from . import env
