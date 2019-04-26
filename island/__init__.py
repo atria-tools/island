@@ -17,7 +17,8 @@ from . import tools
 from realog import debug
 from . import env
 from . import actions
-from . import arguments
+import death.Arguments as arguments
+import death.ArgElement as arg_element
 is_init = False
 
 
@@ -60,7 +61,7 @@ init()
 
 debug.verbose("List of actions: " + str(actions.get_list_of_action()))
 
-my_args = arguments.islandArg()
+my_args = arguments.Arguments()
 my_args.add_section("option", "Can be set one time in all case")
 my_args.add("h", "help", desc="Display this help")
 my_args.add("v", "verbose", list=[["0","None"],["1","error"],["2","warning"],["3","info"],["4","debug"],["5","verbose"],["6","extreme_verbose"]], desc="display debug level (verbose) default =2")
@@ -153,37 +154,37 @@ if os.path.isfile(config_file) == True:
 	if "get_parsing_depth" in dir(configuration_file):
 		data = configuration_file.get_parsing_depth()
 		debug.debug(" get default config 'get_parsing_depth' val='" + str(data) + "'")
-		parseGenericArg(arguments.ArgElement("depth", str(data)), True)
+		parseGenericArg(arg_element.ArgElement("depth", str(data)), True)
 	
 	if "get_default_jobs" in dir(configuration_file):
 		data = configuration_file.get_default_jobs()
 		debug.debug(" get default config 'get_default_jobs' val='" + str(data) + "'")
-		parseGenericArg(arguments.ArgElement("jobs", str(data)), True)
+		parseGenericArg(arg_element.ArgElement("jobs", str(data)), True)
 	
 	if "get_default_color" in dir(configuration_file):
 		data = configuration_file.get_default_color()
 		debug.debug(" get default config 'get_default_color' val='" + str(data) + "'")
-		parseGenericArg(arguments.ArgElement("color", str(data)), True)
+		parseGenericArg(arg_element.ArgElement("color", str(data)), True)
 	
 	if "get_default_debug_level" in dir(configuration_file):
 		data = configuration_file.get_default_debug_level()
 		debug.debug(" get default config 'get_default_debug_level' val='" + str(data) + "'")
-		parseGenericArg(arguments.ArgElement("verbose", str(data)), True)
+		parseGenericArg(arg_element.ArgElement("verbose", str(data)), True)
 	
 	if "get_default_print_pretty" in dir(configuration_file):
 		data = configuration_file.get_default_print_pretty()
 		debug.debug(" get default config 'get_default_print_pretty' val='" + str(data) + "'")
-		parseGenericArg(arguments.ArgElement("pretty", str(data)), True)
+		parseGenericArg(arg_element.ArgElement("pretty", str(data)), True)
 	
 	if "get_default_force_optimisation" in dir(configuration_file):
 		data = configuration_file.get_default_force_optimisation()
 		debug.debug(" get default config 'get_default_force_optimisation' val='" + str(data) + "'")
-		parseGenericArg(arguments.ArgElement("force-optimisation", str(data)), True)
+		parseGenericArg(arg_element.ArgElement("force-optimisation", str(data)), True)
 	
 	if "get_default_isolate_system" in dir(configuration_file):
 		data = configuration_file.get_default_isolate_system()
 		debug.debug(" get default config 'get_default_isolate_system' val='" + str(data) + "'")
-		parseGenericArg(arguments.ArgElement("isolate-system", str(data)), True)
+		parseGenericArg(arg_element.ArgElement("isolate-system", str(data)), True)
 		
 """
 

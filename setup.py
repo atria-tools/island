@@ -40,6 +40,7 @@ setup(name='island',
       install_requires=[
           'lxml',
           'realog',
+          'death',
       ],
       include_package_data = True,
       zip_safe=False)

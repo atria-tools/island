@@ -13,7 +13,7 @@ from realog import debug
 import os
 import sys
 from . import env
-from . import arguments
+import death.Arguments as arguments
 
 list_actions = []
 
@@ -86,7 +86,7 @@ def execute(action_name, argument_start_id):
 		# finish the parsing
 		sys.path.append(os.path.dirname(elem["path"]))
 		the_action = __import__(__base_action_name + action_name)
-		my_under_args_parser = arguments.islandArg()
+		my_under_args_parser = arguments.Arguments()
 		my_under_args_parser.add("h", "help", desc="Help of this action")
 		if "add_specific_arguments" in dir(the_action):
 			the_action.add_specific_arguments(my_under_args_parser, elem["name"])
