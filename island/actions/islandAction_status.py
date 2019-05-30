@@ -22,16 +22,20 @@ def help():
 	return "Get the status of all the repositories"
 
 
-def add_specific_arguments(my_args, section):
-	my_args.add("r", "remote", haveParam=True, desc="Name of the remote server")
+def add_specific_arguments(_my_args, _section):
+	_my_args.add("r", "remote", haveParam=True, desc="Name of the remote server")
+	_my_args.add("t", "tags", haveParam=False, desc="Display if the commit is on a tag (and display it)")
 
 
 def execute(arguments):
 	argument_remote_name = ""
+	argument_display_tag = False
 	for elem in arguments:
 		if elem.get_option_name() == "remote":
 			debug.info("find remote name: '" + elem.get_arg() + "'")
 			argument_remote_name = elem.get_arg()
+		elif elem.get_option_name() == "tags":
+			argument_display_tag = True
 		else:
 			debug.error("Wrong argument: '" + elem.get_option_name() + "' '" + elem.get_arg() + "'")
 	
@@ -98,8 +102,24 @@ def execute(arguments):
 			behind_forward_comment += "behind=" + str(in_behind)
 		if behind_forward_comment != "":
 			behind_forward_comment = "\r\t\t\t\t\t\t\t\t\t\t\t\t[" + behind_forward_comment + "]"
-		#debug.info("" + str(id_element) + "/" + str(len(all_project)) + " : " + str(elem.name) + "\r\t\t\t\t\t\t\t" + modify_status + "(" + select_branch + " -> " + ret_track[1] + " -> " + elem.select_remote["name"] + "/" + elem.branch + ")")
-		debug.info("" + str(id_element) + "/" + str(len(all_project)) + " : " + str(elem.name) + "\r\t\t\t\t\t\t\t" + modify_status + "(" + select_branch + " -> " + ret_track[1] + ")" + behind_forward_comment)
+		
+		
+		tags_comment = ""
+		# check the current tags of the repository
+		if argument_display_tag == True:
+			cmd = "git tag --points-at"
+			debug.verbose("execute : " + cmd)
+			ret_current_tags = multiprocess.run_command(cmd, cwd=git_repo_path)[1].split('\n')
+			debug.verbose("tags found: " + str(ret_current_tags))
+			for elem_tag in ret_current_tags:
+				if len(tags_comment) != 0:
+					tags_comment += ","
+				tags_comment += elem_tag
+		if len(tags_comment) != 0:
+			tags_comment = "\r\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t[" + tags_comment + "]"
+		
+		#debug.info("" + str(id_element) + "/" + str(len(all_project)) + " : " + str(elem.name) + "\r\t\t\t\t\t\t\t" + modify_status + "(" + select_branch + " -> " + tracking_remote_branch + " -> " + elem.select_remote["name"] + "/" + elem.branch + ")")
+		debug.info("" + str(id_element) + "/" + str(len(all_project)) + " : " + str(elem.name) + "\r\t\t\t\t\t\t\t" + modify_status + "(" + select_branch + " -> " + tracking_remote_branch + ")" + behind_forward_comment + tags_comment)
 		if is_modify == True:
 			cmd = "git status --short"
 			debug.verbose("execute : " + cmd)
