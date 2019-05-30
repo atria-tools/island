@@ -12,6 +12,7 @@ from realog import debug
 from island import tools
 from island import env
 from island import config
+from island import commands
 from island import multiprocess
 import os
 

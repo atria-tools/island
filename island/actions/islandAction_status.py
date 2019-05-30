@@ -14,6 +14,7 @@ from island import env
 from island import multiprocess
 from island import config
 from island import manifest
+from island import commands
 import os
 
 
@@ -53,67 +54,31 @@ def execute(arguments):
 	id_element = 0
 	for elem in all_project:
 		id_element += 1
-		debug.verbose("status : " + str(id_element) + "/" + str(len(all_project)) + " : " + str(elem.name))
+		debug.verbose("status : " + str(id_element) + " / " + str(len(all_project)) + " : " + str(elem.name))
 		#debug.debug("elem : " + str(elem))
 		git_repo_path = os.path.join(env.get_island_root_path(), elem.path)
 		if os.path.exists(git_repo_path) == False:
 			debug.info("" + str(id_element) + "/" + str(len(all_project)) + " : " + str(elem.name) + "\r\t\t\t\t\t\t\t\t\t" + "     (not download)")
 			continue
 		
-		# check if the repository is modify
-		cmd = "git diff --quiet"
-		debug.verbose("execute : " + cmd)
-		ret_diff = multiprocess.run_command(cmd, cwd=git_repo_path)
-		# get local branch
-		cmd = "git branch -a"
-		debug.verbose("execute : " + cmd)
-		ret_branch = multiprocess.run_command(cmd, cwd=git_repo_path)
-		
-		is_modify = True
-		if ret_diff[0] == 0:
-			is_modify = False
-		
-		list_branch = ret_branch[1].split('\n')
-		list_branch2 = []
-		list_branch3 = []
-		select_branch = ""
-		for elem_branch in list_branch:
-			if len(elem_branch.split(" -> ")) != 1:
-				continue
-			if elem_branch[2:10] == "remotes/":
-				elem_branch = elem_branch[:2] + elem_branch[10:]
-			if elem_branch[:2] == "* ":
-				list_branch2.append([elem_branch[2:], True])
-				select_branch = elem_branch[2:]
-			else:
-				list_branch2.append([elem_branch[2:], False])
-			list_branch3.append(elem_branch[2:])
-		debug.verbose("List all branch: " + str(list_branch3))
+		is_modify = commands.check_repository_is_modify(git_repo_path)
+		list_branch = commands.get_list_branch_all(git_repo_path)
+		select_branch = commands.get_current_branch(git_repo_path)
+		debug.verbose("List all branch: " + str(list_branch))
 		# get tracking branch
-		if argument_remote_name == "":
-			cmd = "git rev-parse --abbrev-ref --symbolic-full-name @{u}"
-			debug.verbose("execute : " + cmd)
-			ret_track = multiprocess.run_command(cmd, cwd=git_repo_path)
-		else:
-			debug.extreme_verbose("check if exist " + argument_remote_name + "/" + select_branch + " in " + str(list_branch3))
-			if argument_remote_name + "/" + select_branch not in list_branch3:
-				debug.info("" + str(id_element) + "/" + str(len(all_project)) + " : " + str(elem.name) + "\r\t\t\t\t\t\t\t     (NO BRANCH)")
-				continue;
-			else:
-				ret_track = [True, argument_remote_name + "/" + select_branch]
+		tracking_remote_branch = commands.get_tracking_branch(git_repo_path, argument_remote_name, select_branch)
+		if tracking_remote_branch == None:
+			debug.info("" + str(id_element) + "/" + str(len(all_project)) + " : " + str(elem.name) + "\r\t\t\t\t\t\t\t     (NO BRANCH)")
+			continue
 		
 		modify_status = "     "
 		if is_modify == True:
 			modify_status = " *** "
 		
-		debug.verbose("select branch = '" + select_branch + "' is modify : " + str(is_modify) + "     track: '" + str(ret_track[1]) + "'")
+		debug.verbose("select branch = '" + select_branch + "' is modify : " + str(is_modify) + "     track: '" + str(tracking_remote_branch) + "'")
 		
-		cmd = "git rev-list " + select_branch
-		debug.verbose("execute : " + cmd)
-		ret_current_branch_sha1 = multiprocess.run_command(cmd, cwd=git_repo_path)[1].split('\n')
-		cmd = "git rev-list " + ret_track[1]
-		debug.verbose("execute : " + cmd)
-		ret_track_branch_sha1 = multiprocess.run_command(cmd, cwd=git_repo_path)[1].split('\n')
+		ret_current_branch_sha1 = commands.get_revision_list_to_branch(git_repo_path, select_branch)
+		ret_track_branch_sha1 = commands.get_revision_list_to_branch(git_repo_path, tracking_remote_branch)
 		# remove all identical sha1 ==> not needed for this
 		in_forward = 0
 		for elem_sha1 in ret_current_branch_sha1:

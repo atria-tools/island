@@ -14,6 +14,7 @@ from island import env
 from island import multiprocess
 from island import config
 from island import manifest
+from island import commands
 import os
 
 

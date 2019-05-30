@@ -14,6 +14,7 @@ from island import env
 from island import config
 from island import multiprocess
 from island import manifest
+from island import commands
 import os
 
 
@@ -66,35 +67,13 @@ def execute(arguments):
 			continue
 		
 		# check if the repository is modify
-		cmd = "git diff --quiet"
-		debug.verbose("execute : " + cmd)
-		ret_diff = multiprocess.run_command(cmd, cwd=git_repo_path)
-		# get local branch
-		cmd = "git branch"
-		debug.verbose("execute : " + cmd)
-		ret_branch = multiprocess.run_command(cmd, cwd=git_repo_path)
-		
-		# get  tracking branch
-		cmd = "git rev-parse --abbrev-ref --symbolic-full-name @{u}"
-		debug.verbose("execute : " + cmd)
-		ret_track = multiprocess.run_command(cmd, cwd=git_repo_path)
-		
-		is_modify = True
-		if ret_diff[0] == 0:
-			is_modify = False
-		
+		is_modify = commands.check_repository_is_modify(git_repo_path)
 		if is_modify == True:
 			debug.warning("checkout " + str(id_element) + "/" + str(len(all_project)) + " : " + str(elem.name) + " ==> modify data can not checkout new branch")
 			continue
 		
-		list_branch = ret_branch[1].split('\n')
-		list_branch2 = []
-		select_branch = ""
-		for elem_branch in list_branch:
-			list_branch2.append(elem_branch[2:])
-			if elem_branch[:2] == "* ":
-				select_branch = elem_branch[2:]
-		
+		list_branch_local = commands.get_list_branch_local(git_repo_path)
+		select_branch = commands.get_current_branch(git_repo_path)
 		
 		# check if we are on the good branch:
 		if branch_to_checkout == select_branch:
@@ -102,8 +81,8 @@ def execute(arguments):
 			continue
 		
 		# check if we have already checkout the branch before
-		debug.verbose("      check : " + branch_to_checkout + "    in " + str(list_branch2))
-		if branch_to_checkout in list_branch2:
+		debug.verbose("      check : " + branch_to_checkout + "    in " + str(list_branch_local))
+		if branch_to_checkout in list_branch_local:
 			cmd = "git checkout " + branch_to_checkout
 			debug.verbose("execute : " + cmd)
 			ret = multiprocess.run_command(cmd, cwd=git_repo_path)
@@ -118,18 +97,10 @@ def execute(arguments):
 			continue
 		
 		# Check if the remote branch exist ...
-		cmd = "git branch -a"
-		debug.verbose("execute : " + cmd)
-		ret_branch_all = multiprocess.run_command(cmd, cwd=git_repo_path)
-		list_branch_all = ret_branch_all[1].split('\n')
-		exist = False
-		for elem_branch in list_branch_all:
-			debug.verbose(" check : '" + elem_branch + "' == '" + "  remotes/" + elem.select_remote["name"] + "/" + branch_to_checkout + "'")
-			if elem_branch == "  remotes/" + elem.select_remote["name"] + "/" + branch_to_checkout:
-				exist = True
-				debug.info("    ==> find ...")
-				break
-		if exist == False:
+		list_branch_remote = commands.get_list_branch_remote(git_repo_path)
+		if elem.select_remote["name"] + "/" + branch_to_checkout in list_branch_remote:
+			debug.info("    ==> find ...")
+		else:
 			debug.info("checkout " + str(id_element) + "/" + str(len(all_project)) + " : " + str(elem.name) + " ==> NO remote branch")
 			continue
 		
