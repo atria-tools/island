@@ -149,9 +149,9 @@ def parse_generic_arg(argument, active):
 		return True
 	return False
 
-"""
 # open configuration of island:
 config_file_name = "islandConfig.py"
+# TODO: Change get_run_path with folder of .island
 config_file = os.path.join(tools.get_run_path(), config_file_name)
 if os.path.isfile(config_file) == True:
 	sys.path.append(os.path.dirname(config_file))
@@ -164,42 +164,22 @@ if os.path.isfile(config_file) == True:
 		debug.debug(" get default config 'get_exclude_path' val='" + str(data) + "'")
 		env.set_exclude_search_path(data)
 	
-	if "get_parsing_depth" in dir(configuration_file):
-		data = configuration_file.get_parsing_depth()
-		debug.debug(" get default config 'get_parsing_depth' val='" + str(data) + "'")
-		parseGenericArg(arg_element.ArgElement("depth", str(data)), True)
-	
-	if "get_default_jobs" in dir(configuration_file):
-		data = configuration_file.get_default_jobs()
-		debug.debug(" get default config 'get_default_jobs' val='" + str(data) + "'")
-		parseGenericArg(arg_element.ArgElement("jobs", str(data)), True)
-	
 	if "get_default_color" in dir(configuration_file):
 		data = configuration_file.get_default_color()
 		debug.debug(" get default config 'get_default_color' val='" + str(data) + "'")
-		parseGenericArg(arg_element.ArgElement("color", str(data)), True)
+		parse_generic_arg(arg_element.ArgElement("color", str(data)), True)
 	
 	if "get_default_debug_level" in dir(configuration_file):
 		data = configuration_file.get_default_debug_level()
 		debug.debug(" get default config 'get_default_debug_level' val='" + str(data) + "'")
-		parseGenericArg(arg_element.ArgElement("verbose", str(data)), True)
+		parse_generic_arg(arg_element.ArgElement("verbose", str(data)), True)
 	
-	if "get_default_print_pretty" in dir(configuration_file):
-		data = configuration_file.get_default_print_pretty()
-		debug.debug(" get default config 'get_default_print_pretty' val='" + str(data) + "'")
-		parseGenericArg(arg_element.ArgElement("pretty", str(data)), True)
+	if "get_default_folder" in dir(configuration_file):
+		data = configuration_file.get_default_folder()
+		debug.debug(" get default config 'get_default_folder' val='" + str(data) + "'")
+		parse_generic_arg(arg_element.ArgElement("folder", str(data)), True)
 	
-	if "get_default_force_optimisation" in dir(configuration_file):
-		data = configuration_file.get_default_force_optimisation()
-		debug.debug(" get default config 'get_default_force_optimisation' val='" + str(data) + "'")
-		parseGenericArg(arg_element.ArgElement("force-optimisation", str(data)), True)
-	
-	if "get_default_isolate_system" in dir(configuration_file):
-		data = configuration_file.get_default_isolate_system()
-		debug.debug(" get default config 'get_default_isolate_system' val='" + str(data) + "'")
-		parseGenericArg(arg_element.ArgElement("isolate-system", str(data)), True)
-		
-"""
+
 
 # parse default unique argument:
 for argument in local_argument:
