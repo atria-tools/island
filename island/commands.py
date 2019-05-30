@@ -128,7 +128,7 @@ def get_tracking_branch(path_repository, remote_name, select_branch):
 	# get tracking branch
 	if remote_name == "" or remote_name == None:
 		return get_current_tracking_branch(path_repository)
-	list_branch_remote = commands.get_list_branch_remote(path_repository)
+	list_branch_remote = get_list_branch_remote(path_repository)
 	debug.extreme_verbose("check if exist " + remote_name + "/" + select_branch + " in " + str(list_branch_remote))
 	if remote_name + "/" + select_branch not in list_branch_remote:
 		debug.debug("    ==> can not get remote branch")
