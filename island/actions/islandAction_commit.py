@@ -18,7 +18,7 @@ import os
 
 
 def help():
-	return "commit in all repository"
+	return "Commit in all repository"
 
 
 

@@ -18,7 +18,7 @@ import os
 
 
 def help():
-	return "plop"
+	return "Get the status of all the repositories"
 
 
 def add_specific_arguments(my_args, section):

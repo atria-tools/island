@@ -18,11 +18,11 @@ import os
 
 
 def help():
-	return "plop"
+	return "Syncronize all the repository referenced"
 
 
 def add_specific_arguments(my_args, section):
-	my_args.add("d", "download", haveParam=False, desc="Just download not download repository")
+	my_args.add("d", "download", haveParam=False, desc="Just download the 'not download' repository")
 
 def execute(arguments):
 	just_download = False

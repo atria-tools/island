@@ -18,7 +18,10 @@ import os
 
 
 def help():
-	return "write the command you want to be executed in every repository"
+	return "Write the command you want to be executed in every repository"
+
+def have_unknow_argument():
+	return True
 
 def execute(arguments):
 	cmd = ""

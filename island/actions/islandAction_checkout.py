@@ -18,7 +18,7 @@ import os
 
 
 def help():
-	return "plop"
+	return "Ckeckout a specific branch in all repository"
 
 def add_specific_arguments(my_args, section):
 	my_args.add("r", "remote", haveParam=True, desc="Name of the remote server")
