@@ -88,9 +88,13 @@ def execute(action_name, argument_start_id):
 		the_action = __import__(__base_action_name + action_name)
 		my_under_args_parser = arguments.Arguments()
 		my_under_args_parser.add("h", "help", desc="Help of this action")
+		
 		if "add_specific_arguments" in dir(the_action):
 			the_action.add_specific_arguments(my_under_args_parser, elem["name"])
-		my_under_args = my_under_args_parser.parse(argument_start_id)
+		have_unknow_argument = False
+		if "have_unknow_argument" in dir(the_action):
+			have_unknow_argument = the_action.have_unknow_argument()
+		my_under_args = my_under_args_parser.parse(argument_start_id, have_unknow_argument)
 		# search help if needed ==> permit to not duplicating code
 		for elem in my_under_args:
 			if elem.get_option_name() == "help":
