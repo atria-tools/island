@@ -50,11 +50,12 @@ def execute(arguments):
 	for elem in all_project:
 		debug.info("------------------------------------------")
 		id_element += 1
-		debug.info("execute command : " + str(id_element) + "/" + str(len(all_project)) + " : " + str(elem.name))
+		base_display = tools.get_list_base_display(id_element, len(all_project), elem)
+		debug.info("execute command : " + base_display)
 		#debug.debug("elem : " + str(elem))
 		git_repo_path = os.path.join(env.get_island_root_path(), elem.path)
 		if os.path.exists(git_repo_path) == False:
-			debug.info("" + str(id_element) + "/" + str(len(all_project)) + " : " + str(elem.name) + "\r\t\t\t\t\t\t\t\t\t" + "     (not download)")
+			debug.info("" + base_display + "\r\t\t\t\t\t\t\t\t\t" + "     (not download)")
 			continue
 		
 		debug.verbose("execute : " + cmd)

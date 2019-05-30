@@ -289,3 +289,10 @@ def remove_element(data, to_remove):
 	return out;
 
 
+def get_list_base_display(id, count, elem):
+	if env.get_display_folder_instead_of_git_name() == False:
+		return str(id) + "/" + str(count) + " : " + str(elem.name)
+	return str(id) + "/" + str(count) + " : " + str(elem.path)
+
+
+

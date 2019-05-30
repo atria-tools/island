@@ -57,34 +57,35 @@ def execute(arguments):
 	deliver_availlable = True
 	for elem in all_project:
 		id_element += 1
-		debug.verbose("deliver-ckeck: " + str(id_element) + "/" + str(len(all_project)) + " : " + str(elem.name))
+		base_display = tools.get_list_base_display(id_element, len(all_project), elem)
+		debug.verbose("deliver-ckeck: " + base_display)
 		# Check the repo exist
 		git_repo_path = os.path.join(env.get_island_root_path(), elem.path)
 		if os.path.exists(git_repo_path) == False:
-			debug.warning("deliver-ckeck: " + str(id_element) + "/" + str(len(all_project)) + " : " + str(elem.name) + " ==> MUST be download")
+			debug.warning("deliver-ckeck: " + base_display + " ==> MUST be download")
 			deliver_availlable = False
 			continue
 		# check if we are on "master"
 		select_branch = commands.get_current_branch(git_repo_path)
 		if select_branch != "master":
-			debug.warning("deliver-ckeck: " + str(id_element) + "/" + str(len(all_project)) + " : " + str(elem.name) + " ==> MUST be on master")
+			debug.warning("deliver-ckeck: " + base_display + " ==> MUST be on master")
 			deliver_availlable = False
 		# check if we have a remote traking branch
 		tracking_remote_branch = commands.get_tracking_branch(git_repo_path, argument_remote_name, select_branch)
 		if tracking_remote_branch == None:
-			debug.warning("deliver-ckeck: " + str(id_element) + "/" + str(len(all_project)) + " : " + str(elem.name) + " ==> MUST have a remote tracking branch")
+			debug.warning("deliver-ckeck: " + base_display + " ==> MUST have a remote tracking branch")
 			deliver_availlable = False
 		# check if we have a local branch
 		list_branch_local = commands.get_list_branch_local(git_repo_path)
 		if "develop" not in list_branch_local:
-			debug.warning("deliver-ckeck: " + str(id_element) + "/" + str(len(all_project)) + " : " + str(elem.name) + " ==> MUST have local branch named develop")
+			debug.warning("deliver-ckeck: " + base_display + " ==> MUST have local branch named develop")
 			deliver_availlable = False
 		# TODO: check develop is up to date
 		
 		# check if the curent repo is modify
 		is_modify = commands.check_repository_is_modify(git_repo_path)
 		if is_modify == True:
-			debug.warning("deliver-ckeck: " + str(id_element) + "/" + str(len(all_project)) + " : " + str(elem.name) + " ==> MUST not be modify")
+			debug.warning("deliver-ckeck: " + base_display + " ==> MUST not be modify")
 			deliver_availlable = False
 		# check the remote branch and the local branch are the same
 		#sha_tracking = get_sha1_for_branch(git_repo_path, tracking_remote_branch)
@@ -96,8 +97,9 @@ def execute(arguments):
 	id_element = 0
 	for elem in all_project:
 		id_element += 1
+		base_display = tools.get_list_base_display(id_element, len(all_project), elem)
 		debug.info("deliver: ========================================================================")
-		debug.info("deliver: == " + str(id_element) + "/" + str(len(all_project)) + " : " + str(elem.name))
+		debug.info("deliver: == " + base_display)
 		debug.info("deliver: ========================================================================")
 		
 		git_repo_path = os.path.join(env.get_island_root_path(), elem.path)
@@ -189,7 +191,7 @@ def execute(arguments):
 		# get tracking branch
 		tracking_remote_branch = get_tracking_branch(git_repo_path, argument_remote_name, select_branch)
 		if tracking_remote_branch == None:
-			debug.info("" + str(id_element) + "/" + str(len(all_project)) + " : " + str(elem.name) + "\r\t\t\t\t\t\t\t     (NO BRANCH)")
+			debug.info("" + base_display + "\r\t\t\t\t\t\t\t     (NO BRANCH)")
 			continue
 		
 		modify_status = "     "
@@ -239,8 +241,8 @@ def execute(arguments):
 		if len(tags_comment) != 0:
 			tags_comment = "\r\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t[" + tags_comment + "]"
 		
-		#debug.info("" + str(id_element) + "/" + str(len(all_project)) + " : " + str(elem.name) + "\r\t\t\t\t\t\t\t" + modify_status + "(" + select_branch + " -> " + ret_track[1] + " -> " + elem.select_remote["name"] + "/" + elem.branch + ")")
-		debug.info("" + str(id_element) + "/" + str(len(all_project)) + " : " + str(elem.name) + "\r\t\t\t\t\t\t\t" + modify_status + "(" + select_branch + " -> " + ret_track[1] + ")" + behind_forward_comment + tags_comment)
+		#debug.info("" + base_display + "\r\t\t\t\t\t\t\t" + modify_status + "(" + select_branch + " -> " + ret_track[1] + " -> " + elem.select_remote["name"] + "/" + elem.branch + ")")
+		debug.info("" + base_display + "\r\t\t\t\t\t\t\t" + modify_status + "(" + select_branch + " -> " + ret_track[1] + ")" + behind_forward_comment + tags_comment)
 		if is_modify == True:
 			cmd = "git status --short"
 			debug.verbose("execute : " + cmd)

@@ -60,16 +60,17 @@ def execute(arguments):
 	id_element = 0
 	for elem in all_project:
 		id_element += 1
-		debug.verbose("checkout : " + str(id_element) + "/" + str(len(all_project)) + " : " + str(elem.name))
+		base_display = tools.get_list_base_display(id_element, len(all_project), elem)
+		debug.verbose("checkout : " + base_display)
 		git_repo_path = os.path.join(env.get_island_root_path(), elem.path)
 		if os.path.exists(git_repo_path) == False:
-			debug.warning("checkout " + str(id_element) + "/" + str(len(all_project)) + " : " + str(elem.name) + " ==> repository does not exist ...")
+			debug.warning("checkout " + base_display + " ==> repository does not exist ...")
 			continue
 		
 		# check if the repository is modify
 		is_modify = commands.check_repository_is_modify(git_repo_path)
 		if is_modify == True:
-			debug.warning("checkout " + str(id_element) + "/" + str(len(all_project)) + " : " + str(elem.name) + " ==> modify data can not checkout new branch")
+			debug.warning("checkout " + base_display + " ==> modify data can not checkout new branch")
 			continue
 		
 		list_branch_local = commands.get_list_branch_local(git_repo_path)
@@ -77,7 +78,7 @@ def execute(arguments):
 		
 		# check if we are on the good branch:
 		if branch_to_checkout == select_branch:
-			debug.info("checkout " + str(id_element) + "/" + str(len(all_project)) + " : " + str(elem.name) + " ==> No change already on good branch")
+			debug.info("checkout " + base_display + " ==> No change already on good branch")
 			continue
 		
 		# check if we have already checkout the branch before
@@ -90,9 +91,9 @@ def execute(arguments):
 			   and ret[1] != "" \
 			   and ret != False:
 				debug.info("'" + str(ret) + "'")
-				debug.error("checkout " + str(id_element) + "/" + str(len(all_project)) + " : " + str(elem.name) + " ==> Can not checkout to the correct branch")
+				debug.error("checkout " + base_display + " ==> Can not checkout to the correct branch")
 				continue
-			debug.info("checkout " + str(id_element) + "/" + str(len(all_project)) + " : " + str(elem.name) + " ==> switch branch")
+			debug.info("checkout " + base_display + " ==> switch branch")
 			# TODO : Check the number of commit to the origin/XXX branch ....
 			continue
 		
@@ -101,7 +102,7 @@ def execute(arguments):
 		if elem.select_remote["name"] + "/" + branch_to_checkout in list_branch_remote:
 			debug.info("    ==> find ...")
 		else:
-			debug.info("checkout " + str(id_element) + "/" + str(len(all_project)) + " : " + str(elem.name) + " ==> NO remote branch")
+			debug.info("checkout " + base_display + " ==> NO remote branch")
 			continue
 		
 		# checkout the new branch:
@@ -112,9 +113,9 @@ def execute(arguments):
 		if     ret[1] != "" \
 		   and ret != False:
 			debug.info("'" + str(ret) + "'")
-			debug.error("checkout " + str(id_element) + "/" + str(len(all_project)) + " : " + str(elem.name) + " ==> Can not checkout to the correct branch")
+			debug.error("checkout " + base_display + " ==> Can not checkout to the correct branch")
 			continue
-		debug.info("checkout " + str(id_element) + "/" + str(len(all_project)) + " : " + str(elem.name) + " ==> create new branch")
+		debug.info("checkout " + base_display + " ==> create new branch")
 		continue
 
 

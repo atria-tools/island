@@ -59,7 +59,8 @@ def execute(arguments):
 	id_element = 0
 	for elem in all_project:
 		id_element += 1
-		debug.info("sync : " + str(id_element) + "/" + str(len(all_project)) + " : " + str(elem.name))
+		base_display = tools.get_list_base_display(id_element, len(all_project), elem)
+		debug.info("sync : " + base_display)
 		#debug.debug("elem : " + str(elem))
 		git_repo_path = os.path.join(env.get_island_root_path(), elem.path)
 		if os.path.exists(git_repo_path) == False:

@@ -24,6 +24,7 @@ def help():
 
 def add_specific_arguments(_my_args, _section):
 	_my_args.add("r", "remote", haveParam=True, desc="Name of the remote server")
+	
 	_my_args.add("t", "tags", haveParam=False, desc="Display if the commit is on a tag (and display it)")
 
 
@@ -58,11 +59,12 @@ def execute(arguments):
 	id_element = 0
 	for elem in all_project:
 		id_element += 1
-		debug.verbose("status : " + str(id_element) + " / " + str(len(all_project)) + " : " + str(elem.name))
+		base_display = tools.get_list_base_display(id_element, len(all_project), elem)
+		debug.verbose("status : " + base_display)
 		#debug.debug("elem : " + str(elem))
 		git_repo_path = os.path.join(env.get_island_root_path(), elem.path)
 		if os.path.exists(git_repo_path) == False:
-			debug.info("" + str(id_element) + "/" + str(len(all_project)) + " : " + str(elem.name) + "\r\t\t\t\t\t\t\t\t\t" + "     (not download)")
+			debug.info(base_display + "\r\t\t\t\t\t\t\t\t\t" + "     (not download)")
 			continue
 		
 		is_modify = commands.check_repository_is_modify(git_repo_path)
@@ -72,7 +74,7 @@ def execute(arguments):
 		# get tracking branch
 		tracking_remote_branch = commands.get_tracking_branch(git_repo_path, argument_remote_name, select_branch)
 		if tracking_remote_branch == None:
-			debug.info("" + str(id_element) + "/" + str(len(all_project)) + " : " + str(elem.name) + "\r\t\t\t\t\t\t\t     (NO BRANCH)")
+			debug.info(base_display + "\r\t\t\t\t\t\t\t     (NO BRANCH)")
 			continue
 		
 		modify_status = "     "
@@ -118,8 +120,7 @@ def execute(arguments):
 		if len(tags_comment) != 0:
 			tags_comment = "\r\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t[" + tags_comment + "]"
 		
-		#debug.info("" + str(id_element) + "/" + str(len(all_project)) + " : " + str(elem.name) + "\r\t\t\t\t\t\t\t" + modify_status + "(" + select_branch + " -> " + tracking_remote_branch + " -> " + elem.select_remote["name"] + "/" + elem.branch + ")")
-		debug.info("" + str(id_element) + "/" + str(len(all_project)) + " : " + str(elem.name) + "\r\t\t\t\t\t\t\t" + modify_status + "(" + select_branch + " -> " + tracking_remote_branch + ")" + behind_forward_comment + tags_comment)
+		debug.info(base_display + "\r\t\t\t\t\t\t\t" + modify_status + "(" + select_branch + " -> " + tracking_remote_branch + ")" + behind_forward_comment + tags_comment)
 		if is_modify == True:
 			cmd = "git status --short"
 			debug.verbose("execute : " + cmd)

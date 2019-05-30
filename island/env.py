@@ -36,6 +36,15 @@ def get_fetch_manifest():
 	global fetch_manifest
 	return fetch_manifest
 
+display_folder_instead_of_git_name = True
+
+def set_display_folder_instead_of_git_name(val):
+	global display_folder_instead_of_git_name
+	display_folder_instead_of_git_name = val
+
+def get_display_folder_instead_of_git_name():
+	global display_folder_instead_of_git_name
+	return display_folder_instead_of_git_name
 
 island_root_path = os.path.join(os.getcwd())
 if os.path.exists(os.path.join(island_root_path, "." + get_system_base_name())) == True:

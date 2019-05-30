@@ -64,9 +64,18 @@ debug.verbose("List of actions: " + str(actions.get_list_of_action()))
 my_args = arguments.Arguments()
 my_args.add_section("option", "Can be set one time in all case")
 my_args.add("h", "help", desc="Display this help")
-my_args.add("v", "verbose", list=[["0","None"],["1","error"],["2","warning"],["3","info"],["4","debug"],["5","verbose"],["6","extreme_verbose"]], desc="display debug level (verbose) default =2")
+my_args.add("v", "verbose", list=[
+								["0","None"],
+								["1","error"],
+								["2","warning"],
+								["3","info"],
+								["4","debug"],
+								["5","verbose"],
+								["6","extreme_verbose"],
+								], desc="display debug level (verbose) default =2")
 my_args.add("c", "color", desc="Display message in color")
 my_args.add("n", "no-fetch-manifest", haveParam=False, desc="Disable the fetch of the manifest")
+my_args.add("f", "folder", haveParam=False, desc="Display the folder instead of the git repository name")
 my_args.set_stop_at(actions.get_list_of_action())
 local_argument = my_args.parse()
 
@@ -104,7 +113,7 @@ def check_boolean(value):
 	return False
 
 # preparse the argument to get the verbose element for debug mode
-def parseGenericArg(argument, active):
+def parse_generic_arg(argument, active):
 	debug.extreme_verbose("parse arg : " + argument.get_option_name() + " " + argument.get_arg() + " active=" + str(active))
 	if argument.get_option_name() == "help":
 		if active == False:
@@ -122,6 +131,10 @@ def parseGenericArg(argument, active):
 	elif argument.get_option_name() == "verbose":
 		if active == True:
 			debug.set_level(int(argument.get_arg()))
+		return True
+	elif argument.get_option_name() == "folder":
+		if active == True:
+			env.set_display_folder_instead_of_git_name(True)
 		return True
 	elif argument.get_option_name() == "color":
 		if active == True:
@@ -190,12 +203,12 @@ if os.path.isfile(config_file) == True:
 
 # parse default unique argument:
 for argument in local_argument:
-	parseGenericArg(argument, True)
+	parse_generic_arg(argument, True)
 
 # remove all generic arguments:
 new_argument_list = []
 for argument in local_argument:
-	if parseGenericArg(argument, False) == True:
+	if parse_generic_arg(argument, False) == True:
 		continue
 	new_argument_list.append(argument)
 
