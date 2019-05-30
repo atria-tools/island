@@ -86,6 +86,20 @@ def version_to_string(version):
 		version_ID += str(id)
 	return version_ID
 
+def version_string_to_list(version):
+	debug.verbose("parse version string '" + version +"'")
+	out = []
+	if version == "":
+		return [0, 0, 0]
+	elems = version.split("-")
+	if len(elems[0].split(".")) <= 1:
+		debug.error("Can not parde a version with wrong version model '" + version +"'")
+	for elem in elems[0].split("."):
+		out.append(int(elem))
+	if len(elems) >= 2:
+		out.append(elems[1])
+	return out
+
 ##
 ## @brief Write data in a specific path.
 ## @param[in] path Path of the data might be written.
