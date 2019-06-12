@@ -249,3 +249,17 @@ def fetch(path_repository, remote_name):
 	return_value = multiprocess.run_command(cmd, cwd=path_repository)
 	generic_display_error(return_value, "fetch")
 	return return_value
+
+def push(path_repository, remote_name, elements):
+	if remote_name == None or remote_name == "":
+		raise "Missing remote_name"
+	if len(elements) == 0:
+		raise "No elements to push on server"
+		
+	cmd = 'git push ' + remote_name
+	for elem in elements:
+		cmd += " " + elem
+	debug.verbose("execute : " + cmd)
+	return_value = multiprocess.run_command(cmd, cwd=path_repository)
+	generic_display_error(return_value, "push")
+	return return_value
