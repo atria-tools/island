@@ -13,6 +13,7 @@ import shutil
 import errno
 import fnmatch
 import stat
+import time
 # Local import
 from realog import debug
 from . import env
@@ -293,6 +294,18 @@ def get_list_base_display(id, count, elem):
 	if env.get_display_folder_instead_of_git_name() == False:
 		return str(id) + "/" + str(count) + " : " + str(elem.name)
 	return str(id) + "/" + str(count) + " : " + str(elem.path)
+
+
+is_first_time_sleep = True
+
+def wait_for_server_if_needed():
+	global is_first_time_sleep
+	if is_first_time_sleep == False:
+		is_first_time_sleep = True;
+		return
+	if env.get_wait_between_sever_command() != 0:
+		debug.info("Wait for server contrition (" + str(env.get_wait_between_sever_command()) + " s)")
+		time.sleep(env.get_wait_between_sever_command())
 
 
 
