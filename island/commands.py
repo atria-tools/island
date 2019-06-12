@@ -165,6 +165,13 @@ def get_sha1_for_branch(path_repository, branch_name):
 	return return_value[1].split('\n')[0]
 
 
+def get_tags_current(path_repository):
+	cmd = "git tag --points-at"
+	debug.verbose("execute : " + cmd)
+	return_value = multiprocess.run_command(cmd, cwd=path_repository)
+	generic_display_error(return_value, "get_tags_current", error_only=True)
+	return return_value[1].split('\n')
+
 
 def get_tracking_branch(path_repository, remote_name, select_branch):
 	# get tracking branch
