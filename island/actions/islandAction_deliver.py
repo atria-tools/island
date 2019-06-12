@@ -147,11 +147,12 @@ def execute(arguments):
 			debug.info("    (1) Major version  (change API)")
 			debug.info("    (2) Medium version (add feature)")
 			debug.info("    (3) Minor version  (Bug fix & doc)")
+			debug.info("    (4) Do not release & continue")
 			input1 = input()
-			if input1 in ["1", "2", "3"]:
+			if input1 in ["1", "2", "3", "4"]:
 				valid = True
 			else:
-				debug.info("!!! Must select in range " + str(["1", "2", "3"]))
+				debug.info("!!! Must select in range " + str(["1", "2", "3", "4"]))
 		if input1 == "1":
 			version_description[0] += 1
 			version_description[1] = 0
@@ -161,6 +162,12 @@ def execute(arguments):
 			version_description[2] = 0
 		elif input1 == "3":
 			version_description[2] += 1
+		elif input1 == "4":
+			debug.info("No release for this repository")
+			continue
+		else:
+			debug.warning("An error occured for this repository")
+			continue
 		debug.info("new version: " + str(version_description))
 		
 		commands.merge_branch_on_master(git_repo_path, "develop")
