@@ -58,6 +58,10 @@ def execute(arguments):
 	id_element = 0
 	for elem in all_project:
 		id_element += 1
+		# configure remote name:
+		if argument_remote_name == "":
+			argument_remote_name = elem.select_remote["name"]
+			
 		base_display = tools.get_list_base_display(id_element, len(all_project), elem)
 		debug.info("fetch: " + base_display)
 		tools.wait_for_server_if_needed()
@@ -73,12 +77,6 @@ def execute(arguments):
 		
 		# simply update the repository ...
 		debug.verbose("Fetching project: ")
-		# fetch the repository
-		cmd = "git fetch"
-		if argument_remote_name != "":
-			cmd += " " + argument_remote_name
-		else:
-			cmd += " " + elem.select_remote["name"]
-		debug.verbose("execute : " + cmd)
-		multiprocess.run_command_direct(cmd, cwd=git_repo_path)
+		
+		commands.fetch(git_repo_path, argument_remote_name)
 		
