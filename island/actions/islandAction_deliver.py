@@ -23,19 +23,15 @@ def help():
 
 
 def add_specific_arguments(_my_args, _section):
-	_my_args.add("t", "tags", haveParam=False, desc="Display if the commit is on a tag (and display it)")
+	pass
 
 default_behind_message = "[DEV] update dev tag version"
 default_update_message = "[VERSION] update dev tag version"
 
 def execute(arguments):
 	argument_remote_name = ""
-	argument_display_tag = False
 	for elem in arguments:
-		if elem.get_option_name() == "tags":
-			argument_display_tag = True
-		else:
-			debug.error("Wrong argument: '" + elem.get_option_name() + "' '" + elem.get_arg() + "'")
+		debug.error("Wrong argument: '" + elem.get_option_name() + "' '" + elem.get_arg() + "'")
 	
 	# check if .XXX exist (create it if needed)
 	if    os.path.exists(env.get_island_path()) == False \
