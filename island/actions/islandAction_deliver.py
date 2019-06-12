@@ -19,7 +19,7 @@ import os
 
 
 def help():
-	return "Get the status of all the repositories"
+	return "Deliver the current repository (develop & master MUST be up to date and you MUST be on master)"
 
 
 def add_specific_arguments(_my_args, _section):
