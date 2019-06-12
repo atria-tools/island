@@ -240,3 +240,12 @@ def reset_hard(path_repository, destination):
 	return_value = multiprocess.run_command(cmd, cwd=path_repository)
 	generic_display_error(return_value, "reset_hard", error_only=True)
 	return return_value
+
+
+
+def fetch(path_repository, remote_name):
+	cmd = 'git fetch ' + remote_name
+	debug.verbose("execute : " + cmd)
+	return_value = multiprocess.run_command(cmd, cwd=path_repository)
+	generic_display_error(return_value, "fetch")
+	return return_value
