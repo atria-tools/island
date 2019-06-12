@@ -76,6 +76,7 @@ my_args.add("v", "verbose", list=[
 my_args.add("c", "color", desc="Display message in color")
 my_args.add("n", "no-fetch-manifest", haveParam=False, desc="Disable the fetch of the manifest")
 my_args.add("f", "folder", haveParam=False, desc="Display the folder instead of the git repository name")
+my_args.add("w", "wait", haveParam=True, desc="Wait between 2 acces on the server (needed when the server is really slow to remove ssh connection) (default=" + str(env.get_wait_between_sever_command()) + ")")
 my_args.set_stop_at(actions.get_list_of_action())
 local_argument = my_args.parse()
 
@@ -124,9 +125,9 @@ def parse_generic_arg(argument, active):
 			#multiprocess.set_core_number(int(argument.get_arg()))
 			pass
 		return True
-	elif argument.get_option_name()=="depth":
+	elif argument.get_option_name()=="wait":
 		if active == True:
-			env.set_parse_depth(int(argument.get_arg()))
+			env.set_wait_between_sever_command(int(argument.get_arg()))
 		return True
 	elif argument.get_option_name() == "verbose":
 		if active == True:
@@ -178,6 +179,11 @@ if os.path.isfile(config_file) == True:
 		data = configuration_file.get_default_folder()
 		debug.debug(" get default config 'get_default_folder' val='" + str(data) + "'")
 		parse_generic_arg(arg_element.ArgElement("folder", str(data)), True)
+	
+	if "get_default_wait" in dir(configuration_file):
+		data = configuration_file.get_default_wait()
+		debug.debug(" get default config 'get_default_wait' val='" + str(data) + "'")
+		parse_generic_arg(arg_element.ArgElement("wait", str(data)), True)
 	
 
 

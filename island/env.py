@@ -36,6 +36,17 @@ def get_fetch_manifest():
 	global fetch_manifest
 	return fetch_manifest
 
+
+wait_between_sever_command = 0
+
+def set_wait_between_sever_command(val):
+	global wait_between_sever_command
+	wait_between_sever_command = val
+
+def get_wait_between_sever_command():
+	global wait_between_sever_command
+	return wait_between_sever_command
+
 display_folder_instead_of_git_name = True
 
 def set_display_folder_instead_of_git_name(val):
