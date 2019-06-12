@@ -172,6 +172,13 @@ def get_tags_current(path_repository):
 	generic_display_error(return_value, "get_tags_current", error_only=True)
 	return return_value[1].split('\n')
 
+def get_tags(path_repository):
+	cmd = "git tag"
+	debug.verbose("execute : " + cmd)
+	return_value = multiprocess.run_command(cmd, cwd=path_repository)
+	generic_display_error(return_value, "get_tags", error_only=True)
+	return return_value[1].split('\n')
+
 
 def get_tracking_branch(path_repository, remote_name, select_branch):
 	# get tracking branch
