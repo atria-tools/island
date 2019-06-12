@@ -179,6 +179,33 @@ def get_tags(path_repository):
 	generic_display_error(return_value, "get_tags", error_only=True)
 	return return_value[1].split('\n')
 
+def get_tags_remote(path_repository, remote_name):
+	if remote_name == "" or remote_name == None:
+		return get_current_tracking_branch(path_repository)
+	cmd = "git ls-remote --tags " + remote_name
+	debug.verbose("execute : " + cmd)
+	return_value = multiprocess.run_command(cmd, cwd=path_repository)
+	generic_display_error(return_value, "get_tags_remote", error_only=True)
+	list_element = return_value[1].split('\n')
+	debug.verbose(" receive: " + str(list_element))
+	#6bc01117e85d00686ae2d423193a161e82df9a44	refs/tags/0.1.0
+	#7ef9caa51cf3744de0f46352e5aa07bd4980fe89	refs/tags/v0.2.0
+	#870e8e039b0a98370a9d23844f0af66824c57a5f	refs/tags/v0.2.0^{}
+	#16707e17e58f16b3409f8c64df7f595ba7dcf499	refs/tags/v0.3.0
+	#dfb97c3dfea776e5c4862dc9f60f8c5ad83b55eb	refs/tags/v0.3.0^{}
+	out = []
+	for elem in list_element:
+		cut = elem.split("\t")
+		if len(cut) != 2:
+			continue
+		if cut[1][-3:] == "^{}":
+			# specific usage for the annotated commit
+			continue
+		if cut[1][:10] == "refs/tags/":
+			out.append(cut[1][10:])
+		else:
+			out.append(cut[1])
+	return out
 
 def get_tracking_branch(path_repository, remote_name, select_branch):
 	# get tracking branch
