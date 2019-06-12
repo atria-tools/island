@@ -109,9 +109,7 @@ def execute(arguments):
 		tags_comment = ""
 		# check the current tags of the repository
 		if argument_display_tag == True:
-			cmd = "git tag --points-at"
-			debug.verbose("execute : " + cmd)
-			ret_current_tags = multiprocess.run_command(cmd, cwd=git_repo_path)[1].split('\n')
+			ret_current_tags = commands.get_tags_current(git_repo_path)
 			debug.verbose("tags found: " + str(ret_current_tags))
 			for elem_tag in ret_current_tags:
 				if len(tags_comment) != 0:
