@@ -100,10 +100,31 @@ def execute(arguments):
 		
 		git_repo_path = os.path.join(env.get_island_root_path(), elem.path)
 		version_path_file = os.path.join(git_repo_path, "version.txt")
-		if os.path.exists(git_repo_path) == False:
-			debug.info("deliver:     ==> No 'version.txt' file ==> not manage release version.")
-			continue
-		version_description = tools.version_string_to_list(tools.file_read_data(version_path_file))
+		add_in_version_management = False
+		if os.path.exists(version_path_file) == False:
+			debug.info("deliver:     ==> No 'version.txt' file ==> not manage release version....")
+			# Action to do:
+			valid = False
+			while valid == False:
+				debug.info("Create a new version: (0.0.0)")
+				debug.info("    (1) Add in managing version")
+				debug.info("    (2) Do NOTHING & continue")
+				input1 = input()
+				if input1 in ["1", "2"]:
+					valid = True
+				else:
+					debug.info("!!! Must select in range " + str(["1", "2"]))
+			if input1 == "1":
+				version_description = [0, 0, 0]
+				add_in_version_management = True
+			elif input1 == "2":
+				debug.info("Continue Not managing for this repository")
+				continue
+			else:
+				debug.warning("An error occured for this repository")
+				continue
+		else:
+			version_description = tools.version_string_to_list(tools.file_read_data(version_path_file))
 		debug.info("deliver:     ==> version: " + str(version_description))
 		
 		select_branch = commands.get_current_branch(git_repo_path)
@@ -128,7 +149,7 @@ def execute(arguments):
 				message = commands.get_specific_commit_message(git_repo_path, elem_sha1)
 				behind_count += 1
 				behind_message = message
-		if behind_count == 0:
+		if behind_count == 0 and add_in_version_management == False:
 			debug.info("deliver:     ==> Nothing to do (1).")
 			continue
 		if     behind_count == 1 \
