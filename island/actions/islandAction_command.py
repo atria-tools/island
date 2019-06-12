@@ -52,6 +52,7 @@ def execute(arguments):
 		id_element += 1
 		base_display = tools.get_list_base_display(id_element, len(all_project), elem)
 		debug.info("execute command : " + base_display)
+		tools.wait_for_server_if_needed()
 		#debug.debug("elem : " + str(elem))
 		git_repo_path = os.path.join(env.get_island_root_path(), elem.path)
 		if os.path.exists(git_repo_path) == False:
