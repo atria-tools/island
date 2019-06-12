@@ -158,7 +158,7 @@ def get_specific_commit_message(path_repository, sha_1):
 def get_sha1_for_branch(path_repository, branch_name):
 	if branch_name == None or branch_name == "":
 		return None
-	cmd = "git rev-parse" + sha_1
+	cmd = "git rev-parse " + branch_name
 	debug.verbose("execute : " + cmd)
 	return_value = multiprocess.run_command(cmd, cwd=path_repository)
 	generic_display_error(return_value, "get_sha1_for_branch", error_only=True)
