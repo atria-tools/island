@@ -21,9 +21,9 @@ from . import debug
 
 
 
-def generic_display_error(return_value, type_name, error_only=False):
+def generic_display_error(return_value, type_name, error_only=False, availlable_return=[0], display_if_nothing=True):
 	debug.verbose(str(return_value))
-	if return_value[0] == 0:
+	if return_value[0] in availlable_return:
 		if error_only == True:
 			return
 		display = False
@@ -33,6 +33,8 @@ def generic_display_error(return_value, type_name, error_only=False):
 		if return_value[2] != "":
 			debug.warning(return_value[2])
 			display = True
+		if display_if_nothing == False:
+			return
 		if display == False:
 			debug.verbose("GIT(" + type_name + "): All done OK")
 	else:
@@ -56,7 +58,7 @@ def check_repository_is_modify(path_repository):
 	cmd = "git diff --quiet"
 	debug.verbose("execute : " + cmd)
 	return_value = multiprocess.run_command(cmd, cwd=path_repository)
-	generic_display_error(return_value, "check_repository_is_modify", error_only=True)
+	generic_display_error(return_value, "check_repository_is_modify", error_only=True, availlable_return=[0,1], display_if_nothing=False)
 	ret_diff = return_value
 	if ret_diff[0] == 0:
 		return False
