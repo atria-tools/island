@@ -295,6 +295,17 @@ def fetch(path_repository, remote_name, prune=True):
 	generic_display_error(return_value, "fetch")
 	return return_value
 
+def pull(path_repository, remote_name, prune=True):
+	if remote_name == None or remote_name == "":
+		raise "Missing remote_name"
+	cmd = 'git pull ' + remote_name
+	if prune == True:
+		cmd += " --prune"
+	debug.verbose("execute : " + cmd)
+	return_value = multiprocess.run_command(cmd, cwd=path_repository)
+	generic_display_error(return_value, "pull")
+	return return_value
+
 def push(path_repository, remote_name, elements):
 	if remote_name == None or remote_name == "":
 		raise "Missing remote_name"
