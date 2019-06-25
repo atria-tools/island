@@ -53,6 +53,9 @@ def execute(arguments):
 		debug.error("Missing manifest file : '" + str(file_source_manifest) + "'")
 	
 	mani = manifest.Manifest(file_source_manifest)
+	is_modify_manifest = commands.check_repository_is_modify(env.get_island_path_manifest())
+	if is_modify_manifest == True:
+		debug.info("!!!!!!!!!!!! MANIFEST is modify !!!!!!!!")
 	
 	all_project = mani.get_all_configs()
 	debug.info("status of: " + str(len(all_project)) + " projects")

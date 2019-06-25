@@ -42,12 +42,6 @@ def execute(arguments):
 	
 	configuration = config.Config()
 	
-	if env.get_fetch_manifest() == True:
-		debug.info("update manifest : '" + str(env.get_island_path_manifest()) + "'")
-		# update manifest
-		cmd = "git fetch --all"
-		multiprocess.run_command_direct(cmd, cwd=env.get_island_path_manifest())
-	
 	file_source_manifest = os.path.join(env.get_island_path_manifest(), configuration.get_manifest_name())
 	if os.path.exists(file_source_manifest) == False:
 		debug.error("Missing manifest file : '" + str(file_source_manifest) + "'")
