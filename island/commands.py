@@ -286,8 +286,10 @@ def reset_hard(path_repository, destination):
 
 
 
-def fetch(path_repository, remote_name):
+def fetch(path_repository, remote_name, prune=True):
 	cmd = 'git fetch ' + remote_name
+	if prune == True:
+		cmd += " --prune"
 	debug.verbose("execute : " + cmd)
 	return_value = multiprocess.run_command(cmd, cwd=path_repository)
 	generic_display_error(return_value, "fetch")
