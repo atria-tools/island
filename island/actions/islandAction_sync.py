@@ -40,13 +40,16 @@ def execute(arguments):
 	   or os.path.exists(env.get_island_path_manifest()) == False:
 		debug.error("System already init have an error: missing data: '" + str(env.get_island_path()) + "'")
 	
-	
 	configuration = config.Config()
 	
+	# TODO: Load Old manifect to check diff ...
+	
 	debug.info("update manifest : '" + str(env.get_island_path_manifest()) + "'")
-	# update manifest
-	cmd = "git fetch --all"
-	multiprocess.run_command_direct(cmd, cwd=env.get_island_path_manifest())
+	is_modify_manifest = commands.check_repository_is_modify(env.get_island_path_manifest())
+	if is_modify_manifest == True:
+		commands.fetch(env.get_island_path_manifest(), "origin")
+	else:
+		commands.pull(env.get_island_path_manifest(), "origin")
 	
 	file_source_manifest = os.path.join(env.get_island_path_manifest(), configuration.get_manifest_name())
 	if os.path.exists(file_source_manifest) == False:
@@ -125,7 +128,6 @@ def execute(arguments):
 					debug.info("'" + str(ret) + "'")
 					debug.error("Can not init submodules ... ")
 					continue
-				
 			continue
 		
 		if just_download == True:
@@ -138,96 +140,23 @@ def execute(arguments):
 		
 		# simply update the repository ...
 		debug.verbose("Fetching project: ")
-		# fetch the repository
 		
-		cmd = "git fetch " + elem.select_remote["name"]
-		debug.verbose("execute : " + cmd)
-		multiprocess.run_command_direct(cmd, cwd=git_repo_path)
-		# check if the repository is modify
-		cmd = "git diff --quiet"
-		debug.verbose("execute : " + cmd)
-		ret_diff = multiprocess.run_command(cmd, cwd=git_repo_path)
-		# get local branch
-		cmd = "git branch"
-		debug.verbose("execute : " + cmd)
-		ret_branch = multiprocess.run_command(cmd, cwd=git_repo_path)
-		
-		# get  tracking branch
-		cmd = "git rev-parse --abbrev-ref --symbolic-full-name @{u}"
-		debug.verbose("execute : " + cmd)
-		ret_track = multiprocess.run_command(cmd, cwd=git_repo_path)
-		
-		is_modify = True
-		if ret_diff[0] == 0:
-			is_modify = False
-		
-		list_branch = ret_branch[1].split('\n')
-		list_branch2 = []
-		select_branch = ""
-		for elem_branch in list_branch:
-			if elem_branch[:2] == "* ":
-				list_branch2.append([elem_branch[2:], True])
-				select_branch = elem_branch[2:]
-			else:
-				list_branch2.append([elem_branch[2:], False])
-		
+		# get tracking branch
+		ret_track = commands.get_current_tracking_branch(git_repo_path)
+		is_modify = commands.check_repository_is_modify(git_repo_path)
+		select_branch = commands.get_current_branch(git_repo_path)
 		
 		if is_modify == True:
-			debug.warning("[" + elem.name + "] Not update ==> the repository is modified")
+			# fetch the repository
+			commands.fetch(git_repo_path, elem.select_remote["name"])
+			debug.warning("[" + elem.name + "] Not update ==> the repository is modified (just fetch)")
 			continue
-		""" # TODO: this does not work ...
-		if ret_track[1] != elem.select_remote["name"] + "/" + elem.branch:
-			debug.warning("[" + elem.name + "] Not update ==> the current branch does not track the correct branch : track '" + ret_track[1] + "' instead of '" + elem.select_remote["name"] + "/" + elem.branch + "'")
-			continue
-		"""
-		cmd = "git pull"
-		debug.verbose("execute : " + cmd)
-		ret_pull = multiprocess.run_command(cmd, cwd=git_repo_path)
-		if ret_pull[0] == 0:
-			if ret_pull[1] == "Already up-to-date.":
-				pass
-			elif ret_pull[1] != "":
-				debug.info(ret_pull[1])
-		else:
-			if ret_pull[1] != "":
-				debug.warning("ERROR GIT: " + ret_pull[1])
-			else:
-				debug.warning("ERROR GIT: in pull")
+		commands.pull(git_repo_path, elem.select_remote["name"])
 		
-		debug.verbose("select branch = '" + select_branch + "' is modify : " + str(is_modify) + "     track: '" + str(ret_track[1]) + "'")
+		debug.verbose("select branch = '" + select_branch + "' track: '" + str(ret_track) + "'")
 		# check submodule if requested:
 		if     elem.select_remote["sync"] == True \
 		   and os.path.exists(os.path.join(git_repo_path, ".gitmodules")) == True:
 			debug.info("    ==> sync submodule")
-			cmd = "git submodule sync"
-			ret = multiprocess.run_command_direct(cmd, cwd=git_repo_path)
-			if ret[:31] == "Synchronizing submodule url for":
-				#all is good ...
-				debug.info("    " + ret)
-			elif     ret != "" \
-			     and ret != False:
-				# all is good, ready to get the system work corectly
-				debug.info("'" + ret + "'")
-				debug.error("Can not sync submodules ... ")
-				continue
-			"""
-			cmd = "git submodule init"
-			ret = multiprocess.run_command_direct(cmd, cwd=git_repo_path)
-			if     ret != "" \
-			   and ret != False:
-				# all is good, ready to get the system work corectly
-				debug.info("'" + ret + "'")
-				debug.error("Can not init submodules ... ")
-				continue
-			cmd = "git submodule update"
-			ret = multiprocess.run_command_direct(cmd, cwd=git_repo_path)
-			if ret[:16] == "Submodule path '":
-				#all is good ...
-				debug.info("    " + ret)
-			elif     ret != "" \
-			     and ret != False:
-				# all is good, ready to get the system work corectly
-				debug.info("'" + ret + "'")
-				debug.error("Can not init submodules ... ")
-				continue
-			"""
+			commands.submodule_sync(git_repo_path)
+			
