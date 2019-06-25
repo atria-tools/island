@@ -319,3 +319,22 @@ def push(path_repository, remote_name, elements):
 	return_value = multiprocess.run_command(cmd, cwd=path_repository)
 	generic_display_error(return_value, "push")
 	return return_value
+
+
+def submodule_sync(path_repository, remote_name):
+	cmd = "git submodule sync"
+	debug.verbose("execute : " + cmd)
+	return_value = multiprocess.run_command(cmd, cwd=path_repository)
+	generic_display_error(return_value, "submodule_sync")
+	"""
+	if ret[:31] == "Synchronizing submodule url for":
+		#all is good ...
+		debug.info("    " + ret)
+	elif     ret != "" \
+	     and ret != False:
+		# all is good, ready to get the system work corectly
+		debug.info("'" + ret + "'")
+		debug.error("Can not sync submodules ... ")
+	"""
+
+
