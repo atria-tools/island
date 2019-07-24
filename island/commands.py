@@ -311,7 +311,6 @@ def push(path_repository, remote_name, elements):
 		raise "Missing remote_name"
 	if len(elements) == 0:
 		raise "No elements to push on server"
-		
 	cmd = 'git push ' + remote_name
 	for elem in elements:
 		cmd += " " + elem
@@ -336,5 +335,43 @@ def submodule_sync(path_repository, remote_name):
 		debug.info("'" + ret + "'")
 		debug.error("Can not sync submodules ... ")
 	"""
+
+
+
+def get_forward(path_repository, branch_name):
+	if branch_name == None or branch_name == "":
+		raise "get_fast_forward: Missing branch_name"
+	select_branch = get_current_branch(path_repository)
+	# get tracking branch
+	ret_current_branch_sha1 = get_revision_list_to_branch(path_repository, select_branch)
+	ret_track_branch_sha1 = get_revision_list_to_branch(path_repository, branch_name)
+	# count the number of commit fast forward
+	forward_count = 0
+	for elem_sha1 in ret_current_branch_sha1:
+		if elem_sha1 not in ret_track_branch_sha1:
+			forward_count += 1
+	return forward_count
+
+def is_forward(path_repository, branch_name):
+	return get_forward(path_repository, branch_name) != 0;
+
+
+
+def get_behind(path_repository, branch_name):
+	if branch_name == None or branch_name == "":
+		raise "get_fast_forward: Missing branch_name"
+	select_branch = get_current_branch(path_repository)
+	# get tracking branch
+	ret_current_branch_sha1 = get_revision_list_to_branch(path_repository, select_branch)
+	ret_track_branch_sha1 = get_revision_list_to_branch(path_repository, branch_name)
+	# count the number of commit behind
+	behind_count = 0
+	for elem_sha1 in ret_track_branch_sha1:
+		if elem_sha1 not in ret_current_branch_sha1:
+			behind_count += 1
+	return behind_count
+
+def is_behind(path_repository, branch_name):
+	return get_behind(path_repository, branch_name) != 0;
 
 
