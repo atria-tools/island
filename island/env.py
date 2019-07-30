@@ -130,3 +130,8 @@ def get_island_path_user_config():
 	return island_path_user_config
 
 
+ret_manifest_is_not_existing = -5
+ret_action_is_not_existing = -10
+ret_action_executing_system_error = -11
+ret_action_wrong_parameters = -12
+ret_action_partial_done = -13
