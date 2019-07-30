@@ -46,11 +46,8 @@ def execute(_arguments):
 	for elem in _arguments:
 		debug.error("pull Wrong argument: '" + elem.get_option_name() + "' '" + elem.get_arg() + "'")
 	
-	# check if .XXX exist (create it if needed)
-	if    os.path.exists(env.get_island_path()) == False \
-	   or os.path.exists(env.get_island_path_config()) == False \
-	   or os.path.exists(env.get_island_path_manifest()) == False:
-		debug.error("System already init have an error: missing data: '" + str(env.get_island_path()) + "'")
+	# check system is OK
+	manifest.check_lutin_is_init()
 	
 	configuration = config.Config()
 	

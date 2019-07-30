@@ -14,6 +14,7 @@ from island import env
 from island import config
 from island import commands
 from island import multiprocess
+from island import manifest
 import os
 
 ##
@@ -69,6 +70,9 @@ def execute(_arguments):
 		debug.error("volatile-add: Missing git repository address", env.ret_action_wrong_parameters)
 	
 	debug.info("Add 'volatile' repository: '" + address_git + "' path='" + path + "'")
+	
+	# check system is OK
+	manifest.check_lutin_is_init()
 	
 	# Update the current configuration:
 	conf = config.Config()

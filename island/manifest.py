@@ -26,7 +26,25 @@ class RepoConfig():
 		self.remotes = [] # list of all remotes, with the upstream elements (needed for third party integrations)
 		self.select_remote = ""
 		self.branch = ""
-		
+
+def is_lutin_init():
+	if os.path.exists(env.get_island_path()) == False:
+		debug.verbose("Lutin is not init: path does not exist: '" + env.get_island_path() + "'")
+		return False
+	if     os.path.exists(env.get_island_path_config()) == False \
+	   and os.path.exists(env.get_island_path_config_old()) == False:
+		debug.verbose("Lutin is not init: config does not exist: '" + env.get_island_path_config() + "' or '" + env.get_island_path_config_old() + "'")
+		return False
+	if os.path.exists(env.get_island_path_manifest()) == False:
+		debug.verbose("Lutin is not init: Manifest does not exist: '" + env.get_island_path_manifest() + "'")
+		return False
+	return True
+
+def check_lutin_is_init():
+	# check if .XXX exist (create it if needed)
+	if is_lutin_init() == False:
+		debug.error("System not init: missing config: '" + str(env.get_island_path()) + "'. Call <island init> first")
+		exit(-1)
 
 class Manifest():
 	def __init__(self, manifest_xml):

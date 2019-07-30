@@ -14,6 +14,7 @@ from island import env
 from island import config
 from island import commands
 from island import multiprocess
+from island import manifest
 import os
 
 ##
@@ -37,6 +38,10 @@ def help():
 def execute(_arguments):
 	for elem in _arguments:
 		debug.error("Wrong argument: '" + elem.get_option_name() + "' '" + elem.get_arg() + "'")
+	
+	# check system is OK
+	manifest.check_lutin_is_init()
+	
 	conf = config.Config()
 	volatiles = conf.get_volatile()
 	debug.info("List of all volatiles repository: ")

@@ -14,6 +14,7 @@ from island import env
 from island import config
 from island import commands
 from island import multiprocess
+from island import manifest
 import os
 
 ##
@@ -70,10 +71,9 @@ def execute(_arguments):
 	
 	
 	# check if .XXX exist (create it if needed)
-	if     os.path.exists(env.get_island_path()) == True \
-	   and os.path.exists(env.get_island_path_config()) == True \
-	   and os.path.exists(env.get_island_path_manifest()) == True:
+	if manifest.is_lutin_init() == True:
 		debug.error("System already init: path already exist: '" + str(env.get_island_path()) + "'")
+	
 	tools.create_directory(env.get_island_path())
 	# check if the git of the manifest if availlable
 	
