@@ -18,20 +18,36 @@ from island import commands
 import os
 
 
+##
+## @brief Get the global description of the current action
+## @return (string) the description string (fist line if reserved for the overview, all is for the specific display)
+##
 def help():
 	return "Get the status of all the repositories"
 
-
+##
+## @brief Add argument to the specific action
+## @param[in,out] my_args (death.Arguments) Argument manager
+## @param[in] section Name of the currect action
+##
 def add_specific_arguments(_my_args, _section):
 	_my_args.add("r", "remote", haveParam=True, desc="Name of the remote server")
 	
 	_my_args.add("t", "tags", haveParam=False, desc="Display if the commit is on a tag (and display it)")
 
-
-def execute(arguments):
+##
+## @brief Execute the action required.
+##
+## @return error value [0 .. 50] the <0 value is reserved system ==> else, what you want.
+##         None : No error (return program out 0)
+##         -10 : ACTION is not existing
+##         -11 : ACTION execution system error
+##         -12 : ACTION Wrong parameters
+##
+def execute(_arguments):
 	argument_remote_name = ""
 	argument_display_tag = False
-	for elem in arguments:
+	for elem in _arguments:
 		if elem.get_option_name() == "remote":
 			debug.info("find remote name: '" + elem.get_arg() + "'")
 			argument_remote_name = elem.get_arg()

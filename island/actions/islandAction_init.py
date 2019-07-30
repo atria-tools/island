@@ -16,23 +16,40 @@ from island import commands
 from island import multiprocess
 import os
 
+##
+## @brief Get the global description of the current action
+## @return (string) the description string (fist line if reserved for the overview, all is for the specific display)
+##
 def help():
 	return "Init a island repository (need 'fetch' after)"
 
+##
+## @brief Add argument to the specific action
+## @param[in,out] my_args (death.Arguments) Argument manager
+## @param[in] section Name of the currect action
+##
 def add_specific_arguments(my_args, section):
 	my_args.add("b", "branch", haveParam=True, desc="Select branch to display")
 	my_args.add("m", "manifest", haveParam=True, desc="Name of the manifest")
 
-
-def execute(arguments):
-	if len(arguments) == 0:
+##
+## @brief Execute the action required.
+##
+## @return error value [0 .. 50] the <0 value is reserved system ==> else, what you want.
+##         None : No error (return program out 0)
+##         -10 : ACTION is not existing
+##         -11 : ACTION execution system error
+##         -12 : ACTION Wrong parameters
+##
+def execute(_arguments):
+	if len(_arguments) == 0:
 		debug.error("Missing argument to execute the current action ...")
 	
 	# the configuration availlable:
 	branch = "master"
 	manifest_name = "default.xml"
 	address_manifest = ""
-	for elem in arguments:
+	for elem in _arguments:
 		if elem.get_option_name() == "branch":
 			debug.info("find branch name: '" + elem.get_arg() + "'")
 			branch = elem.get_arg()

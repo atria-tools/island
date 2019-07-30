@@ -18,15 +18,32 @@ from island import commands
 import os
 
 
+##
+## @brief Get the global description of the current action
+## @return (string) the description string (fist line if reserved for the overview, all is for the specific display)
+##
 def help():
 	return "Write the command you want to be executed in every repository"
 
+##
+## @brief Set the option argument are not able to check if the argument are correct or not
+## @return (boolean) have parameter without arguments
+##
 def have_unknow_argument():
 	return True
 
-def execute(arguments):
+##
+## @brief Execute the action required.
+##
+## @return error value [0 .. 50] the <0 value is reserved system ==> else, what you want.
+##         None : No error (return program out 0)
+##         -10 : ACTION is not existing
+##         -11 : ACTION execution system error
+##         -12 : ACTION Wrong parameters
+##
+def execute(_arguments):
 	cmd = ""
-	for elem in arguments:
+	for elem in _arguments:
 		debug.info("Get data element: " + str(elem.get_arg()))
 		cmd += elem.get_arg() + " "
 	
