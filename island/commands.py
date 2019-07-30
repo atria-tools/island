@@ -284,6 +284,16 @@ def reset_hard(path_repository, destination):
 	generic_display_error(return_value, "reset_hard", error_only=True)
 	return return_value
 
+def rebase(path_repository, destination):
+	if destination == None or destination == "":
+		raise "Missing destination 'sha1' or 'branch name'"
+	cmd = 'git rebase ' + destination
+	debug.verbose("execute : " + cmd)
+	# TODO: check if the command work correctly
+	return_value = multiprocess.run_command(cmd, cwd=path_repository)
+	generic_display_error(return_value, "rebase", error_only=True)
+	return return_value
+
 
 
 def fetch(path_repository, remote_name, prune=True):
