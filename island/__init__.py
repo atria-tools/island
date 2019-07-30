@@ -156,14 +156,12 @@ def parse_generic_arg(argument, active):
 	return False
 
 # open configuration of island:
-config_file_name = "islandConfig.py"
-# TODO: Change get_run_path with folder of .island
-config_file = os.path.join(tools.get_run_path(), config_file_name)
+config_file = env.get_island_path_user_config()
 if os.path.isfile(config_file) == True:
 	sys.path.append(os.path.dirname(config_file))
 	debug.debug("Find basic configuration file: '" + config_file + "'")
 	# the file exist, we can open it and get the initial configuration:
-	configuration_file = __import__(config_file_name[:-3])
+	configuration_file = __import__(env.get_system_config_name()[:-3])
 	
 	if "get_exclude_path" in dir(configuration_file):
 		data = configuration_file.get_exclude_path()

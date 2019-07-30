@@ -25,6 +25,10 @@ def get_system_base_name():
 	global system_base_name
 	return system_base_name
 
+def get_system_config_name():
+	global system_base_name
+	return system_base_name + "Config.py"
+
 
 fetch_manifest = True
 
@@ -96,6 +100,7 @@ elif os.path.exists(os.path.join(island_root_path, "..", "..", "..", "..", "..",
 else:
 	#debug.error("the root path of " + get_system_base_name() + " must not be upper that 6 parent path")
 	pass
+island_path_user_config = os.path.join(island_root_path, get_system_config_name())
 island_path = os.path.join(island_root_path, "." + get_system_base_name())
 island_path_config = os.path.join(island_path, "config.txt")
 island_path_manifest = os.path.join(island_path, "manifest")
@@ -119,5 +124,9 @@ def get_island_path_config():
 def get_island_path_manifest():
 	global island_path_manifest
 	return island_path_manifest
+
+def get_island_path_user_config():
+	global island_path_user_config
+	return island_path_user_config
 
 
