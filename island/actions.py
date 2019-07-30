@@ -52,27 +52,47 @@ def get_list_of_action():
 ##
 ## @brief Get a description of an action
 ## @param[in] action_name (string) Name of the action
-## @return (string/None) A descriptive string or None
+## @param[in] function_name (string) Name of the fucntion to call
+## @param[in] default_value (*) Renurned value of the call if function does not exist
+## @return (*) the getted value or the default_value
 ##
-def get_desc(action_name):
+def get_function_value(action_name, function_name, default_value = None):
 	global list_actions;
 	for elem in list_actions:
 		if elem["name"] == action_name:
 			# finish the parsing
 			sys.path.append(os.path.dirname(elem["path"]))
 			the_action = __import__(__base_action_name + action_name)
-			if "get_desc" not in dir(the_action):
-				return ""
-			return the_action.get_desc()
-	return ""
+			if function_name not in dir(the_action):
+				return default_value
+			method_to_call = getattr(the_action, function_name)
+			return method_to_call()
+	return default_value
+
+##
+## @brief Get the global help value of a module
+## @param[in] action_name (string) Name of the action
+## @return The first line of description
+##
+def get_action_help(action_name):
+	value = get_function_value(action_name, "help", "---")
+	return value.split("\n")[0]
 
 
 def usage(arguments, action_name):
 	color = debug.get_color_set()
 	# generic argument displayed for specific action:
-	print("Specific argument for the command: '" + action_name + "'" )
-	print("    " + get_desc(action_name))
+	#print("Specific argument for the command: '" + action_name + "'" )
+	#print("    " + get_desc(action_name))
+	value = get_function_value(action_name, "help")
+	debug.info("Description:")
+	debug.info("\t" + str(value))
 	arguments.display(action_name)
+	value = get_function_value(action_name, "help_example")
+	if value != None:
+		debug.info("Example:")
+		for elem in value.split("\n"):
+			debug.info("\t" + value)
 	exit(0)
 
 def execute(action_name, argument_start_id):
@@ -99,25 +119,20 @@ def execute(action_name, argument_start_id):
 		for elem in my_under_args:
 			if elem.get_option_name() == "help":
 				usage(my_under_args_parser, action_name)
-				return False
+				return 0
 		# now we can execute:
 		if "execute" not in dir(the_action):
 			debug.error("execute is not implmented for this action ... '" + str(action_name) + "'")
-			return False
+			return -11
 		debug.info("execute: " + action_name)
 		for elem in my_under_args:
-			debug.info("    " + str(elem.get_option_name()) + "='" + str(elem.get_arg()) + "'")
-		return the_action.execute(my_under_args)
+			debug.debug("    " + str(elem.get_option_name()) + "='" + str(elem.get_arg()) + "'")
+		ret = the_action.execute(my_under_args)
+		if ret == None:
+			return 0
+		debug.info("    ==========================")
+		debug.info("    ==  Some error occured  ==")
+		debug.info("    ==========================")
+		return ret
 	debug.error("Can not do the action...")
-	return False
-
-def get_action_help(action_name):
-	global list_actions;
-	for elem in list_actions:
-		if elem["name"] != action_name:
-			continue
-		sys.path.append(os.path.dirname(elem["path"]))
-		the_action = __import__(__base_action_name + action_name)
-		if "help" in dir(the_action):
-			return the_action.help()
-	return "---"
+	return -10
