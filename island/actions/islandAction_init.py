@@ -84,20 +84,14 @@ def execute(_arguments):
 	conf.set_manifest_name(manifest_name)
 	conf.store()
 	
-	#clone the manifest repository
-	cmd = "git clone " + address_manifest + " --branch " + branch + " " + env.get_island_path_manifest()
-	
-	debug.info("clone the manifest")
-	ret = multiprocess.run_command_direct(cmd)
-	
-	if ret == "":
-		return True
+	debug.info("Clone the manifest")
+	commands.clone(env.get_island_path_manifest(), address_manifest, branch_name=branch):
 	
 	if ret == False:
-		# all is good, ready to get the system work corectly
-		return True
-	debug.info("'" + ret + "'")
-	debug.error("Init does not work")
-	return False
+		debug.info("'" + ret + "'")
+		debug.error("Init does not work")
+		return False
+	return True
+	
 
 

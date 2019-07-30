@@ -95,15 +95,16 @@ def execute(_arguments):
 			#clone the manifest repository
 			address_manifest = ""
 			### example git@git.plouf.com:basic_folder
-			cmd = "git clone " + elem.select_remote["fetch"]
+			address_manifest = elem.select_remote["fetch"]
 			if     elem.select_remote["fetch"][0:4] == "git@" \
 			   and len(elem.select_remote["fetch"][4:].split(":")) <= 1:
-				cmd += ":"
+				address_manifest += ":"
 			else:
-				cmd += "/"
-			cmd += elem.name + " --branch " + elem.branch + " --origin " + elem.select_remote["name"] + " " + git_repo_path
+				address_manifest += "/"
+			address_manifest += elem.name
+			 + " --branch " + elem.branch + " --origin " + elem.select_remote["name"] + " " + git_repo_path
 			debug.info("clone the repo")
-			ret = multiprocess.run_command_direct(cmd)
+			ret = commands.clone(git_repo_path, address_manifest, branch_name=elem.branch, origin=elem.select_remote["name"]):
 			if     ret != "" \
 			   and ret != False:
 				# all is good, ready to get the system work corectly
