@@ -57,6 +57,8 @@ def execute(_arguments):
 	   or os.path.exists(env.get_island_path_manifest()) == False:
 		debug.error("System already init have an error: missing data: '" + str(env.get_island_path()) + "'")
 	
+	debug.info("fetch manifest : '" + str(env.get_island_path_manifest()) + "'")
+	commands.fetch(env.get_island_path_manifest(), "origin")
 	
 	configuration = config.Config()
 	file_source_manifest = os.path.join(env.get_island_path_manifest(), configuration.get_manifest_name())
