@@ -11,6 +11,7 @@ import platform
 import sys
 import os
 import copy
+import json
 # Local import
 from realog import debug
 from . import tools
@@ -26,9 +27,8 @@ class Config():
 		self._repo = ""
 		self._branch = "master"
 		self._manifest_name = "default.xml"
-		
+		self._volatiles = []
 		self.load()
-		
 	
 	# set it deprecated at 2020/07
 	def load_old(self):
@@ -70,6 +70,10 @@ class Config():
 				self._branch = data["branch"]
 			if "manifest_name" in data.keys():
 				self._manifest_name = data["manifest_name"]
+			if "volatiles" in data.keys():
+				for elem in data["volatiles"]:
+					if "git_address" in elem.keys() and "path" in elem.keys():
+						self.add_volatile(elem["git_address"], elem["path"])
 			return True
 		return False
 	
@@ -78,6 +82,7 @@ class Config():
 		data["repo"] = self._repo
 		data["branch"] = self._branch
 		data["manifest_name"] = self._manifest_name
+		data["volatiles"] = self._volatiles
 		with open(env.get_island_path_config(), 'w') as outfile:
 			json.dump(data, outfile, indent=4)
 			return True
@@ -100,4 +105,18 @@ class Config():
 	
 	def get_manifest_name(self):
 		return self._manifest_name
+	
+	def add_volatile(self, git_adress, local_path):
+		for elem in self._volatiles:
+			if elem["path"] == local_path:
+				debug.error("can not have multiple local repositoty on the same PATH", crash=False)
+				return False
+		self._volatiles.append( {
+			"git_address": git_adress,
+			"path": local_path
+			})
+		return True
+	
+	def get_volatile(self):
+		return copy.deepcopy(self._volatiles)
 
