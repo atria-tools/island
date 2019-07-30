@@ -243,6 +243,9 @@ class Manifest():
 		# add all local project
 		for elem in self.projects:
 			debug.verbose("parse element " + str(elem))
+			if env.need_process_with_filter(elem["name"]) == False:
+				debug.info("Filter repository: " + str(elem["name"]))
+				continue
 			conf = RepoConfig()
 			conf.name = elem["name"]
 			conf.path = self._create_path_with_elem(elem)

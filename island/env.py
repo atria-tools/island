@@ -47,6 +47,26 @@ def get_wait_between_sever_command():
 	global wait_between_sever_command
 	return wait_between_sever_command
 
+filter_command = ""
+
+def set_filter_command(val):
+	global filter_command
+	filter_command = val
+
+def get_filter_command():
+	global filter_command
+	return filter_command
+
+def need_process_with_filter(data):
+	global filter_command
+	if filter_command == "":
+		return True
+	if len(data) < len(filter_command):
+		return False
+	if data[:len(filter_command)] == filter_command:
+		return True
+	return False
+
 display_folder_instead_of_git_name = True
 
 def set_display_folder_instead_of_git_name(val):

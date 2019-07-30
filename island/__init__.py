@@ -75,6 +75,7 @@ my_args.add("v", "verbose", list=[
 								], desc="display debug level (verbose) default =2")
 my_args.add("c", "color", desc="Display message in color")
 my_args.add("n", "no-fetch-manifest", haveParam=False, desc="Disable the fetch of the manifest")
+my_args.add("F", "filter", haveParam=True, desc="Filter the action on a list of path or subpath: -f library")
 my_args.add("f", "folder", haveParam=False, desc="Display the folder instead of the git repository name")
 my_args.add("w", "wait", haveParam=True, desc="Wait between 2 acces on the server (needed when the server is really slow to remove ssh connection) (default=" + str(env.get_wait_between_sever_command()) + ")")
 my_args.set_stop_at(actions.get_list_of_action())
@@ -144,6 +145,10 @@ def parse_generic_arg(argument, active):
 			else:
 				debug.disable_color()
 		return True
+	elif argument.get_option_name() == "filter":
+		if active == True:
+			env.set_filter_command(str(argument.get_arg()))
+		return True
 	elif argument.get_option_name() == "no-fetch-manifest":
 		if active == False:
 			env.set_fetch_manifest(False)
@@ -184,6 +189,11 @@ if os.path.isfile(config_file) == True:
 		data = configuration_file.get_default_wait()
 		debug.debug(" get default config 'get_default_wait' val='" + str(data) + "'")
 		parse_generic_arg(arg_element.ArgElement("wait", str(data)), True)
+	
+	if "get_default_filter" in dir(configuration_file):
+		data = configuration_file.get_default_filter()
+		debug.debug(" get default config 'get_default_filter' val='" + str(data) + "'")
+		parse_generic_arg(arg_element.ArgElement("filter", str(data)), True)
 	
 
 
