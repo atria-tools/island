@@ -295,6 +295,24 @@ def rebase(path_repository, destination):
 	return return_value
 
 
+def clone(path_repository, address, branch_name = None, origin=None):
+	if address == None or address == "":
+		raise "Missing address"
+	cmd = 'git clone ' + address
+	if branch_name != None and branch_name == "":
+		cmd += " --branch " + branch_name
+	if origin != None and origin == "":
+		cmd += " --origin " + origin
+	if path_repository != None and path_repository == "":
+		cmd += " " + path_repository
+	debug.verbose("execute : " + cmd)
+	if os.path.exists(path_repository) == True:
+		debug.warning("Can not clone repository path already exist")
+		return False
+	return_value = multiprocess.run_command(cmd)
+	generic_display_error(return_value, "clone", error_only=True)
+	return return_value
+
 
 def fetch(path_repository, remote_name, prune=True):
 	cmd = 'git fetch ' + remote_name
