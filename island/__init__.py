@@ -21,6 +21,7 @@ import death.Arguments as arguments
 import death.ArgElement as arg_element
 is_init = False
 
+debug.set_display_on_error("    ==========================\n    ==  Some error occured  ==\n    ==========================")
 
 def filter_name_and_file(root, list_files, filter):
 	# filter elements:
