@@ -26,6 +26,7 @@ class RepoConfig():
 		self.remotes = [] # list of all remotes, with the upstream elements (needed for third party integrations)
 		self.select_remote = ""
 		self.branch = ""
+		self.volatile = False
 
 def is_lutin_init():
 	if os.path.exists(env.get_island_path()) == False:
@@ -310,6 +311,66 @@ class Manifest():
 			list_project = elem["manifest"].get_all_configs(default, upper_remotes_forward)
 			for elem_proj in list_project:
 				out.append(elem_proj)
+		
+		## -------------------------------------------------------------
+		## -- add Volatile ...
+		## -------------------------------------------------------------
+		debug.verbose("include volatile config")
+		# TODO: maybe find a better way to do this...
+		conf_global = config.Config()
+		for elem in conf_global.get_volatile():
+			conf = RepoConfig()
+			base_volatile, repo_volatile = split_repo(elem["git_address"])
+			conf.name = repo_volatile
+			conf.path = elem["path"]
+			conf.branch = "master"
+			conf.volatile = True
+			conf.remotes = [
+				{
+					'name': 'origin',
+					'fetch': base_volatile,
+					'mirror': []
+				}
+				]
+			conf.select_remote = {
+					'name': 'origin',
+					'fetch': base_volatile,
+					'sync': False,
+					'mirror': []
+				}
+			out.append(conf)
+		## -------------------------------------------------------------
+		if False:
+			debug.info("list of all repo:")
+			for elem in out:
+				debug.info("    '" + elem.name + "'")
+				debug.info("        path: " + elem.path)
+				debug.info("        remotes: " + str(elem.remotes))
+				debug.info("        select_remote: " + str(elem.select_remote))
+				debug.info("        branch: " + elem.branch)
 		return out
 
 
+def split_repo(git_repo):
+	debug.verbose("parse git repo in RAW: " + str(git_repo))
+	if     len(git_repo) > 4 \
+	   and git_repo[:4] == "http":
+		# http://wdfqsdfqs@qsdfqsdf/qsdfqsdf/qsdfqsdf/qsdfqs.git find the 3rd '/' and cut at this point
+		elements = git_repo.split('/')
+		if len(elements) < 4:
+			debug.error("Can not parse the git repository : '" + str(git_repo) + "' wrong format http?://xxx@xxx.xxx/****")
+		base = elements[0] + "/" + elements[1] + "/" + elements[2]
+		repo = git_repo[len(base)+1:]
+	elif     len(git_repo) > 3 \
+	     and git_repo[:3] == "git":
+		# git@qsdfqsdf:qsdfqsdf/qsdfqsdf/qsdfqs.git find the 1st ':' and cut at this point
+		elements = git_repo.split(':')
+		if len(elements) < 2:
+			debug.error("Can not parse the git repository : '" + str(git_repo) + "' wrong format git@xxx.xxx:****")
+		base = elements[0]
+		repo = git_repo[len(base)+1:]
+	else:
+		debug.error("Can not parse the git repository : '" + str(git_repo) + "' does not start with ['http', 'git']")
+	debug.verbose("    base: " + str(base))
+	debug.verbose("    repo: " + str(repo))
+	return (base, repo)

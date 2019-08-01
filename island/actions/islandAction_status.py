@@ -75,11 +75,14 @@ def execute(_arguments):
 	for elem in all_project:
 		id_element += 1
 		base_display = tools.get_list_base_display(id_element, len(all_project), elem)
+		volatile = ""
+		if elem.volatile == True:
+			volatile = " (volatile)"
 		debug.verbose("status : " + base_display)
 		#debug.debug("elem : " + str(elem))
 		git_repo_path = os.path.join(env.get_island_root_path(), elem.path)
 		if os.path.exists(git_repo_path) == False:
-			debug.info(base_display + "\r\t\t\t\t\t\t\t\t\t" + "     (not download)")
+			debug.info(base_display + volatile + "\r\t\t\t\t\t\t\t\t\t" + "     (not download)")
 			continue
 		
 		is_modify = commands.check_repository_is_modify(git_repo_path)
@@ -89,7 +92,7 @@ def execute(_arguments):
 		# get tracking branch
 		tracking_remote_branch = commands.get_tracking_branch(git_repo_path, argument_remote_name, select_branch)
 		if tracking_remote_branch == None:
-			debug.info(base_display + "\r\t\t\t\t\t\t\t     (NO BRANCH)")
+			debug.info(base_display + volatile + "\r\t\t\t\t\t\t\t     (NO BRANCH)")
 			continue
 		
 		modify_status = "     "
@@ -132,8 +135,7 @@ def execute(_arguments):
 				tags_comment += elem_tag
 		if len(tags_comment) != 0:
 			tags_comment = "\r\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t[" + tags_comment + "]"
-		
-		debug.info(base_display + "\r\t\t\t\t\t\t\t" + modify_status + "(" + select_branch + " -> " + tracking_remote_branch + ")" + behind_forward_comment + tags_comment)
+		debug.info(base_display + volatile + "\r\t\t\t\t\t\t\t" + modify_status + "(" + select_branch + " -> " + tracking_remote_branch + ")" + behind_forward_comment + tags_comment)
 		if is_modify == True:
 			cmd = "git status --short"
 			debug.verbose("execute : " + cmd)
