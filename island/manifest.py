@@ -221,6 +221,9 @@ class Manifest():
 				    })
 				debug.debug("(l:" + str(child.sourceline) + ")     find '" + child.tag + "' : name='" + name + "' path='" + path + "'");
 				continue
+			if child.tag == "option":
+				# not managed ==> future use
+				continue
 			debug.info("(l:" + str(child.sourceline) + ")     '" + str(child.tag) + "' values=" + str(child.attrib));
 			debug.error("(l:" + str(child.sourceline) + ") Parsing error Unknow NODE : '" + str(child.tag) + "' availlable:[remote,include,default,project]")
 		# now we parse all sub repo:
