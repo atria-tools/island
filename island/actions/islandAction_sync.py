@@ -99,11 +99,10 @@ def execute(_arguments):
 			else:
 				address_manifest += "/"
 			address_manifest += elem.name
-			 + " --branch " + elem.branch + " --origin " + elem.select_remote["name"] + " " + git_repo_path
 			debug.info("clone the repo")
-			ret = commands.clone(git_repo_path, address_manifest, branch_name=elem.branch, origin=elem.select_remote["name"]):
-			if     ret != "" \
-			   and ret != False:
+			ret = commands.clone(git_repo_path, address_manifest, branch_name=elem.branch, origin=elem.select_remote["name"])
+			if     ret[0] != "" \
+			   and ret[0] != False:
 				# all is good, ready to get the system work corectly
 				debug.info("'" + str(ret) + "'")
 				debug.error("Clone repository does not work ... ")

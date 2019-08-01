@@ -85,13 +85,16 @@ def execute(_arguments):
 	conf.store()
 	
 	debug.info("Clone the manifest")
-	commands.clone(env.get_island_path_manifest(), address_manifest, branch_name=branch):
+	ret_values = commands.clone(env.get_island_path_manifest(), address_manifest, branch_name=branch)
 	
-	if ret == False:
-		debug.info("'" + ret + "'")
+	if ret_values == False:
+		debug.info("'" + str(ret_values) + "'")
 		debug.error("Init does not work")
 		return False
-	return True
+	
+	debug.info("Init done correctly ...")
+	
+	return None
 	
 
 
