@@ -15,6 +15,7 @@ from island import config
 from island import multiprocess
 from island import manifest
 from island import commands
+import update_links
 import os
 
 ##
@@ -179,4 +180,9 @@ def execute(_arguments):
 		   and os.path.exists(os.path.join(git_repo_path, ".gitmodules")) == True:
 			debug.info("    ==> sync submodule")
 			commands.submodule_sync(git_repo_path)
-			
+	
+	## Update the links:
+	have_error = update_links.update(configuration, mani, "sync-local")
+	if have_error == True:
+		return -1
+	return None

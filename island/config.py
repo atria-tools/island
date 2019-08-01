@@ -28,6 +28,7 @@ class Config():
 		self._branch = "master"
 		self._manifest_name = "default.xml"
 		self._volatiles = []
+		self._curent_link = []
 		self.load()
 	
 	# set it deprecated at 2020/07
@@ -62,6 +63,7 @@ class Config():
 		if os.path.exists(env.get_island_path_config()) == False:
 			return True
 		self._volatiles = []
+		self._curent_link = []
 		with open(env.get_island_path_config()) as json_file:
 			data = json.load(json_file)
 			if "repo" in data.keys():
@@ -74,6 +76,10 @@ class Config():
 				for elem in data["volatiles"]:
 					if "git_address" in elem.keys() and "path" in elem.keys():
 						self.add_volatile(elem["git_address"], elem["path"])
+			if "link" in data.keys():
+				for elem in data["link"]:
+					if "source" in elem.keys() and "destination" in elem.keys():
+						self.add_link(elem["source"], elem["destination"])
 			return True
 		return False
 	
@@ -83,6 +89,7 @@ class Config():
 		data["branch"] = self._branch
 		data["manifest_name"] = self._manifest_name
 		data["volatiles"] = self._volatiles
+		data["link"] = self._curent_link
 		with open(env.get_island_path_config(), 'w') as outfile:
 			json.dump(data, outfile, indent=4)
 			return True
@@ -119,4 +126,30 @@ class Config():
 	
 	def get_volatile(self):
 		return copy.deepcopy(self._volatiles)
-
+	
+	
+	def get_links(self):
+		return self._curent_link
+	
+	def add_link(self, source, destination):
+		for elem in self._curent_link:
+			if elem["destination"] == destination:
+				debug.error("can not have multiple destination folder in link " + destination, crash=False)
+				return False
+		self._curent_link.append( {
+			"source": source,
+			"destination": destination
+			})
+		return True
+	
+	def remove_link(self, destination):
+		for elem in self._curent_link:
+			if elem["destination"] == destination:
+				del self._curent_link[elem]
+				return
+		debug.warning("Request remove link that does not exist")
+	
+	def clear_links(self):
+		self._curent_link = []
+	
+	

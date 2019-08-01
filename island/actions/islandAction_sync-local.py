@@ -15,6 +15,7 @@ from island import config
 from island import multiprocess
 from island import manifest
 from island import commands
+import update_links
 import os
 
 
@@ -148,6 +149,11 @@ def execute(_arguments):
 		debug.info("        **  local sync partial warning on " + str(count_error) + " repository")
 		debug.info("        ***********************************************************")
 		return env.ret_action_partial_done
+	
+	## Update the links:
+	have_error = update_links.update(configuration, mani, "sync-local")
+	if have_error == True:
+		return -1
 	return None
 
 

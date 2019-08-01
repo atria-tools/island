@@ -16,6 +16,7 @@ from realog import debug
 from . import tools
 from . import env
 from . import multiprocess
+from . import config
 
 from lxml import etree
 
@@ -27,6 +28,12 @@ class RepoConfig():
 		self.select_remote = ""
 		self.branch = ""
 		self.volatile = False
+
+class LinkConfig():
+	def __init__(self):
+		self.source = ""
+		self.destination = ""
+		
 
 def is_lutin_init():
 	if os.path.exists(env.get_island_path()) == False:
@@ -59,10 +66,14 @@ class Manifest():
 		    }
 		self.remotes = []
 		self.includes = []
+		self.links = []
 		# load the manifest
 		self._load()
 		# check error in manifest (double path ...)
 		self._check_double_path([])
+	
+	def get_links(self):
+		return self.links
 	
 	def _load(self):
 		tree = etree.parse(self.manifest_xml)
@@ -224,8 +235,29 @@ class Manifest():
 			if child.tag == "option":
 				# not managed ==> future use
 				continue
+			if child.tag == "link":
+				# not managed ==> future use
+				source = ""
+				destination = ""
+				for attr in child.attrib:
+					if attr == "source":
+						source = child.attrib[attr]
+					elif attr == "destination":
+						destination = child.attrib[attr]
+					else:
+						debug.error("(l:" + str(child.sourceline) + ") Parsing the manifest: Unknow '" + child.tag + "'  attibute : '" + attr + "', availlable:[source,destination]")
+				if source == "":
+					debug.error("(l:" + str(child.sourceline) + ") Parsing the manifest: '" + child.tag + "'  missing attribute: 'source' ==> specify the git to clone ...")
+				if destination == "":
+					debug.error("(l:" + str(child.sourceline) + ") Parsing the manifest: '" + child.tag + "'  missing attribute: 'destination' ==> specify the git to clone ...")
+				self.links.append({
+				    "source":source,
+				    "destination":destination,
+				    })
+				debug.warning("Add link: '" + str(destination) + "' ==> '" + str(source) + "'")
+				continue
 			debug.info("(l:" + str(child.sourceline) + ")     '" + str(child.tag) + "' values=" + str(child.attrib));
-			debug.error("(l:" + str(child.sourceline) + ") Parsing error Unknow NODE : '" + str(child.tag) + "' availlable:[remote,include,default,project]")
+			debug.error("(l:" + str(child.sourceline) + ") Parsing error Unknow NODE : '" + str(child.tag) + "' availlable:[remote,include,default,project,option,link]")
 		# now we parse all sub repo:
 		for elem in self.includes:
 			elem["manifest"] = Manifest(elem["path"])
