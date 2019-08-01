@@ -306,7 +306,7 @@ def clone(path_repository, address, branch_name = None, origin=None):
 		cmd += " --branch " + branch_name
 	if origin != None and origin == "":
 		cmd += " --origin " + origin
-	if path_repository != None and path_repository == "":
+	if path_repository != None and path_repository != "":
 		cmd += " " + path_repository
 	debug.verbose("execute : " + cmd)
 	if os.path.exists(path_repository) == True:
