@@ -21,33 +21,6 @@ from . import debug
 
 
 
-def generic_display_error(return_value, type_name, error_only=False, availlable_return=[0], display_if_nothing=True):
-	debug.verbose(str(return_value))
-	if return_value[0] in availlable_return:
-		if error_only == True:
-			return
-		display = False
-		if return_value[1] != "":
-			debug.info(return_value[1])
-			display = True
-		if return_value[2] != "":
-			debug.warning(return_value[2])
-			display = True
-		if display_if_nothing == False:
-			return
-		if display == False:
-			debug.verbose("GIT(" + type_name + "): All done OK")
-	else:
-		display = False
-		if return_value[1] != "":
-			debug.warning("ERROR GIT(" + type_name + ") 1:" + return_value[1])
-			display = True
-		if return_value[2] != "":
-			debug.warning("ERROR GIT(" + type_name + ") 2:" + return_value[2])
-			display = True
-		if display == False:
-			debug.warning("ERROR GIT(" + type_name + "): Unknow error return_value=" + str(return_value[0]))
-
 
 
 """
@@ -58,7 +31,7 @@ def check_repository_is_modify(path_repository):
 	cmd = "git diff --quiet"
 	debug.verbose("execute : " + cmd)
 	return_value = multiprocess.run_command(cmd, cwd=path_repository)
-	generic_display_error(return_value, "check_repository_is_modify", error_only=True, availlable_return=[0,1], display_if_nothing=False)
+	multiprocess.generic_display_error(return_value, "check_repository_is_modify", error_only=True, availlable_return=[0,1], display_if_nothing=False)
 	ret_diff = return_value
 	if ret_diff[0] == 0:
 		return False
@@ -69,7 +42,7 @@ def get_list_branch_meta(path_repository):
 	cmd = "git branch -a"
 	debug.verbose("execute : " + cmd)
 	return_value = multiprocess.run_command(cmd, cwd=path_repository)
-	generic_display_error(return_value, "get_list_branch_meta", error_only=True)
+	multiprocess.generic_display_error(return_value, "get_list_branch_meta", error_only=True)
 	ret_branch = return_value
 	list_branch = ret_branch[1].split('\n')
 	out = []
@@ -141,14 +114,14 @@ def get_current_tracking_branch(path_repository):
 	if return_value[1] == "@{u}":
 		debug.warning("in '" + path_repository + "' no tracking branch is specify")
 		return None
-	generic_display_error(return_value, "get_current_tracking_branch", error_only=True)
+	multiprocess.generic_display_error(return_value, "get_current_tracking_branch", error_only=True)
 	return return_value[1]
 
 def get_revision_list_to_branch(path_repository, branch):
 	cmd = "git rev-list " + branch
 	debug.verbose("execute : " + cmd)
 	return_value = multiprocess.run_command(cmd, cwd=path_repository)
-	generic_display_error(return_value, "get_revision_list_to_branch", error_only=True)
+	multiprocess.generic_display_error(return_value, "get_revision_list_to_branch", error_only=True)
 	return return_value[1].split('\n')
 
 def get_specific_commit_message(path_repository, sha_1):
@@ -157,7 +130,7 @@ def get_specific_commit_message(path_repository, sha_1):
 	cmd = "git log --format=%B -n 1 " + sha_1
 	debug.verbose("execute : " + cmd)
 	return_value = multiprocess.run_command(cmd, cwd=path_repository)
-	generic_display_error(return_value, "get_specific_commit_message", error_only=True)
+	multiprocess.generic_display_error(return_value, "get_specific_commit_message", error_only=True)
 	return return_value[1].split('\n')[0]
 
 def get_sha1_for_branch(path_repository, branch_name):
@@ -166,7 +139,7 @@ def get_sha1_for_branch(path_repository, branch_name):
 	cmd = "git rev-parse " + branch_name
 	debug.verbose("execute : " + cmd)
 	return_value = multiprocess.run_command(cmd, cwd=path_repository)
-	generic_display_error(return_value, "get_sha1_for_branch", error_only=True)
+	multiprocess.generic_display_error(return_value, "get_sha1_for_branch", error_only=True)
 	return return_value[1].split('\n')[0]
 
 
@@ -174,14 +147,14 @@ def get_tags_current(path_repository):
 	cmd = "git tag --points-at"
 	debug.verbose("execute : " + cmd)
 	return_value = multiprocess.run_command(cmd, cwd=path_repository)
-	generic_display_error(return_value, "get_tags_current", error_only=True)
+	multiprocess.generic_display_error(return_value, "get_tags_current", error_only=True)
 	return return_value[1].split('\n')
 
 def get_tags(path_repository):
 	cmd = "git tag"
 	debug.verbose("execute : " + cmd)
 	return_value = multiprocess.run_command(cmd, cwd=path_repository)
-	generic_display_error(return_value, "get_tags", error_only=True)
+	multiprocess.generic_display_error(return_value, "get_tags", error_only=True)
 	return return_value[1].split('\n')
 
 def get_tags_remote(path_repository, remote_name):
@@ -190,7 +163,7 @@ def get_tags_remote(path_repository, remote_name):
 	cmd = "git ls-remote --tags " + remote_name
 	debug.verbose("execute : " + cmd)
 	return_value = multiprocess.run_command(cmd, cwd=path_repository)
-	generic_display_error(return_value, "get_tags_remote", error_only=True)
+	multiprocess.generic_display_error(return_value, "get_tags_remote", error_only=True)
 	list_element = return_value[1].split('\n')
 	debug.verbose(" receive: " + str(list_element))
 	#6bc01117e85d00686ae2d423193a161e82df9a44	refs/tags/0.1.0
@@ -231,7 +204,7 @@ def merge_branch_on_master(path_repository, branch_name):
 	debug.verbose("execute : " + cmd)
 	# TODO: check if the command work correctly
 	return_value = multiprocess.run_command(cmd, cwd=path_repository)
-	generic_display_error(return_value, "merge_branch_on_master", error_only=True)
+	multiprocess.generic_display_error(return_value, "merge_branch_on_master", error_only=True)
 	return return_value
 
 
@@ -242,7 +215,7 @@ def add_file(path_repository, file_path):
 	debug.verbose("execute : " + cmd)
 	# TODO: check if the command work correctly
 	return_value = multiprocess.run_command(cmd, cwd=path_repository)
-	generic_display_error(return_value, "add_file", error_only=True)
+	multiprocess.generic_display_error(return_value, "add_file", error_only=True)
 	return return_value
 
 
@@ -253,7 +226,7 @@ def commit_all(path_repository, comment):
 	debug.verbose("execute : " + cmd)
 	# TODO: check if the command work correctly
 	return_value = multiprocess.run_command(cmd, cwd=path_repository)
-	generic_display_error(return_value, "commit_all", error_only=True)
+	multiprocess.generic_display_error(return_value, "commit_all", error_only=True)
 	return return_value
 
 def tag(path_repository, tag_name):
@@ -264,7 +237,7 @@ def tag(path_repository, tag_name):
 	debug.verbose("execute : " + cmd)
 	# TODO: check if the command work correctly
 	return_value = multiprocess.run_command(cmd, cwd=path_repository)
-	generic_display_error(return_value, "tag", error_only=True)
+	multiprocess.generic_display_error(return_value, "tag", error_only=True)
 	return return_value
 
 def checkout(path_repository, branch_name):
@@ -274,7 +247,7 @@ def checkout(path_repository, branch_name):
 	debug.verbose("execute : " + cmd)
 	# TODO: check if the command work correctly
 	return_value = multiprocess.run_command(cmd, cwd=path_repository)
-	generic_display_error(return_value, "checkout", error_only=True)
+	multiprocess.generic_display_error(return_value, "checkout", error_only=True)
 	return return_value
 
 def reset_hard(path_repository, destination):
@@ -284,7 +257,7 @@ def reset_hard(path_repository, destination):
 	debug.verbose("execute : " + cmd)
 	# TODO: check if the command work correctly
 	return_value = multiprocess.run_command(cmd, cwd=path_repository)
-	generic_display_error(return_value, "reset_hard", error_only=True)
+	multiprocess.generic_display_error(return_value, "reset_hard", error_only=True)
 	return return_value
 
 def rebase(path_repository, destination):
@@ -294,7 +267,7 @@ def rebase(path_repository, destination):
 	debug.verbose("execute : " + cmd)
 	# TODO: check if the command work correctly
 	return_value = multiprocess.run_command(cmd, cwd=path_repository)
-	generic_display_error(return_value, "rebase", error_only=True)
+	multiprocess.generic_display_error(return_value, "rebase", error_only=True)
 	return return_value
 
 
@@ -313,7 +286,7 @@ def clone(path_repository, address, branch_name = None, origin=None):
 		debug.warning("Can not clone repository path already exist")
 		return False
 	return_value = multiprocess.run_command(cmd)
-	generic_display_error(return_value, "clone", error_only=True)
+	multiprocess.generic_display_error(return_value, "clone", error_only=True)
 	return return_value
 
 
@@ -323,7 +296,7 @@ def fetch(path_repository, remote_name, prune=True):
 		cmd += " --prune"
 	debug.verbose("execute : " + cmd)
 	return_value = multiprocess.run_command(cmd, cwd=path_repository)
-	generic_display_error(return_value, "fetch")
+	multiprocess.generic_display_error(return_value, "fetch")
 	return return_value
 
 def pull(path_repository, remote_name, prune=True):
@@ -334,7 +307,7 @@ def pull(path_repository, remote_name, prune=True):
 		cmd += " --prune"
 	debug.verbose("execute : " + cmd)
 	return_value = multiprocess.run_command(cmd, cwd=path_repository)
-	generic_display_error(return_value, "pull")
+	multiprocess.generic_display_error(return_value, "pull")
 	return return_value
 
 def push(path_repository, remote_name, elements):
@@ -347,7 +320,7 @@ def push(path_repository, remote_name, elements):
 		cmd += " " + elem
 	debug.verbose("execute : " + cmd)
 	return_value = multiprocess.run_command(cmd, cwd=path_repository)
-	generic_display_error(return_value, "push")
+	multiprocess.generic_display_error(return_value, "push")
 	return return_value
 
 
@@ -355,7 +328,7 @@ def submodule_sync(path_repository, remote_name):
 	cmd = "git submodule sync"
 	debug.verbose("execute : " + cmd)
 	return_value = multiprocess.run_command(cmd, cwd=path_repository)
-	generic_display_error(return_value, "submodule_sync")
+	multiprocess.generic_display_error(return_value, "submodule_sync")
 	"""
 	if ret[:31] == "Synchronizing submodule url for":
 		#all is good ...

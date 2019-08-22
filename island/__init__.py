@@ -23,37 +23,17 @@ is_init = False
 
 debug.set_display_on_error("    ==========================\n    ==  Some error occured  ==\n    ==========================")
 
-def filter_name_and_file(root, list_files, filter):
-	# filter elements:
-	tmp_list = fnmatch.filter(list_files, filter)
-	out = []
-	for elem in tmp_list:
-		if os.path.isfile(os.path.join(root, elem)) == True:
-			out.append(elem);
-	return out;
-
-def import_path_local(path):
-	out = []
-	debug.verbose("island files: " + str(path) + " [START]")
-	list_files = os.listdir(path)
-	# filter elements:
-	tmp_list_island_file = filter_name_and_file(path, list_files, env.get_system_base_name() + "*.py")
-	debug.verbose("island files: " + str(path) + " : " + str(tmp_list_island_file))
-	# Import the module:
-	for filename in tmp_list_island_file:
-		out.append(os.path.join(path, filename))
-		debug.verbose("     Find a file : '" + str(out[-1]) + "'")
-	return out
-
 
 def init():
 	global is_init;
 	if is_init == True:
 		return
-	list_of_island_files = import_path_local(os.path.join(tools.get_current_path(__file__), 'actions'))
-	
+	# import local island files
+	list_of_island_files = tools.import_path_local(os.path.join(tools.get_current_path(__file__), 'actions'), base_name = env.get_system_base_name() + "*.py")
 	actions.init(list_of_island_files)
-	
+	# import project actions files
+	list_of_island_files = tools.import_path_local(env.get_island_root_path(), 2, [".island", ".git", "archive"], base_name = env.get_system_base_name() + "*.py")
+	actions.init(list_of_island_files)
 	is_init = True
 
 # initialize the system ...

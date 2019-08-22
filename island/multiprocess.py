@@ -21,6 +21,33 @@ from . import tools
 from . import env
 
 
+def generic_display_error(return_value, type_name, error_only=False, availlable_return=[0], display_if_nothing=True):
+	debug.verbose(str(return_value))
+	if return_value[0] in availlable_return:
+		if error_only == True:
+			return
+		display = False
+		if return_value[1] != "":
+			debug.info(return_value[1])
+			display = True
+		if return_value[2] != "":
+			debug.warning(return_value[2])
+			display = True
+		if display_if_nothing == False:
+			return
+		if display == False:
+			debug.verbose("GIT(" + type_name + "): All done OK")
+	else:
+		display = False
+		if return_value[1] != "":
+			debug.warning("ERROR GIT(" + type_name + ") 1:" + return_value[1])
+			display = True
+		if return_value[2] != "":
+			debug.warning("ERROR GIT(" + type_name + ") 2:" + return_value[2])
+			display = True
+		if display == False:
+			debug.warning("ERROR GIT(" + type_name + "): Unknow error return_value=" + str(return_value[0]))
+
 def run_command_direct_shell(cmd_line, cwd=None, shell=False):
 	# prepare command line:
 	args = shlex.split(cmd_line)

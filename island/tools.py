@@ -48,6 +48,12 @@ def get_list_sub_path(path):
 		return dirnames
 	return []
 
+def get_list_sub_files(path):
+	# TODO : os.listdir(path)
+	for dirname, dirnames, filenames in os.walk(path):
+		return filenames
+	return []
+
 def remove_path_and_sub_path(path):
 	if os.path.isdir(path):
 		debug.verbose("remove path : '" + path + "'")
@@ -111,9 +117,10 @@ def version_string_to_list(version):
 ##
 def file_write_data(path, data, only_if_new=False):
 	if only_if_new == True:
-		old_data = file_read_data(path)
-		if old_data == data:
-			return False
+		if os.path.exists(path) == True:
+			old_data = file_read_data(path)
+			if old_data == data:
+				return False
 	#real write of data:
 	create_directory_of_file(path)
 	file = open(path, "w")
@@ -309,3 +316,58 @@ def wait_for_server_if_needed():
 
 
 
+
+def filter_name_and_file(root, list_files, filter):
+	# filter elements:
+	tmp_list = fnmatch.filter(list_files, filter)
+	out = []
+	for elem in tmp_list:
+		if os.path.isfile(os.path.join(root, elem)) == True:
+			out.append(elem);
+	return out;
+
+def filter_name(list_files, filter):
+	# filter elements:
+	return fnmatch.filter(list_files, filter)
+
+def exclude_list(list_elements, filter):
+	out = []
+	for elem in list_elements:
+		if elem not in filter:
+			out.append(elem)
+	return out
+
+def import_path_local(path, limit_sub_folder = 1, exclude_path = [], base_name = "*"):
+	out = []
+	debug.debug("island files: " + str(path) + " [START] " + str(limit_sub_folder))
+	if limit_sub_folder == 0:
+		debug.verbose("Subparsing limitation append ...")
+		return []
+	list_files = get_list_sub_files(path)
+	# filter elements:
+	debug.debug("island files: " + str(path) + " : " + str(list_files))
+	tmp_list_island_file = filter_name_and_file(path, list_files, base_name)
+	debug.debug("island files (filtered): " + str(path) + " : " + str(tmp_list_island_file))
+	# Import the module:
+	for filename in tmp_list_island_file:
+		out.append(os.path.join(path, filename))
+		debug.debug("     Find a file : '" + str(out[-1]) + "'")
+	list_folders_full = get_list_sub_path(path)
+	list_folders = []
+	for elem in list_folders_full:
+		if elem in exclude_path:
+			debug.verbose("find '" + str(elem) + "' in exclude_path=" + str(exclude_path))
+			continue
+		list_folders.append(os.path.join(path,elem))
+	# check if we need to parse sub_folder
+	if len(list_folders) != 0:
+		debug.debug("     Find a folder : " + str(list_folders))
+		for folder in list_folders:
+			tmp_out = import_path_local(folder,
+			                            limit_sub_folder - 1,
+			                            exclude_path,
+			                            base_name)
+			# add all the elements:
+			for elem in tmp_out:
+				out.append(elem)
+	return out

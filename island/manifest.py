@@ -254,7 +254,7 @@ class Manifest():
 				    "source":source,
 				    "destination":destination,
 				    })
-				debug.warning("Add link: '" + str(destination) + "' ==> '" + str(source) + "'")
+				debug.debug("Add link: '" + str(destination) + "' ==> '" + str(source) + "'")
 				continue
 			debug.info("(l:" + str(child.sourceline) + ")     '" + str(child.tag) + "' values=" + str(child.attrib));
 			debug.error("(l:" + str(child.sourceline) + ") Parsing error Unknow NODE : '" + str(child.tag) + "' availlable:[remote,include,default,project,option,link]")

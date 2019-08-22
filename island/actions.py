@@ -21,8 +21,9 @@ __base_action_name = env.get_system_base_name() + "Action_"
 
 def init(files):
 	global list_actions;
-	debug.debug("List of action for island: ")
+	debug.verbose("List of action for island: " + str(len(files)))
 	for elem_path in files :
+		debug.verbose("parse file : " + elem_path)
 		base_name = os.path.basename(elem_path)
 		if len(base_name) <= 3 + len(__base_action_name):
 			# reject it, too small

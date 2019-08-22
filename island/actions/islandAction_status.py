@@ -72,9 +72,17 @@ def execute(_arguments):
 	all_project = mani.get_all_configs()
 	debug.info("status of: " + str(len(all_project)) + " projects")
 	id_element = 0
+	
 	for elem in all_project:
 		id_element += 1
 		base_display = tools.get_list_base_display(id_element, len(all_project), elem)
+		display_status(elem, argument_remote_name, argument_display_tag, id_element, base_display)
+	
+	
+	
+
+
+def display_status(elem, argument_remote_name, argument_display_tag, id_element, base_display):
 		volatile = ""
 		if elem.volatile == True:
 			volatile = " (volatile)"
@@ -83,7 +91,7 @@ def execute(_arguments):
 		git_repo_path = os.path.join(env.get_island_root_path(), elem.path)
 		if os.path.exists(git_repo_path) == False:
 			debug.info(base_display + volatile + "\r\t\t\t\t\t\t\t\t\t" + "     (not download)")
-			continue
+			return
 		
 		is_modify = commands.check_repository_is_modify(git_repo_path)
 		list_branch = commands.get_list_branch_all(git_repo_path)
@@ -93,7 +101,7 @@ def execute(_arguments):
 		tracking_remote_branch = commands.get_tracking_branch(git_repo_path, argument_remote_name, select_branch)
 		if tracking_remote_branch == None:
 			debug.info(base_display + volatile + "\r\t\t\t\t\t\t\t     (NO BRANCH)")
-			continue
+			return
 		
 		modify_status = "     "
 		if is_modify == True:
