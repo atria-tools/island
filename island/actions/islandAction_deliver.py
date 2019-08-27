@@ -101,7 +101,8 @@ def execute(_arguments):
 		# create new repo tag
 		new_version_description = status.create_new_version_repo(git_repo_path, version_description, add_in_version_management, source_branch, destination_branch)
 		debug.info("new version: " + str(new_version_description))
-		
+		if new_version_description == None:
+			continue
 		# merge branch
 		if mani.deliver_mode == "merge":
 			merge_force = True
