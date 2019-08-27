@@ -140,3 +140,8 @@ ret_action_is_not_existing = -10
 ret_action_executing_system_error = -11
 ret_action_wrong_parameters = -12
 ret_action_partial_done = -13
+ret_action_fail = -14
+
+ret_action_need_updtate = 15
+
+
