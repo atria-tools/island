@@ -45,6 +45,8 @@ def add_specific_arguments(_my_args, _section):
 ##
 def execute(_arguments):
 	argument_remote_name = ""
+	destination_branch = "master"
+	source_branch = "develop"
 	for elem in _arguments:
 		debug.error("Wrong argument: '" + elem.get_option_name() + "' '" + elem.get_arg() + "'")
 	
@@ -67,7 +69,7 @@ def execute(_arguments):
 		id_element += 1
 		base_display = tools.get_list_base_display(id_element, len(all_project), elem)
 		debug.verbose("deliver-ckeck: " + base_display)
-		if deliver_check(elem, argument_remote_name, id_element, base_display) == False:
+		if status.deliver_check(elem, argument_remote_name, id_element, base_display, source_branch, destination_branch) == False:
 			deliver_availlable = False
 	if deliver_availlable == False:
 		debug.error("deliver-ckeck: Correct the warning to validate the Merge")
