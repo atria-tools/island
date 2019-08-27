@@ -148,7 +148,11 @@ def get_tags_current(path_repository):
 	debug.verbose("execute : " + cmd)
 	return_value = multiprocess.run_command(cmd, cwd=path_repository)
 	multiprocess.generic_display_error(return_value, "get_tags_current", error_only=True)
-	return return_value[1].split('\n')
+	list_tags = []
+	for elem in return_value[1].split('\n'):
+		if elem != "":
+			list_tags.append(elem)
+	return list_tags
 
 def get_tags(path_repository):
 	cmd = "git tag"
