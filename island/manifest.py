@@ -13,27 +13,14 @@ import os
 import copy
 # Local import
 from realog import debug
+from . import repo_config
+from . import link_config
 from . import tools
 from . import env
 from . import multiprocess
 from . import config
 
 from lxml import etree
-
-class RepoConfig():
-	def __init__(self):
-		self.name = ""
-		self.path = ""
-		self.remotes = [] # list of all remotes, with the upstream elements (needed for third party integrations)
-		self.select_remote = ""
-		self.branch = ""
-		self.volatile = False
-
-class LinkConfig():
-	def __init__(self):
-		self.source = ""
-		self.destination = ""
-		
 
 def is_lutin_init():
 	if os.path.exists(env.get_island_path()) == False:
@@ -300,7 +287,7 @@ class Manifest():
 			if env.need_process_with_filter(elem["name"]) == False:
 				debug.info("Filter repository: " + str(elem["name"]))
 				continue
-			conf = RepoConfig()
+			conf = repo_config.RepoConfig()
 			conf.name = elem["name"]
 			conf.path = self._create_path_with_elem(elem)
 			
@@ -354,8 +341,8 @@ class Manifest():
 		# TODO: maybe find a better way to do this...
 		conf_global = config.Config()
 		for elem in conf_global.get_volatile():
-			conf = RepoConfig()
-			base_volatile, repo_volatile = split_repo(elem["git_address"])
+			conf = repo_config.RepoConfig()
+			base_volatile, repo_volatile = repo_config.split_repo(elem["git_address"])
 			conf.name = repo_volatile
 			conf.path = elem["path"]
 			conf.branch = "master"
@@ -386,26 +373,3 @@ class Manifest():
 		return out
 
 
-def split_repo(git_repo):
-	debug.verbose("parse git repo in RAW: " + str(git_repo))
-	if     len(git_repo) > 4 \
-	   and git_repo[:4] == "http":
-		# http://wdfqsdfqs@qsdfqsdf/qsdfqsdf/qsdfqsdf/qsdfqs.git find the 3rd '/' and cut at this point
-		elements = git_repo.split('/')
-		if len(elements) < 4:
-			debug.error("Can not parse the git repository : '" + str(git_repo) + "' wrong format http?://xxx@xxx.xxx/****")
-		base = elements[0] + "/" + elements[1] + "/" + elements[2]
-		repo = git_repo[len(base)+1:]
-	elif     len(git_repo) > 3 \
-	     and git_repo[:3] == "git":
-		# git@qsdfqsdf:qsdfqsdf/qsdfqsdf/qsdfqs.git find the 1st ':' and cut at this point
-		elements = git_repo.split(':')
-		if len(elements) < 2:
-			debug.error("Can not parse the git repository : '" + str(git_repo) + "' wrong format git@xxx.xxx:****")
-		base = elements[0]
-		repo = git_repo[len(base)+1:]
-	else:
-		debug.error("Can not parse the git repository : '" + str(git_repo) + "' does not start with ['http', 'git']")
-	debug.verbose("    base: " + str(base))
-	debug.verbose("    repo: " + str(repo))
-	return (base, repo)
