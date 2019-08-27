@@ -341,6 +341,22 @@ def create_new_version_repo(git_repo_path, version_description, add_in_version_m
 			valid = True
 		else:
 			debug.info("!!! Must select in range " + str(["1", "2", "3", "4"]))
+	# limit and force at 3 the nuber of variables
+	version_description_tmp = version_description
+	version_description = []
+	if len(version_description_tmp) >= 1:
+		version_description.append(version_description_tmp[0])
+	else:
+		version_description.append(0)
+	if len(version_description_tmp) >= 2:
+		version_description.append(version_description_tmp[1])
+	else:
+		version_description.append(0)
+	if len(version_description_tmp) >= 3:
+		version_description.append(version_description_tmp[2])
+	else:
+		version_description.append(0)
+	# increment the version
 	if input1 == "1":
 		version_description[0] += 1
 		version_description[1] = 0

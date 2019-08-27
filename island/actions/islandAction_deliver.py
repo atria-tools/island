@@ -96,7 +96,7 @@ def execute(_arguments):
 		select_branch = commands.get_current_branch(git_repo_path)
 		
 		# create new repo tag
-		new_version_description = status.create_new_version_repo(git_repo_path, version_description, select_branch)
+		new_version_description = status.create_new_version_repo(git_repo_path, version_description, add_in_version_management, source_branch, destination_branch)
 		debug.info("new version: " + str(version_description))
 		
 		# merge branch
