@@ -201,10 +201,13 @@ def get_tracking_branch(path_repository, remote_name, select_branch):
 	return remote_name + "/" + select_branch
 
 
-def merge_branch_on_master(path_repository, branch_name):
+def merge_branch_on_master(path_repository, branch_name, merge_force=True, branch_destination = "master"):
 	if branch_name == None or branch_name == "":
 		raise "Missing branch name"
-	cmd = "git merge --no-ff " + branch_name + " --message \"Merge branch '" + branch_name + "' into 'master'\""
+	cmd = "git merge "
+	if merge_force == True:
+		cmd += "--no-ff "
+	cmd += branch_name + " --message \"Merge branch '" + branch_name + "' into '" + branch_destination + "'\""
 	debug.verbose("execute : " + cmd)
 	# TODO: check if the command work correctly
 	return_value = multiprocess.run_command(cmd, cwd=path_repository)
