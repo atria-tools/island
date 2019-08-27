@@ -106,6 +106,7 @@ def execute(_arguments):
 			merge_force = False
 		commands.merge_branch_on_master(git_repo_path, source_branch, merge_force, branch_destination=destination_branch)
 		
+		version_path_file = os.path.join(git_repo_path, "version.txt")
 		# update version file:
 		tools.file_write_data(version_path_file, tools.version_to_string(version_description))
 		commands.add_file(git_repo_path, version_path_file)
