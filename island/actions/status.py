@@ -356,6 +356,7 @@ def create_new_version_repo(git_repo_path, version_description, add_in_version_m
 		version_description.append(version_description_tmp[2])
 	else:
 		version_description.append(0)
+	debug.info("update version: curent: " + str(version_description))
 	# increment the version
 	if input1 == "1":
 		version_description[0] += 1
@@ -372,6 +373,7 @@ def create_new_version_repo(git_repo_path, version_description, add_in_version_m
 	else:
 		debug.warning("An error occured for this repository")
 		return None
+	debug.info("update version: curent: " + str(version_description))
 	return version_description
 
 

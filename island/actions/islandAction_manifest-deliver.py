@@ -98,13 +98,10 @@ def execute(_arguments):
 	# go to the dev branch
 	select_branch = commands.get_current_branch(git_repo_path)
 	
-	# Checkout destination branch:
-	commands.checkout(git_repo_path, destination_branch)
-	
 	
 	# create new repo tag
 	new_version_description = status.create_new_version_repo(git_repo_path, version_description, add_in_version_management, source_branch, destination_branch)
-	debug.info("new version: " + str(version_description))
+	debug.info("new version: " + str(new_version_description))
 	
 	# merge branch
 	commands.checkout(git_repo_path, destination_branch)
@@ -118,15 +115,15 @@ def execute(_arguments):
 	
 	version_path_file = os.path.join(git_repo_path, "version.txt")
 	# update version file:
-	tools.file_write_data(version_path_file, tools.version_to_string(version_description))
+	tools.file_write_data(version_path_file, tools.version_to_string(new_version_description))
 	commands.add_file(git_repo_path, version_path_file)
-	commands.commit_all(git_repo_path, "[RELEASE] Release v" + tools.version_to_string(version_description))
-	commands.tag(git_repo_path, "v" + tools.version_to_string(version_description))
+	commands.commit_all(git_repo_path, "[RELEASE] Release v" + tools.version_to_string(new_version_description))
+	commands.tag(git_repo_path, "v" + tools.version_to_string(new_version_description))
 	commands.checkout(git_repo_path, source_branch)
 	commands.reset_hard(git_repo_path, destination_branch)
-	version_description.append("dev")
+	new_version_description.append("dev")
 	manifest.tag_clear(file_source_manifest);
-	tools.file_write_data(version_path_file, tools.version_to_string(version_description))
+	tools.file_write_data(version_path_file, tools.version_to_string(new_version_description))
 	commands.add_file(git_repo_path, version_path_file)
 	commands.commit_all(git_repo_path, status.default_update_message)
 	commands.checkout(git_repo_path, destination_branch)
