@@ -54,6 +54,8 @@ class Manifest():
 		self.remotes = []
 		self.includes = []
 		self.links = []
+		self.deliver_master = "master"
+		self.deliver_develop = "develop"
 		# load the manifest
 		self._load()
 		# check error in manifest (double path ...)
@@ -225,6 +227,21 @@ class Manifest():
 				continue
 			if child.tag == "option":
 				# not managed ==> future use
+				type_option = ""
+				value_option = ""
+				for attr in child.attrib:
+					if attr == "type":
+						type_option = child.attrib[attr]
+					elif attr == "value":
+						value_option = child.attrib[attr]
+					else:
+						debug.error("(l:" + str(child.sourceline) + ") Parsing the manifest: Unknow '" + child.tag + "'  attibute : '" + attr + "', availlable:[type,value]")
+				if type_option == "deliver_master":
+					self.deliver_master = value_option
+				elif type_option == "deliver_develop":
+					self.deliver_develop = value_option
+				else:
+					debug.error("(l:" + str(child.sourceline) + ") Parsing the manifest: Unknow 'type' value availlable: [deliver_master,deliver_develop]")
 				continue
 			if child.tag == "link":
 				# not managed ==> future use
