@@ -45,8 +45,6 @@ def add_specific_arguments(_my_args, _section):
 ##
 def execute(_arguments):
 	argument_remote_name = ""
-	destination_branch = "master"
-	source_branch = "develop"
 	for elem in _arguments:
 		debug.error("Wrong argument: '" + elem.get_option_name() + "' '" + elem.get_arg() + "'")
 	
@@ -60,6 +58,10 @@ def execute(_arguments):
 		debug.error("Missing manifest file : '" + str(file_source_manifest) + "'")
 	
 	mani = manifest.Manifest(file_source_manifest)
+	
+	destination_branch = mani.deliver_master
+	source_branch = mani.deliver_develop
+	
 	
 	all_project = mani.get_all_configs()
 	debug.info("Check if all project are on master: " + str(len(all_project)) + " projects")

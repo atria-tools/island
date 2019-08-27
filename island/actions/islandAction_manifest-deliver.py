@@ -48,8 +48,6 @@ def add_specific_arguments(my_args, section):
 ##
 def execute(_arguments):
 	argument_remote_name = ""
-	destination_branch = "master"
-	source_branch = "develop"
 	for elem in _arguments:
 		debug.error("pull Wrong argument: '" + elem.get_option_name() + "' '" + elem.get_arg() + "'")
 	
@@ -62,8 +60,12 @@ def execute(_arguments):
 	if os.path.exists(file_source_manifest) == False:
 		debug.error("Missing manifest file : '" + str(file_source_manifest) + "'")
 	
-	
 	elem = configuration.get_manifest_config()
+	
+	mani = manifest.Manifest(file_source_manifest)
+	
+	destination_branch = mani.deliver_master
+	source_branch = mani.deliver_develop
 	
 	# Check the manifest is up to date ...
 	base_display = tools.get_list_base_display(0, 0, elem)
@@ -72,7 +74,6 @@ def execute(_arguments):
 		debug.error("Can not deliver a MANIFEST that is not ready to merge", crash=False)
 		return env.ret_action_fail
 	
-	mani = manifest.Manifest(file_source_manifest)
 	
 	all_tags = check_all_tags(mani)
 	if all_tags == None:

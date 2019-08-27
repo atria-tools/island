@@ -62,6 +62,11 @@ def execute(_arguments):
 	# Check the manifest is up to date ...
 	base_display = tools.get_list_base_display(0, 0, elem)
 	
-	status.deliver_push(elem, "origin", "master", "develop", base_display)
+	mani = manifest.Manifest(file_source_manifest)
+	
+	destination_branch = mani.deliver_master
+	source_branch = mani.deliver_develop
+	
+	status.deliver_push(elem, "origin", destination_branch, source_branch, base_display)
 
 

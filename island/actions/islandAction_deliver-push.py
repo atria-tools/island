@@ -44,8 +44,6 @@ def add_specific_arguments(my_args, section):
 ##
 def execute(_arguments):
 	argument_remote_name = ""
-	destination_branch = "master"
-	source_branch = "develop"
 	for elem in _arguments:
 		if elem.get_option_name() == "remote":
 			debug.info("find remote name: '" + elem.get_arg() + "'")
@@ -56,13 +54,15 @@ def execute(_arguments):
 	# check system is OK
 	manifest.check_lutin_is_init()
 	
-	
 	configuration = config.get_unique_config()
 	
 	file_source_manifest = os.path.join(env.get_island_path_manifest(), configuration.get_manifest_name())
 	if os.path.exists(file_source_manifest) == False:
 		debug.error("Missing manifest file : '" + str(file_source_manifest) + "'")
 	mani = manifest.Manifest(file_source_manifest)
+	
+	destination_branch = mani.deliver_master
+	source_branch = mani.deliver_develop
 	
 	all_project = mani.get_all_configs()
 	debug.info("fetch : " + str(len(all_project)) + " projects")
