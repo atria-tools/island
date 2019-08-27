@@ -56,6 +56,7 @@ class Manifest():
 		self.links = []
 		self.deliver_master = "master"
 		self.deliver_develop = "develop"
+		self.deliver_mode = "merge"
 		# load the manifest
 		self._load()
 		# check error in manifest (double path ...)
@@ -240,8 +241,12 @@ class Manifest():
 					self.deliver_master = value_option
 				elif type_option == "deliver_develop":
 					self.deliver_develop = value_option
+				elif type_option == "deliver_mode":
+					self.deliver_mode = value_option
+					if self.deliver_mode not in ["merge","fast_forward"]:
+						debug.error("(l:" + str(child.sourceline) + ") Parsing the manifest: option 'deliver_mode' value availlable: [merge,fast_forward]")
 				else:
-					debug.error("(l:" + str(child.sourceline) + ") Parsing the manifest: Unknow 'type' value availlable: [deliver_master,deliver_develop]")
+					debug.error("(l:" + str(child.sourceline) + ") Parsing the manifest: Unknow 'type' value availlable: [deliver_master,deliver_develop,deliver_mode]")
 				continue
 			if child.tag == "link":
 				# not managed ==> future use
