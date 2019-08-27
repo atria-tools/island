@@ -108,7 +108,11 @@ def execute(_arguments):
 	
 	# merge branch
 	commands.checkout(git_repo_path, destination_branch)
-	commands.merge_branch_on_master(git_repo_path, source_branch)
+	if mani.deliver_mode == "merge":
+		merge_force = True
+	else:
+		merge_force = False
+	commands.merge_branch_on_master(git_repo_path, source_branch, merge_force, branch_destination=destination_branch)
 	
 	manifest.tag_manifest(file_source_manifest, all_tags);
 	
@@ -118,14 +122,14 @@ def execute(_arguments):
 	commands.add_file(git_repo_path, version_path_file)
 	commands.commit_all(git_repo_path, "[RELEASE] Release v" + tools.version_to_string(version_description))
 	commands.tag(git_repo_path, "v" + tools.version_to_string(version_description))
-	commands.checkout(git_repo_path, "develop")
-	commands.reset_hard(git_repo_path, "master")
+	commands.checkout(git_repo_path, source_branch)
+	commands.reset_hard(git_repo_path, destination_branch)
 	version_description.append("dev")
 	manifest.tag_clear(file_source_manifest);
 	tools.file_write_data(version_path_file, tools.version_to_string(version_description))
 	commands.add_file(git_repo_path, version_path_file)
 	commands.commit_all(git_repo_path, status.default_update_message)
-	commands.checkout(git_repo_path, "master")
+	commands.checkout(git_repo_path, destination_branch)
 	
 	
 	debug.info("manifest-deliver: ==> DONE")
