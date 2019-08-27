@@ -213,8 +213,9 @@ if     action_to_do != "init" \
 	exit(-1)
 
 
-actions.execute(action_to_do, my_args.get_last_parsed()+1)
+ret = actions.execute(action_to_do, my_args.get_last_parsed()+1)
 
+exit (ret)
 # stop all started threads;
 #multiprocess.un_init()
 

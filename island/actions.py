@@ -131,9 +131,10 @@ def execute(action_name, argument_start_id):
 		ret = the_action.execute(my_under_args)
 		if ret == None:
 			return 0
-		debug.info("    ==========================")
-		debug.info("    ==  Some error occured  ==")
-		debug.info("    ==========================")
+		if ret < 0:
+			debug.info("    ==========================")
+			debug.info("    ==  Some error occured  ==")
+			debug.info("    ==========================")
 		return ret
 	debug.error("Can not do the action...")
 	return -10
