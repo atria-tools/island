@@ -378,3 +378,118 @@ class Manifest():
 		return out
 
 
+def tag_manifest(manifest_xml_filename, all_tags):
+	tree = etree.parse(manifest_xml_filename)
+	debug.debug("manifest : '" + manifest_xml_filename + "'")
+	root = tree.getroot()
+	includes = []
+	if root.tag != "manifest":
+		debug.error("(l:" + str(child.sourceline) + ") in '" + str(file) + "' have not main xml node='manifest'")
+		return False
+	for child in root:
+		if type(child) == etree._Comment:
+			debug.verbose("(l:" + str(child.sourceline) + ")     comment='" + str(child.text) + "'");
+			continue
+		if child.tag == "remote":
+			continue
+		if child.tag == "include":
+			name = ""
+			for attr in child.attrib:
+				if attr == "name":
+					name = child.attrib[attr]
+				else:
+					debug.error("(l:" + str(child.sourceline) + ") Parsing the manifest : Unknow '" + child.tag + "'  attibute : '" + attr + "', availlable:[name]")
+			debug.debug("(l:" + str(child.sourceline) + ")     find '" + child.tag + "' : name='" + name + "'");
+			# check if the file exist ...
+			new_name_xml = os.path.join(os.path.dirname(manifest_xml_filename),name)
+			if os.path.exists(new_name_xml) == False:
+				debug.error("(l:" + str(child.sourceline) + ") The file does not exist : '" + new_name_xml + "'")
+			includes.append({
+			    "name":name,
+			    "path":new_name_xml,
+			    "manifest":None
+			    })
+			continue
+		if child.tag == "default":
+			continue
+		if child.tag == "project":
+			name = ""
+			path = ""
+			tag_sha1 = None
+			for attr in child.attrib:
+				if attr == "name":
+					name = child.attrib[attr]
+				elif attr == "path":
+					path = child.attrib[attr]
+				elif attr == "tag":
+					tag_sha1 = child.attrib[attr]
+				else:
+					debug.error("(l:" + str(child.sourceline) + ") Parsing the manifest: Unknow '" + child.tag + "'  attibute : '" + attr + "', availlable:[name,tag,sync-s]")
+			if name == "":
+				debug.error("(l:" + str(child.sourceline) + ") Parsing the manifest: '" + child.tag + "'  missing attribute: 'name' ==> specify the git to clone ...")
+			for elem_tag in all_tags:
+				if elem_tag["name"] == name:
+					child.set("tag", elem_tag["tag"])
+			continue
+		if child.tag == "option":
+			# not managed ==> future use
+			continue
+		if child.tag == "link":
+			continue
+		debug.info("(l:" + str(child.sourceline) + ")     '" + str(child.tag) + "' values=" + str(child.attrib));
+		debug.error("(l:" + str(child.sourceline) + ") Parsing error Unknow NODE : '" + str(child.tag) + "' availlable:[remote,include,default,project,option,link]")
+	tree.write(manifest_xml_filename, pretty_print=True, xml_declaration=True, encoding="utf-8")
+	# now we parse all sub repo:
+	for elem in includes:
+		tag_manifest(elem["path"], all_tags)
+
+
+
+def tag_clear(manifest_xml_filename):
+	tree = etree.parse(manifest_xml_filename)
+	debug.debug("manifest : '" + manifest_xml_filename + "'")
+	root = tree.getroot()
+	includes = []
+	if root.tag != "manifest":
+		debug.error("(l:" + str(child.sourceline) + ") in '" + str(file) + "' have not main xml node='manifest'")
+		return False
+	for child in root:
+		if type(child) == etree._Comment:
+			debug.verbose("(l:" + str(child.sourceline) + ")     comment='" + str(child.text) + "'");
+			continue
+		if child.tag == "remote":
+			continue
+		if child.tag == "include":
+			name = ""
+			for attr in child.attrib:
+				if attr == "name":
+					name = child.attrib[attr]
+				else:
+					debug.error("(l:" + str(child.sourceline) + ") Parsing the manifest : Unknow '" + child.tag + "'  attibute : '" + attr + "', availlable:[name]")
+			debug.debug("(l:" + str(child.sourceline) + ")     find '" + child.tag + "' : name='" + name + "'");
+			# check if the file exist ...
+			new_name_xml = os.path.join(os.path.dirname(manifest_xml_filename),name)
+			if os.path.exists(new_name_xml) == False:
+				debug.error("(l:" + str(child.sourceline) + ") The file does not exist : '" + new_name_xml + "'")
+			includes.append({
+			    "name":name,
+			    "path":new_name_xml,
+			    "manifest":None
+			    })
+			continue
+		if child.tag == "default":
+			continue
+		if child.tag == "project":
+			child.attrib.pop("tag", None)
+			continue
+		if child.tag == "option":
+			continue
+		if child.tag == "link":
+			continue
+		debug.info("(l:" + str(child.sourceline) + ")     '" + str(child.tag) + "' values=" + str(child.attrib));
+		debug.error("(l:" + str(child.sourceline) + ") Parsing error Unknow NODE : '" + str(child.tag) + "' availlable:[remote,include,default,project,option,link]")
+	tree.write(manifest_xml_filename, pretty_print=True, xml_declaration=True, encoding="utf-8")
+	# now we parse all sub repo:
+	for elem in includes:
+		tag_clear(elem["path"])
+	
