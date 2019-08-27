@@ -204,20 +204,24 @@ class Manifest():
 			if child.tag == "project":
 				name = ""
 				path = ""
+				tag_sha1 = None
 				for attr in child.attrib:
 					if attr == "name":
 						name = child.attrib[attr]
 					elif attr == "path":
 						path = child.attrib[attr]
+					elif attr == "tag":
+						tag_sha1 = child.attrib[attr]
 					else:
-						debug.error("(l:" + str(child.sourceline) + ") Parsing the manifest: Unknow '" + child.tag + "'  attibute : '" + attr + "', availlable:[name,revision,sync-s]")
+						debug.error("(l:" + str(child.sourceline) + ") Parsing the manifest: Unknow '" + child.tag + "'  attibute : '" + attr + "', availlable:[name,tag,sync-s]")
 				if name == "":
 					debug.error("(l:" + str(child.sourceline) + ") Parsing the manifest: '" + child.tag + "'  missing attribute: 'name' ==> specify the git to clone ...")
 				self.projects.append({
 				    "name":name,
 				    "path":path,
+				    "tag":tag_sha1,
 				    })
-				debug.debug("(l:" + str(child.sourceline) + ")     find '" + child.tag + "' : name='" + name + "' path='" + path + "'");
+				debug.debug("(l:" + str(child.sourceline) + ")     find '" + child.tag + "' : name='" + name + "' path='" + path + "' tag='" + str(tag_sha1) + "'");
 				continue
 			if child.tag == "option":
 				# not managed ==> future use
@@ -289,6 +293,7 @@ class Manifest():
 				continue
 			conf = repo_config.RepoConfig()
 			conf.name = elem["name"]
+			conf.tag = elem["tag"]
 			conf.path = self._create_path_with_elem(elem)
 			
 			# add default remote for the project (search in herited element)
@@ -339,7 +344,7 @@ class Manifest():
 		## -------------------------------------------------------------
 		debug.verbose("include volatile config")
 		# TODO: maybe find a better way to do this...
-		conf_global = config.Config()
+		conf_global = config.get_unique_config()
 		for elem in conf_global.get_volatile():
 			conf = repo_config.RepoConfig()
 			base_volatile, repo_volatile = repo_config.split_repo(elem["git_address"])

@@ -17,9 +17,17 @@ from realog import debug
 from . import tools
 from . import env
 from . import multiprocess
-
+from . import repo_config
 
 env.get_island_path_config()
+
+unique_config = None
+
+def get_unique_config():
+	global unique_config
+	if unique_config == None:
+		unique_config = Config()
+	return unique_config
 
 
 class Config():
@@ -153,3 +161,25 @@ class Config():
 		self._curent_link = []
 	
 	
+	def get_manifest_config(self):
+		conf = repo_config.RepoConfig()
+		base_volatile, repo_volatile = repo_config.split_repo(self.get_manifest())
+		conf.name = repo_volatile
+		conf.path = os.path.join("." + env.get_system_base_name(), "manifest") #env.get_island_path_manifest()
+		conf.branch = "master"
+		conf.volatile = False
+		conf.remotes = [
+			{
+				'name': 'origin',
+				'fetch': base_volatile,
+				'mirror': []
+			}
+			]
+		conf.select_remote = {
+				'name': 'origin',
+				'fetch': base_volatile,
+				'sync': False,
+				'mirror': []
+			}
+		return conf
+

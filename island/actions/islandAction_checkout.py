@@ -58,7 +58,7 @@ def execute(_arguments):
 	# check system is OK
 	manifest.check_lutin_is_init()
 	
-	configuration = config.Config()
+	configuration = config.get_unique_config()
 	
 	# update the local configuration file:
 	configuration.set_branch(branch_to_checkout)

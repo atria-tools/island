@@ -57,7 +57,7 @@ def execute(_arguments):
 	debug.info("fetch manifest : '" + str(env.get_island_path_manifest()) + "'")
 	commands.fetch(env.get_island_path_manifest(), "origin")
 	
-	configuration = config.Config()
+	configuration = config.get_unique_config()
 	file_source_manifest = os.path.join(env.get_island_path_manifest(), configuration.get_manifest_name())
 	if os.path.exists(file_source_manifest) == False:
 		debug.error("Missing manifest file : '" + str(file_source_manifest) + "'")

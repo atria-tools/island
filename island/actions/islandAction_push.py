@@ -30,8 +30,8 @@ def help():
 ## @param[in,out] my_args (death.Arguments) Argument manager
 ## @param[in] section Name of the currect action
 ##
-def add_specific_arguments(my_args, section):
-	my_args.add("r", "remote", haveParam=True, desc="Name of the remote server")
+def add_specific_arguments(_my_args, _section):
+	_my_args.add("r", "remote", haveParam=True, desc="Name of the remote server")
 
 ##
 ## @brief Execute the action required.
@@ -54,7 +54,7 @@ def execute(_arguments):
 	# check system is OK
 	manifest.check_lutin_is_init()
 	
-	configuration = config.Config()
+	configuration = config.get_unique_config()
 	
 	file_source_manifest = os.path.join(env.get_island_path_manifest(), configuration.get_manifest_name())
 	if os.path.exists(file_source_manifest) == False:

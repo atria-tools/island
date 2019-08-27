@@ -61,7 +61,7 @@ def execute(_arguments):
 	# check system is OK
 	manifest.check_lutin_is_init()
 	
-	configuration = config.Config()
+	configuration = config.get_unique_config()
 	
 	# TODO: Load Old manifect to check diff ...
 	
@@ -88,6 +88,8 @@ def execute(_arguments):
 		tools.wait_for_server_if_needed()
 		#debug.debug("elem : " + str(elem))
 		git_repo_path = os.path.join(env.get_island_root_path(), elem.path)
+		if elem.tag != None:
+			debug.warning("Need to select a specific tag version ... " + elem.tag)
 		if os.path.exists(git_repo_path) == False:
 			# this is a new clone ==> this is easy ...
 			#clone the manifest repository

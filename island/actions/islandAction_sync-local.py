@@ -57,7 +57,7 @@ def execute(_arguments):
 	# check system is OK
 	manifest.check_lutin_is_init()
 	
-	configuration = config.Config()
+	configuration = config.get_unique_config()
 	
 	debug.info("update manifest : '" + str(env.get_island_path_manifest()) + "'")
 	is_modify_manifest = commands.check_repository_is_modify(env.get_island_path_manifest())

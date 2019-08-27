@@ -78,7 +78,7 @@ def execute(_arguments):
 	# check if the git of the manifest if availlable
 	
 	# create the file configuration:
-	conf = config.Config()
+	conf = config.get_unique_config()
 	conf.set_manifest(address_manifest)
 	conf.set_branch(branch)
 	conf.set_manifest_name(manifest_name)

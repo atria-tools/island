@@ -42,7 +42,7 @@ def execute(_arguments):
 	# check system is OK
 	manifest.check_lutin_is_init()
 	
-	conf = config.Config()
+	conf = config.get_unique_config()
 	volatiles = conf.get_volatile()
 	debug.info("List of all volatiles repository: ")
 	for elem in volatiles:

@@ -75,7 +75,7 @@ def execute(_arguments):
 	manifest.check_lutin_is_init()
 	
 	# Update the current configuration:
-	conf = config.Config()
+	conf = config.get_unique_config()
 	# TODO: Check if the local path does not exist in the manifest
 	
 	if False == conf.add_volatile(address_git, path):
