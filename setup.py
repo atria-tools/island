@@ -36,9 +36,10 @@ setup(name='island',
       author_email='yui.heero@gmail.com',
       license='MPL-2',
       packages=['island',
-                'island/actions'],
+                'island/actions',
+                ],
       classifiers=[
-        'Development Status :: 2 - Pre-Alpha',
+        'Development Status :: 5 - Production/Stable',
         'License :: OSI Approved :: Mozilla Public License 2.0 (MPL 2.0)',
         'Programming Language :: Python',
         'Topic :: Software Development :: Build Tools'

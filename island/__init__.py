@@ -45,6 +45,7 @@ debug.verbose("List of actions: " + str(actions.get_list_of_action()))
 my_args = arguments.Arguments()
 my_args.add_section("option", "Can be set one time in all case")
 my_args.add("h", "help", desc="Display this help")
+my_args.add("",  "version", desc="Display the application version")
 my_args.add("v", "verbose", list=[
 								["0","None"],
 								["1","error"],
@@ -63,7 +64,7 @@ my_args.set_stop_at(actions.get_list_of_action())
 local_argument = my_args.parse()
 
 ##
-## @brief Display the help of this makefile.
+## @brief Display the help of this package.
 ##
 def usage():
 	color = debug.get_color_set()
@@ -86,6 +87,17 @@ def usage():
 	print("	ex: " + sys.argv[0] + " sync")
 	exit(0)
 
+##
+## @brief Display the version of this package.
+##
+def version():
+	color = debug.get_color_set()
+	import pkg_resources
+	print("version: " + str(pkg_resources.get_distribution('island').version))
+	foldername = os.path.dirname(__file__)
+	print("source folder is: " + foldername)
+	exit(0)
+
 def check_boolean(value):
 	if    value == "" \
 	   or value == "1" \
@@ -101,6 +113,10 @@ def parse_generic_arg(argument, active):
 	if argument.get_option_name() == "help":
 		if active == False:
 			usage()
+		return True
+	elif argument.get_option_name() == "version":
+		if active == False:
+			version()
 		return True
 	elif argument.get_option_name()=="jobs":
 		if active == True:
