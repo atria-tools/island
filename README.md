@@ -1,5 +1,5 @@
-Lutin
-=====
+Island
+=======
 
 `island` is a generic source downloader and syncronizer is a FREE software tool.
 
@@ -10,23 +10,7 @@ manifest and project with submodule. The simpl eexample is the atria-soft / gene
 github, gitlab, bitbucket and personal server.
 
 
-.. image:: https://badge.fury.io/py/island.png
-    :target: https://pypi.python.org/pypi/island
-
-Release (master)
-----------------
-
-.. image:: https://travis-ci.org/HeeroYui/island.svg?branch=master
-    :target: https://travis-ci.org/HeeroYui/island
-
-
-
-Developement (dev)
-------------------
-
-.. image:: https://travis-ci.org/HeeroYui/island.svg?branch=dev
-    :target: https://travis-ci.org/HeeroYui/island
-
+[![Badge](https://badge.fury.io/py/island.png](https://pypi.python.org/pypi/island)
 
 Instructions
 ------------
@@ -52,39 +36,50 @@ Installation
 Requirements: ``Python >= 2.7`` and ``pip``
 
 Just run:
-
-  pip install island
+```
+pip install island
+```
 
 Install pip on debian/ubuntu:
-
-  sudo apt-get install pip
+```
+sudo apt-get install pip
+```
 
 Install pip on ARCH-linux:
-
-  sudo pacman -S pip
+```
+sudo pacman -S pip
+```
 
 Install pip on MacOs:
-
-  sudo easy_install pip
+```
+sudo easy_install pip
+```
 
 Usage
 -----
 
 Select a manifest:
-
-  island init http://github.com/atria-soft/manifest.git
+```
+island init http://github.com/atria-soft/manifest.git
+```
 
 Download and synchronize the sources:
-
-  island sync
+```
+island sync
+```
 
 Select all branch availlable in the worktree: (checkout origin/dev in dev branch and track it, do nothing if the branch does not exist)
-
-  island checkout dev
+```
+island checkout dev
+```
 
 Show the status of the workspace
+```
+island status
+```
 
-  island status
+*Note: More information in ```island --help```
+
 
 TODO list
 ---------

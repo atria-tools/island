@@ -44,6 +44,7 @@ setup(name='island',
         'Programming Language :: Python',
         'Topic :: Software Development :: Build Tools'
       ],
+      long_description_content_type="text/markdown",
       keywords='source manager repo qisrc lutin',
       scripts=['bin/island'],
       # Does not work on MacOs
