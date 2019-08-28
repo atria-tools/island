@@ -246,7 +246,7 @@ class Manifest():
 					if self.deliver_mode not in ["merge","fast_forward"]:
 						debug.error("(l:" + str(child.sourceline) + ") Parsing the manifest: option 'deliver_mode' value availlable: [merge,fast_forward]")
 				else:
-					debug.error("(l:" + str(child.sourceline) + ") Parsing the manifest: Unknow 'type' value availlable: [deliver_master,deliver_develop,deliver_mode]")
+					debug.warning("(l:" + str(child.sourceline) + ") Parsing the manifest: Unknow 'type' value availlable: [deliver_master,deliver_develop,deliver_mode]")
 				continue
 			if child.tag == "link":
 				# not managed ==> future use
