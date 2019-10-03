@@ -32,7 +32,8 @@ def help():
 ## @param[in] section Name of the currect action
 ##
 def add_specific_arguments(_my_args, _section):
-	pass
+	_my_args.add("f", "from", haveParam=True, desc="source branche to deliver")
+	_my_args.add("t", "to", haveParam=True, desc="desticantion branche of the deliver")
 
 ##
 ## @brief Execute the action required.
@@ -44,9 +45,17 @@ def add_specific_arguments(_my_args, _section):
 ##         -12 : ACTION Wrong parameters
 ##
 def execute(_arguments):
-	argument_remote_name = ""
+	argument_from = None
+	argument_to = None
 	for elem in _arguments:
-		debug.error("Wrong argument: '" + elem.get_option_name() + "' '" + elem.get_arg() + "'")
+		if elem.get_option_name() == "from":
+			debug.info("find source branch name: '" + elem.get_arg() + "'")
+			argument_from = elem.get_arg()
+		elif elem.get_option_name() == "to":
+			debug.info("find destination branch name: '" + elem.get_arg() + "'")
+			argument_to = elem.get_arg()
+		else:
+			debug.error("Wrong argument: '" + elem.get_option_name() + "' '" + elem.get_arg() + "'")
 	
 	# check system is OK
 	manifest.check_lutin_is_init()
@@ -61,7 +70,10 @@ def execute(_arguments):
 	
 	destination_branch = mani.deliver_master
 	source_branch = mani.deliver_develop
-	
+	if argument_from != None:
+		source_branch = argument_from
+	if argument_to != None:
+		destination_branch = argument_to
 	
 	all_project = mani.get_all_configs()
 	debug.info("Check if all project are on master: " + str(len(all_project)) + " projects")
