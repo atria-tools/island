@@ -24,7 +24,7 @@ import os
 ## @return (string) the description string (fist line if reserved for the overview, all is for the specific display)
 ##
 def help():
-	return "Display status spécifically of the manifest"
+	return "Display specific status of the manifest"
 
 ##
 ## @brief Add argument to the specific action
@@ -59,5 +59,5 @@ def execute(_arguments):
 	elem = configuration.get_manifest_config()
 	base_display = tools.get_list_base_display(0, 0, elem)
 	ret = status.display_status(elem, argument_remote_name, argument_display_tag, 0, base_display)
-	if ret != None:
+	if ret != None and ret != 0:
 		return env.ret_action_need_updtate
