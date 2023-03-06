@@ -8,14 +8,18 @@
 ## @license MPL v2.0 (see license file)
 ##
 
-from realog import debug
-from island import tools
-from island import env
-from island import config
-from island import multiprocess
-from island import manifest
-from island import commands
 import os
+
+from realog import debug
+
+from island import (
+    commands,
+    config,
+    env,
+    manifest,
+    multiprocess,
+    tools,
+)
 
 
 ##
@@ -23,7 +27,8 @@ import os
 ## @return (string) the description string (fist line if reserved for the overview, all is for the specific display)
 ##
 def help():
-	return "Syncronize all the repository referenced"
+    return "Syncronize all the repository referenced"
+
 
 ##
 ## @brief Add argument to the specific action
@@ -31,7 +36,8 @@ def help():
 ## @param[in] section Name of the currect action
 ##
 def add_specific_arguments(my_args, section):
-	pass
+    pass
+
 
 ##
 ## @brief Execute the action required.
@@ -43,18 +49,25 @@ def add_specific_arguments(my_args, section):
 ##         -12 : ACTION Wrong parameters
 ##
 def execute(_arguments):
-	for elem in _arguments:
-		debug.error("pull Wrong argument: '" + elem.get_option_name() + "' '" + elem.get_arg() + "'")
-	
-	# check system is OK
-	manifest.check_lutin_is_init()
-	
-	configuration = config.get_unique_config()
-	
-	debug.info("update manifest : '" + str(env.get_island_path_manifest()) + "'")
-	is_modify_manifest = commands.check_repository_is_modify(env.get_island_path_manifest())
-	if is_modify_manifest == True:
-		commands.fetch(env.get_island_path_manifest(), "origin")
-	else:
-		commands.pull(env.get_island_path_manifest(), "origin")
-	
+    for elem in _arguments:
+        debug.error(
+            "pull Wrong argument: '"
+            + elem.get_option_name()
+            + "' '"
+            + elem.get_arg()
+            + "'"
+        )
+
+    # check system is OK
+    manifest.check_lutin_is_init()
+
+    configuration = config.get_unique_config()
+
+    debug.info("update manifest : '" + str(env.get_island_path_manifest()) + "'")
+    is_modify_manifest = commands.check_repository_is_modify(
+        env.get_island_path_manifest()
+    )
+    if is_modify_manifest == True:
+        commands.fetch(env.get_island_path_manifest(), "origin")
+    else:
+        commands.pull(env.get_island_path_manifest(), "origin")

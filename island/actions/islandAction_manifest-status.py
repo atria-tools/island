@@ -8,15 +8,19 @@
 ## @license MPL v2.0 (see license file)
 ##
 
-from realog import debug
-from island import tools
-from island import env
-from island import config
-from island import multiprocess
-from island import manifest
-from island import commands
-import status
 import os
+
+from realog import debug
+import status
+
+from island import (
+    commands,
+    config,
+    env,
+    manifest,
+    multiprocess,
+    tools,
+)
 
 
 ##
@@ -24,7 +28,8 @@ import os
 ## @return (string) the description string (fist line if reserved for the overview, all is for the specific display)
 ##
 def help():
-	return "Display status spécifically of the manifest"
+    return "Display status spécifically of the manifest"
+
 
 ##
 ## @brief Add argument to the specific action
@@ -32,7 +37,13 @@ def help():
 ## @param[in] section Name of the currect action
 ##
 def add_specific_arguments(_my_args, _section):
-	_my_args.add("t", "tags", haveParam=False, desc="Display if the commit is on a tag (and display it)")
+    _my_args.add(
+        "t",
+        "tags",
+        haveParam=False,
+        desc="Display if the commit is on a tag (and display it)",
+    )
+
 
 ##
 ## @brief Execute the action required.
@@ -44,20 +55,28 @@ def add_specific_arguments(_my_args, _section):
 ##         -12 : ACTION Wrong parameters
 ##
 def execute(_arguments):
-	argument_remote_name = ""
-	argument_display_tag = False
-	for elem in _arguments:
-		if elem.get_option_name() == "tags":
-			argument_display_tag = True
-		else:
-			debug.error("Wrong argument: '" + elem.get_option_name() + "' '" + elem.get_arg() + "'")
-	
-	# check system is OK
-	manifest.check_lutin_is_init()
-	
-	configuration = config.get_unique_config()
-	elem = configuration.get_manifest_config()
-	base_display = tools.get_list_base_display(0, 0, elem)
-	ret = status.display_status(elem, argument_remote_name, argument_display_tag, 0, base_display)
-	if ret != None:
-		return env.ret_action_need_updtate
+    argument_remote_name = ""
+    argument_display_tag = False
+    for elem in _arguments:
+        if elem.get_option_name() == "tags":
+            argument_display_tag = True
+        else:
+            debug.error(
+                "Wrong argument: '"
+                + elem.get_option_name()
+                + "' '"
+                + elem.get_arg()
+                + "'"
+            )
+
+    # check system is OK
+    manifest.check_lutin_is_init()
+
+    configuration = config.get_unique_config()
+    elem = configuration.get_manifest_config()
+    base_display = tools.get_list_base_display(0, 0, elem)
+    ret = status.display_status(
+        elem, argument_remote_name, argument_display_tag, 0, base_display
+    )
+    if ret != None:
+        return env.ret_action_need_updtate

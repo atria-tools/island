@@ -8,21 +8,27 @@
 ## @license MPL v2.0 (see license file)
 ##
 
-from realog import debug
-from island import tools
-from island import env
-from island import config
-from island import commands
-from island import multiprocess
-from island import manifest
 import os
+
+from realog import debug
+
+from island import (
+    commands,
+    config,
+    env,
+    manifest,
+    multiprocess,
+    tools,
+)
+
 
 ##
 ## @brief Get the global description of the current action
 ## @return (string) the description string (fist line if reserved for the overview, all is for the specific display)
 ##
 def help():
-	return "List all the volatil repository"
+    return "List all the volatil repository"
+
 
 ##
 ## @brief Execute the action required.
@@ -36,18 +42,18 @@ def help():
 ##         -13  : env.ret_action_partial_done           : ACTION partially done
 ##
 def execute(_arguments):
-	for elem in _arguments:
-		debug.error("Wrong argument: '" + elem.get_option_name() + "' '" + elem.get_arg() + "'")
-	
-	# check system is OK
-	manifest.check_lutin_is_init()
-	
-	conf = config.get_unique_config()
-	volatiles = conf.get_volatile()
-	debug.info("List of all volatiles repository: ")
-	for elem in volatiles:
-		debug.info("\t" + elem["path"] + "\r\t\t\t\t" + elem["git_address"])
-	
-	return None
+    for elem in _arguments:
+        debug.error(
+            "Wrong argument: '" + elem.get_option_name() + "' '" + elem.get_arg() + "'"
+        )
 
+    # check system is OK
+    manifest.check_lutin_is_init()
 
+    conf = config.get_unique_config()
+    volatiles = conf.get_volatile()
+    debug.info("List of all volatiles repository: ")
+    for elem in volatiles:
+        debug.info("\t" + elem["path"] + "\r\t\t\t\t" + elem["git_address"])
+
+    return None
