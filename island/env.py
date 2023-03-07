@@ -96,28 +96,18 @@ def get_display_folder_instead_of_git_name():
 
 
 island_root_path = os.path.join(os.getcwd())
-if os.path.exists(os.path.join(island_root_path, "." + get_system_base_name())) == True:
+if os.path.exists(os.path.join(island_root_path, "." + get_system_base_name())) is True:
     # all is good ...
     pass
 elif os.path.exists(os.path.join(island_root_path, "..", "." + get_system_base_name())):
     island_root_path = os.path.join(os.getcwd(), "..")
-elif os.path.exists(
-    os.path.join(island_root_path, "..", "..", "." + get_system_base_name())
-):
+elif os.path.exists(os.path.join(island_root_path, "..", "..", "." + get_system_base_name())):
     island_root_path = os.path.join(os.getcwd(), "..", "..")
-elif os.path.exists(
-    os.path.join(island_root_path, "..", "..", "..", "." + get_system_base_name())
-):
+elif os.path.exists(os.path.join(island_root_path, "..", "..", "..", "." + get_system_base_name())):
     island_root_path = os.path.join(os.getcwd(), "..", "..", "..")
-elif os.path.exists(
-    os.path.join(island_root_path, "..", "..", "..", "..", "." + get_system_base_name())
-):
+elif os.path.exists(os.path.join(island_root_path, "..", "..", "..", "..", "." + get_system_base_name())):
     island_root_path = os.path.join(os.getcwd(), "..", "..", "..", "..")
-elif os.path.exists(
-    os.path.join(
-        island_root_path, "..", "..", "..", "..", "..", "." + get_system_base_name()
-    )
-):
+elif os.path.exists(os.path.join(island_root_path, "..", "..", "..", "..", "..", "." + get_system_base_name())):
     island_root_path = os.path.join(os.getcwd(), "..", "..", "..", "..", "..")
 elif os.path.exists(
     os.path.join(
@@ -137,41 +127,35 @@ else:
     pass
 island_path_user_config = os.path.join(island_root_path, get_system_config_name())
 island_path = os.path.join(island_root_path, "." + get_system_base_name())
-island_path_config_old = os.path.join(island_path, "config.txt")
 island_path_config = os.path.join(island_path, "config.json")
 island_path_manifest = os.path.join(island_path, "manifest")
 
 
-##
-## @brief to use later to know where the ".island" parent path is ...
-## @return the parent path of the ".island"
-##
-def get_island_root_path():
+def get_island_root_path() -> str:
+    """Get the parent path where is define ".island" folder.
+
+    :return: the parent path of the ".island"
+    """
     global island_root_path
     return island_root_path
 
 
-def get_island_path():
+def get_island_path() -> str:
     global island_path
     return island_path
 
 
-def get_island_path_config():
+def get_island_path_config() -> str:
     global island_path_config
     return island_path_config
 
 
-def get_island_path_config_old():
-    global island_path_config_old
-    return island_path_config_old
-
-
-def get_island_path_manifest():
+def get_island_path_manifest() -> str:
     global island_path_manifest
     return island_path_manifest
 
 
-def get_island_path_user_config():
+def get_island_path_user_config() -> str:
     global island_path_user_config
     return island_path_user_config
 
@@ -183,4 +167,4 @@ ret_action_wrong_parameters = -12
 ret_action_partial_done = -13
 ret_action_fail = -14
 
-ret_action_need_updtate = 15
+ret_action_need_update = 15

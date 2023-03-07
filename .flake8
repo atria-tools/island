@@ -1,0 +1,16 @@
+[flake8]
+
+# Temporary, should be fixed and reenabled
+# B006 Do not use mutable data structures for argument defaults.  They are created during function definition time. All calls to the function reuse this one instance of that data structure, persisting changes between them.
+# B028 'state_name' is manually surrounded by quotes, consider using the `!r` conversion flag.
+# B902 blind except Exception
+
+# Permanently disabled, because conflicting with other rules
+# B950 line too long (conflicting with black)
+# E203 whitespace before ':' (conflicting with black)
+# E501 line too long (81 > 79 characters) (conflicting with black)
+# W503 line break before binary operator: Nothing to be done on this one, we use W504 instead
+ignore = B006, B028, B902, B950, E203, E501, W503, ANN101, ANN102, ANN401
+max-line-length = 99
+# max-complexity = 18
+select = A,ANN,B,C,D,E,F,I,W,T

@@ -9,15 +9,13 @@
 import copy
 import json
 import os
-import platform
-import sys
+from typing import Optional
 
 # Local import
 from realog import debug
 
 from . import (
     env,
-    multiprocess,
     repo_config,
     tools,
 )
@@ -25,62 +23,21 @@ from . import (
 
 env.get_island_path_config()
 
-unique_config = None
-
-
-def get_unique_config():
-    global unique_config
-    if unique_config == None:
-        unique_config = Config()
-    return unique_config
-
 
 class Config:
-    def __init__(self):
+    def __init__(self) -> None:
         self._repo = ""
         self._branch = "master"
         self._manifest_name = "default.xml"
         self._volatiles = []
-        self._curent_link = []
+        self._current_link = []
         self.load()
 
-    # set it deprecated at 2020/07
-    def load_old(self):
-        config_property = tools.file_read_data(env.get_island_path_config_old())
-        element_config = config_property.split("\n")
-        for line in element_config:
-            if len(line) == 0 or line[0] == "#":
-                # simple comment line ==> pass
-                pass
-            elif line[:5] == "repo=":
-                self._repo = line[5:]
-            elif line[:7] == "branch=":
-                self._branch = line[7:]
-            elif line[:5] == "file=":
-                self._manifest_name = line[5:]
-            else:
-                debug.warning("island config error: can not parse: '" + str(line) + "'")
-        return True
-
-    def convert_config_file(self):
-        debug.warning(
-            "INTERNAL: Convert your configuration file: "
-            + str(env.get_island_path_config_old())
-            + " -> "
-            + str(env.get_island_path_config())
-        )
-        self.load_old()
-        self.store()
-        tools.remove_file(env.get_island_path_config_old())
-
-    def load(self):
-        # transform the old format of configuration (use json now ==> simple
-        if os.path.exists(env.get_island_path_config_old()) == True:
-            self.convert_config_file()
-        if os.path.exists(env.get_island_path_config()) == False:
+    def load(self) -> bool:
+        if os.path.exists(env.get_island_path_config()) is False:
             return True
         self._volatiles = []
-        self._curent_link = []
+        self._current_link = []
         with open(env.get_island_path_config()) as json_file:
             data = json.load(json_file)
             if "repo" in data.keys():
@@ -100,13 +57,13 @@ class Config:
             return True
         return False
 
-    def store(self):
+    def store(self) -> bool:
         data = {}
         data["repo"] = self._repo
         data["branch"] = self._branch
         data["manifest_name"] = self._manifest_name
         data["volatiles"] = self._volatiles
-        data["link"] = self._curent_link
+        data["link"] = self._current_link
         with open(env.get_island_path_config(), "w") as outfile:
             json.dump(data, outfile, indent=4)
             return True
@@ -145,36 +102,34 @@ class Config:
         return copy.deepcopy(self._volatiles)
 
     def get_links(self):
-        return self._curent_link
+        return self._current_link
 
-    def add_link(self, source, destination):
-        for elem in self._curent_link:
+    def add_link(self, source, destination) -> bool:
+        for elem in self._current_link:
             if elem["destination"] == destination:
                 debug.error(
                     "can not have multiple destination folder in link " + destination,
                     crash=False,
                 )
                 return False
-        self._curent_link.append({"source": source, "destination": destination})
+        self._current_link.append({"source": source, "destination": destination})
         return True
 
-    def remove_link(self, destination):
-        for elem in self._curent_link:
+    def remove_link(self, destination) -> None:
+        for elem in self._current_link:
             if elem["destination"] == destination:
-                del self._curent_link[elem]
+                del self._current_link[elem]
                 return
         debug.warning("Request remove link that does not exist")
 
     def clear_links(self):
-        self._curent_link = []
+        self._current_link = []
 
     def get_manifest_config(self):
         conf = repo_config.RepoConfig()
         base_volatile, repo_volatile = repo_config.split_repo(self.get_manifest())
         conf.name = repo_volatile
-        conf.path = os.path.join(
-            "." + env.get_system_base_name(), "manifest"
-        )  # env.get_island_path_manifest()
+        conf.path = os.path.join("." + env.get_system_base_name(), "manifest")  # env.get_island_path_manifest()
         conf.branch = "master"
         conf.volatile = False
         conf.remotes = [{"name": "origin", "fetch": base_volatile, "mirror": []}]
@@ -185,3 +140,13 @@ class Config:
             "mirror": [],
         }
         return conf
+
+
+_unique_config: Optional[Config] = None
+
+
+def get_unique_config() -> Config:
+    global _unique_config
+    if _unique_config is None:
+        _unique_config = Config()
+    return _unique_config

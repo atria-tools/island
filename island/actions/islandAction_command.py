@@ -1,12 +1,10 @@
-#!/usr/bin/python
 # -*- coding: utf-8 -*-
-##
-## @author Edouard DUPIN
-##
-## @copyright 2012, Edouard DUPIN, all right reserved
-##
-## @license MPL v2.0 (see license file)
-##
+"""Action script for command.
+
+@author Edouard DUPIN
+@copyright 2012, Edouard DUPIN, all right reserved
+@license MPL v2.0 (see license file)
+"""
 
 import os
 
@@ -22,31 +20,31 @@ from island import (
 )
 
 
-##
-## @brief Get the global description of the current action
-## @return (string) the description string (fist line if reserved for the overview, all is for the specific display)
-##
+#
+# @brief Get the global description of the current action
+# @return (string) the description string (fist line if reserved for the overview, all is for the specific display)
+#
 def help():
     return "Write the command you want to be executed in every repository"
 
 
-##
-## @brief Set the option argument are not able to check if the argument are correct or not
-## @return (boolean) have parameter without arguments
-##
+#
+# @brief Set the option argument are not able to check if the argument are correct or not
+# @return (boolean) have parameter without arguments
+#
 def have_unknow_argument():
     return True
 
 
-##
-## @brief Execute the action required.
-##
-## @return error value [0 .. 50] the <0 value is reserved system ==> else, what you want.
-##         None : No error (return program out 0)
-##         -10 : ACTION is not existing
-##         -11 : ACTION execution system error
-##         -12 : ACTION Wrong parameters
-##
+#
+# @brief Execute the action required.
+#
+# @return error value [0 .. 50] the <0 value is reserved system ==> else, what you want.
+#         None : No error (return program out 0)
+#         -10 : ACTION is not existing
+#         -11 : ACTION execution system error
+#         -12 : ACTION Wrong parameters
+#
 def execute(_arguments):
     cmd = ""
     for elem in _arguments:
@@ -58,10 +56,8 @@ def execute(_arguments):
 
     configuration = config.get_unique_config()
 
-    file_source_manifest = os.path.join(
-        env.get_island_path_manifest(), configuration.get_manifest_name()
-    )
-    if os.path.exists(file_source_manifest) == False:
+    file_source_manifest = os.path.join(env.get_island_path_manifest(), configuration.get_manifest_name())
+    if os.path.exists(file_source_manifest) is False:
         debug.error("Missing manifest file : '" + str(file_source_manifest) + "'")
 
     mani = manifest.Manifest(file_source_manifest)
@@ -77,10 +73,8 @@ def execute(_arguments):
         tools.wait_for_server_if_needed()
         # debug.debug("elem : " + str(elem))
         git_repo_path = os.path.join(env.get_island_root_path(), elem.path)
-        if os.path.exists(git_repo_path) == False:
-            debug.info(
-                "" + base_display + "\r\t\t\t\t\t\t\t\t\t" + "     (not download)"
-            )
+        if os.path.exists(git_repo_path) is False:
+            debug.info("" + base_display + "\r\t\t\t\t\t\t\t\t\t" + "     (not download)")
             continue
 
         debug.verbose("execute : " + cmd)

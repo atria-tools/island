@@ -23,21 +23,16 @@ from . import (
 )
 
 
-"""
-
-"""
-
-
 def check_repository_is_modify(path_repository):
     # check if the repository is modify
     cmd = "git diff --quiet"
-    debug.verbose("execute : " + cmd)
+    debug.verbose(f"execute : {cmd}")
     return_value = multiprocess.run_command(cmd, cwd=path_repository)
     multiprocess.generic_display_error(
         return_value,
         "check_repository_is_modify",
         error_only=True,
-        availlable_return=[0, 1],
+        available_return=[0, 1],
         display_if_nothing=False,
     )
     ret_diff = return_value
@@ -51,9 +46,7 @@ def get_list_branch_meta(path_repository):
     cmd = "git branch -a"
     debug.verbose("execute : " + cmd)
     return_value = multiprocess.run_command(cmd, cwd=path_repository)
-    multiprocess.generic_display_error(
-        return_value, "get_list_branch_meta", error_only=True
-    )
+    multiprocess.generic_display_error(return_value, "get_list_branch_meta", error_only=True)
     ret_branch = return_value
     list_branch = ret_branch[1].split("\n")
     out = []
@@ -91,7 +84,7 @@ def get_list_branch_local(path_repository):
     tmp = get_list_branch_meta(path_repository)
     out = []
     for elem in tmp:
-        if elem["remote"] == False:
+        if elem["remote"] is False:
             out.append(elem["name"])
     debug.verbose("List local branch: " + str(out))
     return out
@@ -101,7 +94,7 @@ def get_list_branch_remote(path_repository):
     tmp = get_list_branch_meta(path_repository)
     out = []
     for elem in tmp:
-        if elem["remote"] == True:
+        if elem["remote"] is True:
             out.append(elem["name"])
     debug.verbose("List remote branch: " + str(out))
     return out
@@ -110,7 +103,7 @@ def get_list_branch_remote(path_repository):
 def get_current_branch(path_repository):
     tmp = get_list_branch_meta(path_repository)
     for elem in tmp:
-        if elem["select"] == True:
+        if elem["select"] is True:
             debug.verbose("List local branch: " + str(elem["name"]))
             return elem["name"]
     debug.verbose("List local branch: None")
@@ -125,9 +118,7 @@ def get_current_tracking_branch(path_repository):
     if return_value[1] == "@{u}":
         debug.warning("in '" + path_repository + "' no tracking branch is specify")
         return None
-    multiprocess.generic_display_error(
-        return_value, "get_current_tracking_branch", error_only=True
-    )
+    multiprocess.generic_display_error(return_value, "get_current_tracking_branch", error_only=True)
     return return_value[1]
 
 
@@ -135,21 +126,17 @@ def get_revision_list_to_branch(path_repository, branch):
     cmd = "git rev-list " + branch
     debug.verbose("execute : " + cmd)
     return_value = multiprocess.run_command(cmd, cwd=path_repository)
-    multiprocess.generic_display_error(
-        return_value, "get_revision_list_to_branch", error_only=True
-    )
+    multiprocess.generic_display_error(return_value, "get_revision_list_to_branch", error_only=True)
     return return_value[1].split("\n")
 
 
 def get_specific_commit_message(path_repository, sha_1):
-    if sha_1 == None or sha_1 == "":
+    if sha_1 is None or sha_1 == "":
         return ""
     cmd = "git log --format=%B -n 1 " + sha_1
     debug.verbose("execute : " + cmd)
     return_value = multiprocess.run_command(cmd, cwd=path_repository)
-    multiprocess.generic_display_error(
-        return_value, "get_specific_commit_message", error_only=True
-    )
+    multiprocess.generic_display_error(return_value, "get_specific_commit_message", error_only=True)
     return return_value[1].split("\n")[0]
 
 
@@ -159,9 +146,7 @@ def get_sha1_for_branch(path_repository, branch_name):
     cmd = "git rev-parse " + branch_name
     debug.verbose("execute : " + cmd)
     return_value = multiprocess.run_command(cmd, cwd=path_repository)
-    multiprocess.generic_display_error(
-        return_value, "get_sha1_for_branch", error_only=True
-    )
+    multiprocess.generic_display_error(return_value, "get_sha1_for_branch", error_only=True)
     return return_value[1].split("\n")[0]
 
 
@@ -169,9 +154,7 @@ def get_tags_current(path_repository):
     cmd = "git tag --points-at"
     debug.verbose("execute : " + cmd)
     return_value = multiprocess.run_command(cmd, cwd=path_repository)
-    multiprocess.generic_display_error(
-        return_value, "get_tags_current", error_only=True
-    )
+    multiprocess.generic_display_error(return_value, "get_tags_current", error_only=True)
     list_tags = []
     for elem in return_value[1].split("\n"):
         if elem != "":
@@ -221,42 +204,24 @@ def get_tracking_branch(path_repository, remote_name, select_branch):
     if remote_name == "" or remote_name == None:
         return get_current_tracking_branch(path_repository)
     list_branch_remote = get_list_branch_remote(path_repository)
-    debug.extreme_verbose(
-        "check if exist "
-        + remote_name
-        + "/"
-        + select_branch
-        + " in "
-        + str(list_branch_remote)
-    )
+    debug.extreme_verbose("check if exist " + remote_name + "/" + select_branch + " in " + str(list_branch_remote))
     if remote_name + "/" + select_branch not in list_branch_remote:
         debug.debug("    ==> can not get remote branch")
         return None
     return remote_name + "/" + select_branch
 
 
-def merge_branch_on_master(
-    path_repository, branch_name, merge_force=True, branch_destination="master"
-):
+def merge_branch_on_master(path_repository, branch_name, merge_force=True, branch_destination="master"):
     if branch_name == None or branch_name == "":
         raise "Missing branch name"
     cmd = "git merge "
-    if merge_force == True:
+    if merge_force is True:
         cmd += "--no-ff "
-    cmd += (
-        branch_name
-        + " --message \"Merge branch '"
-        + branch_name
-        + "' into '"
-        + branch_destination
-        + "'\""
-    )
+    cmd += branch_name + " --message \"Merge branch '" + branch_name + "' into '" + branch_destination + "'\""
     debug.verbose("execute : " + cmd)
     # TODO: check if the command work correctly
     return_value = multiprocess.run_command(cmd, cwd=path_repository)
-    multiprocess.generic_display_error(
-        return_value, "merge_branch_on_master", error_only=True
-    )
+    multiprocess.generic_display_error(return_value, "merge_branch_on_master", error_only=True)
     return return_value
 
 
@@ -338,7 +303,7 @@ def clone(path_repository, address, branch_name=None, origin=None):
     if path_repository != None and path_repository != "":
         cmd += " " + path_repository
     debug.verbose("execute : " + cmd)
-    if os.path.exists(path_repository) == True:
+    if os.path.exists(path_repository) is True:
         debug.warning("Can not clone repository path already exist")
         return False
     return_value = multiprocess.run_command(cmd)
@@ -348,7 +313,7 @@ def clone(path_repository, address, branch_name=None, origin=None):
 
 def fetch(path_repository, remote_name, prune=True):
     cmd = "git fetch " + remote_name
-    if prune == True:
+    if prune is True:
         cmd += " --prune"
     debug.verbose("execute : " + cmd)
     return_value = multiprocess.run_command(cmd, cwd=path_repository)
@@ -360,7 +325,7 @@ def pull(path_repository, remote_name, prune=True):
     if remote_name == None or remote_name == "":
         raise "Missing remote_name"
     cmd = "git pull " + remote_name
-    if prune == True:
+    if prune is True:
         cmd += " --prune"
     debug.verbose("execute : " + cmd)
     return_value = multiprocess.run_command(cmd, cwd=path_repository)
@@ -404,9 +369,7 @@ def get_forward(path_repository, branch_name):
         raise "get_fast_forward: Missing branch_name"
     select_branch = get_current_branch(path_repository)
     # get tracking branch
-    ret_current_branch_sha1 = get_revision_list_to_branch(
-        path_repository, select_branch
-    )
+    ret_current_branch_sha1 = get_revision_list_to_branch(path_repository, select_branch)
     ret_track_branch_sha1 = get_revision_list_to_branch(path_repository, branch_name)
     # count the number of commit fast forward
     forward_count = 0
@@ -425,9 +388,7 @@ def get_behind(path_repository, branch_name):
         raise "get_fast_forward: Missing branch_name"
     select_branch = get_current_branch(path_repository)
     # get tracking branch
-    ret_current_branch_sha1 = get_revision_list_to_branch(
-        path_repository, select_branch
-    )
+    ret_current_branch_sha1 = get_revision_list_to_branch(path_repository, select_branch)
     ret_track_branch_sha1 = get_revision_list_to_branch(path_repository, branch_name)
     # count the number of commit behind
     behind_count = 0

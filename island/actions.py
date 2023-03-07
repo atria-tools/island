@@ -9,7 +9,7 @@
 
 import os
 import sys
-
+from typing import List, Any, Optional
 import death.Arguments as arguments
 
 # Local import
@@ -23,9 +23,9 @@ list_actions = []
 __base_action_name = env.get_system_base_name() + "Action_"
 
 
-def init(files):
+def init(files) -> None:
     global list_actions
-    debug.verbose("List of action for island: " + str(len(files)))
+    debug.verbose(f"List of action for island: {len(files)}")
     for elem_path in files:
         debug.verbose("parse file : " + elem_path)
         base_name = os.path.basename(elem_path)
@@ -46,11 +46,11 @@ def init(files):
         )
 
 
-##
-## @brief Get the wall list of action availlable
-## @return ([string]) the list of action name
-##
-def get_list_of_action():
+def get_list_of_action() -> List[str]:
+    """Get the wall list of action available
+
+    :return: the list of action name
+    """
     global list_actions
     out = []
     for elem in list_actions:
@@ -58,14 +58,14 @@ def get_list_of_action():
     return out
 
 
-##
-## @brief Get a description of an action
-## @param[in] action_name (string) Name of the action
-## @param[in] function_name (string) Name of the fucntion to call
-## @param[in] default_value (*) Renurned value of the call if function does not exist
-## @return (*) the getted value or the default_value
-##
-def get_function_value(action_name, function_name, default_value=None):
+def get_function_value(action_name: str, function_name: str, default_value: Optional[Any] = None) -> Any:
+    """Get a description of an action.
+
+    :param action_name: Name of the action
+    :param function_name: Name of the function to call
+    :param default_value: Returned value of the call if function does not exist, defaults to None
+    :return: the requested value or the default_value
+    """
     global list_actions
     for elem in list_actions:
         if elem["name"] == action_name:
@@ -79,36 +79,34 @@ def get_function_value(action_name, function_name, default_value=None):
     return default_value
 
 
-##
-## @brief Get the global help value of a module
-## @param[in] action_name (string) Name of the action
-## @return The first line of description
-##
-def get_action_help(action_name):
+def get_action_help(action_name: str) -> str:
+    """Get the global help value of a module.
+
+    :param action_name: Name of the action
+    :return: The first line of description
+    """
     value = get_function_value(action_name, "help", "---")
     return value.split("\n")[0]
 
 
-def usage(arguments, action_name):
-    color = debug.get_color_set()
+def usage(arguments, action_name) -> None:
     # generic argument displayed for specific action:
     # print("Specific argument for the command: '" + action_name + "'" )
-    # print("    " + get_desc(action_name))
     value = get_function_value(action_name, "help")
     debug.info("Description:")
     debug.info("\t" + str(value))
     arguments.display(action_name)
     value = get_function_value(action_name, "help_example")
-    if value != None:
+    if value is not None:
         debug.info("Example:")
         for elem in value.split("\n"):
-            debug.info("\t" + value)
+            debug.info("\t" + elem)
     exit(0)
 
 
 def execute(action_name, argument_start_id):
     global list_actions
-    # TODO: Move here the check if action is availlable
+    # TODO: Move here the check if action is available
 
     for elem in list_actions:
         if elem["name"] != action_name:
@@ -125,9 +123,7 @@ def execute(action_name, argument_start_id):
         have_unknow_argument = False
         if "have_unknow_argument" in dir(the_action):
             have_unknow_argument = the_action.have_unknow_argument()
-        my_under_args = my_under_args_parser.parse(
-            argument_start_id, have_unknow_argument
-        )
+        my_under_args = my_under_args_parser.parse(argument_start_id, have_unknow_argument)
         # search help if needed ==> permit to not duplicating code
         for elem in my_under_args:
             if elem.get_option_name() == "help":
@@ -135,17 +131,11 @@ def execute(action_name, argument_start_id):
                 return 0
         # now we can execute:
         if "execute" not in dir(the_action):
-            debug.error(
-                "execute is not implmented for this action ... '"
-                + str(action_name)
-                + "'"
-            )
+            debug.error("execute is not implmented for this action ... '" + str(action_name) + "'")
             return -11
         debug.info("execute: " + action_name)
         for elem in my_under_args:
-            debug.debug(
-                "    " + str(elem.get_option_name()) + "='" + str(elem.get_arg()) + "'"
-            )
+            debug.debug("    " + str(elem.get_option_name()) + "='" + str(elem.get_arg()) + "'")
         ret = the_action.execute(my_under_args)
         if ret == None:
             return 0

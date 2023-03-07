@@ -1,12 +1,10 @@
-#!/usr/bin/python
 # -*- coding: utf-8 -*-
-##
-## @author Edouard DUPIN
-##
-## @copyright 2012, Edouard DUPIN, all right reserved
-##
-## @license MPL v2.0 (see license file)
-##
+"""Action script for init.
+
+@author Edouard DUPIN
+@copyright 2012, Edouard DUPIN, all right reserved
+@license MPL v2.0 (see license file)
+"""
 
 import os
 
@@ -22,38 +20,38 @@ from island import (
 )
 
 
-##
-## @brief Get the global description of the current action
-## @return (string) the description string (fist line if reserved for the overview, all is for the specific display)
-##
+#
+# @brief Get the global description of the current action
+# @return (string) the description string (fist line if reserved for the overview, all is for the specific display)
+#
 def help():
     return "Init a island repository (need 'fetch' after)"
 
 
-##
-## @brief Add argument to the specific action
-## @param[in,out] my_args (death.Arguments) Argument manager
-## @param[in] section Name of the currect action
-##
+#
+# @brief Add argument to the specific action
+# @param[in,out] my_args (death.Arguments) Argument manager
+# @param[in] section Name of the currect action
+#
 def add_specific_arguments(my_args, section):
     my_args.add("b", "branch", haveParam=True, desc="Select branch to display")
     my_args.add("m", "manifest", haveParam=True, desc="Name of the manifest")
 
 
-##
-## @brief Execute the action required.
-##
-## @return error value [0 .. 50] the <0 value is reserved system ==> else, what you want.
-##         None : No error (return program out 0)
-##         -10 : ACTION is not existing
-##         -11 : ACTION execution system error
-##         -12 : ACTION Wrong parameters
-##
+#
+# @brief Execute the action required.
+#
+# @return error value [0 .. 50] the <0 value is reserved system ==> else, what you want.
+#         None : No error (return program out 0)
+#         -10 : ACTION is not existing
+#         -11 : ACTION execution system error
+#         -12 : ACTION Wrong parameters
+#
 def execute(_arguments):
     if len(_arguments) == 0:
         debug.error("Missing argument to execute the current action ...")
 
-    # the configuration availlable:
+    # the configuration available:
     branch = "master"
     manifest_name = "default.xml"
     address_manifest = ""
@@ -66,46 +64,22 @@ def execute(_arguments):
             manifest_name = elem.get_arg()
         elif elem.get_option_name() == "":
             if address_manifest != "":
-                debug.error(
-                    "Manifest adress already set : '"
-                    + address_manifest
-                    + "' !!! '"
-                    + elem.get_arg()
-                    + "'"
-                )
+                debug.error("Manifest adress already set : '" + address_manifest + "' !!! '" + elem.get_arg() + "'")
             address_manifest = elem.get_arg()
         else:
-            debug.error(
-                "Wrong argument: '"
-                + elem.get_option_name()
-                + "' '"
-                + elem.get_arg()
-                + "'"
-            )
+            debug.error("Wrong argument: '" + elem.get_option_name() + "' '" + elem.get_arg() + "'")
 
     if address_manifest == "":
         debug.error("Init: Missing manifest name")
 
-    debug.info(
-        "Init with: '"
-        + address_manifest
-        + "' branch='"
-        + branch
-        + "' name of manifest='"
-        + manifest_name
-        + "'"
-    )
+    debug.info("Init with: '" + address_manifest + "' branch='" + branch + "' name of manifest='" + manifest_name + "'")
 
     # check if .XXX exist (create it if needed)
-    if manifest.is_lutin_init() == True:
-        debug.error(
-            "System already init: path already exist: '"
-            + str(env.get_island_path())
-            + "'"
-        )
+    if manifest.is_lutin_init() is True:
+        debug.error("System already init: path already exist: '" + str(env.get_island_path()) + "'")
 
     tools.create_directory(env.get_island_path())
-    # check if the git of the manifest if availlable
+    # check if the git of the manifest if available
 
     # create the file configuration:
     conf = config.get_unique_config()
@@ -115,11 +89,9 @@ def execute(_arguments):
     conf.store()
 
     debug.info("Clone the manifest")
-    ret_values = commands.clone(
-        env.get_island_path_manifest(), address_manifest, branch_name=branch
-    )
+    ret_values = commands.clone(env.get_island_path_manifest(), address_manifest, branch_name=branch)
 
-    if ret_values == False:
+    if ret_values is False:
         debug.info("'" + str(ret_values) + "'")
         debug.error("Init does not work")
         return False

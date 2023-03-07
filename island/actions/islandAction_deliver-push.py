@@ -1,12 +1,10 @@
-#!/usr/bin/python
 # -*- coding: utf-8 -*-
-##
-## @author Edouard DUPIN
-##
-## @copyright 2012, Edouard DUPIN, all right reserved
-##
-## @license MPL v2.0 (see license file)
-##
+"""Action script for deliver-push.
+
+@author Edouard DUPIN
+@copyright 2012, Edouard DUPIN, all right reserved
+@license MPL v2.0 (see license file)
+"""
 
 import os
 
@@ -23,32 +21,32 @@ from island import (
 )
 
 
-##
-## @brief Get the global description of the current action
-## @return (string) the description string (fist line if reserved for the overview, all is for the specific display)
-##
+#
+# @brief Get the global description of the current action
+# @return (string) the description string (fist line if reserved for the overview, all is for the specific display)
+#
 def help():
     return "Push a delover (develop & master & tag) on the remotre server"
 
 
-##
-## @brief Add argument to the specific action
-## @param[in,out] my_args (death.Arguments) Argument manager
-## @param[in] section Name of the currect action
-##
+#
+# @brief Add argument to the specific action
+# @param[in,out] my_args (death.Arguments) Argument manager
+# @param[in] section Name of the currect action
+#
 def add_specific_arguments(my_args, section):
     my_args.add("r", "remote", haveParam=True, desc="Name of the remote server")
 
 
-##
-## @brief Execute the action required.
-##
-## @return error value [0 .. 50] the <0 value is reserved system ==> else, what you want.
-##         None : No error (return program out 0)
-##         -10 : ACTION is not existing
-##         -11 : ACTION execution system error
-##         -12 : ACTION Wrong parameters
-##
+#
+# @brief Execute the action required.
+#
+# @return error value [0 .. 50] the <0 value is reserved system ==> else, what you want.
+#         None : No error (return program out 0)
+#         -10 : ACTION is not existing
+#         -11 : ACTION execution system error
+#         -12 : ACTION Wrong parameters
+#
 def execute(_arguments):
     argument_remote_name = ""
     for elem in _arguments:
@@ -56,23 +54,15 @@ def execute(_arguments):
             debug.info("find remote name: '" + elem.get_arg() + "'")
             argument_remote_name = elem.get_arg()
         else:
-            debug.error(
-                "Wrong argument: '"
-                + elem.get_option_name()
-                + "' '"
-                + elem.get_arg()
-                + "'"
-            )
+            debug.error("Wrong argument: '" + elem.get_option_name() + "' '" + elem.get_arg() + "'")
 
     # check system is OK
     manifest.check_lutin_is_init()
 
     configuration = config.get_unique_config()
 
-    file_source_manifest = os.path.join(
-        env.get_island_path_manifest(), configuration.get_manifest_name()
-    )
-    if os.path.exists(file_source_manifest) == False:
+    file_source_manifest = os.path.join(env.get_island_path_manifest(), configuration.get_manifest_name())
+    if os.path.exists(file_source_manifest) is False:
         debug.error("Missing manifest file : '" + str(file_source_manifest) + "'")
     mani = manifest.Manifest(file_source_manifest)
 
@@ -90,6 +80,4 @@ def execute(_arguments):
         base_display = tools.get_list_base_display(id_element, len(all_project), elem)
         debug.info("deliver-push: " + base_display)
         tools.wait_for_server_if_needed()
-        status.deliver_push(
-            elem, argument_remote_name, destination_branch, source_branch, base_display
-        )
+        status.deliver_push(elem, argument_remote_name, destination_branch, source_branch, base_display)

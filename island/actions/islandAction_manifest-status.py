@@ -1,12 +1,10 @@
-#!/usr/bin/python
 # -*- coding: utf-8 -*-
-##
-## @author Edouard DUPIN
-##
-## @copyright 2012, Edouard DUPIN, all right reserved
-##
-## @license MPL v2.0 (see license file)
-##
+"""Action script for manifest-status.
+
+@author Edouard DUPIN
+@copyright 2012, Edouard DUPIN, all right reserved
+@license MPL v2.0 (see license file)
+"""
 
 import os
 
@@ -23,19 +21,19 @@ from island import (
 )
 
 
-##
-## @brief Get the global description of the current action
-## @return (string) the description string (fist line if reserved for the overview, all is for the specific display)
-##
+#
+# @brief Get the global description of the current action
+# @return (string) the description string (fist line if reserved for the overview, all is for the specific display)
+#
 def help():
     return "Display status spécifically of the manifest"
 
 
-##
-## @brief Add argument to the specific action
-## @param[in,out] my_args (death.Arguments) Argument manager
-## @param[in] section Name of the currect action
-##
+#
+# @brief Add argument to the specific action
+# @param[in,out] my_args (death.Arguments) Argument manager
+# @param[in] section Name of the currect action
+#
 def add_specific_arguments(_my_args, _section):
     _my_args.add(
         "t",
@@ -45,15 +43,15 @@ def add_specific_arguments(_my_args, _section):
     )
 
 
-##
-## @brief Execute the action required.
-##
-## @return error value [0 .. 50] the <0 value is reserved system ==> else, what you want.
-##         None : No error (return program out 0)
-##         -10 : ACTION is not existing
-##         -11 : ACTION execution system error
-##         -12 : ACTION Wrong parameters
-##
+#
+# @brief Execute the action required.
+#
+# @return error value [0 .. 50] the <0 value is reserved system ==> else, what you want.
+#         None : No error (return program out 0)
+#         -10 : ACTION is not existing
+#         -11 : ACTION execution system error
+#         -12 : ACTION Wrong parameters
+#
 def execute(_arguments):
     argument_remote_name = ""
     argument_display_tag = False
@@ -61,13 +59,7 @@ def execute(_arguments):
         if elem.get_option_name() == "tags":
             argument_display_tag = True
         else:
-            debug.error(
-                "Wrong argument: '"
-                + elem.get_option_name()
-                + "' '"
-                + elem.get_arg()
-                + "'"
-            )
+            debug.error("Wrong argument: '" + elem.get_option_name() + "' '" + elem.get_arg() + "'")
 
     # check system is OK
     manifest.check_lutin_is_init()
@@ -75,8 +67,6 @@ def execute(_arguments):
     configuration = config.get_unique_config()
     elem = configuration.get_manifest_config()
     base_display = tools.get_list_base_display(0, 0, elem)
-    ret = status.display_status(
-        elem, argument_remote_name, argument_display_tag, 0, base_display
-    )
+    ret = status.display_status(elem, argument_remote_name, argument_display_tag, 0, base_display)
     if ret != None:
-        return env.ret_action_need_updtate
+        return env.ret_action_need_update

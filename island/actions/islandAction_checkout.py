@@ -1,12 +1,10 @@
-#!/usr/bin/python
 # -*- coding: utf-8 -*-
-##
-## @author Edouard DUPIN
-##
-## @copyright 2012, Edouard DUPIN, all right reserved
-##
-## @license MPL v2.0 (see license file)
-##
+"""Action script for Checkout.
+
+@author Edouard DUPIN
+@copyright 2012, Edouard DUPIN, all right reserved
+@license MPL v2.0 (see license file)
+"""
 
 import os
 
@@ -14,28 +12,26 @@ from realog import debug
 import status
 
 from island import (
-    commands,
     config,
     env,
     manifest,
-    multiprocess,
     tools,
 )
 
 
-##
-## @brief Get the global description of the current action
-## @return (string) the description string (fist line if reserved for the overview, all is for the specific display)
-##
-def help():
-    return "Ckeckout a specific branch in all repository"
+#
+# @brief Get the global description of the current action
+# @return (string) the description string (fist line if reserved for the overview, all is for the specific display)
+#
+def help() -> str:
+    return "Checkout a specific branch in all repository"
 
 
-##
-## @brief Add argument to the specific action
-## @param[in,out] my_args (death.Arguments) Argument manager
-## @param[in] section Name of the currect action
-##
+#
+# @brief Add argument to the specific action
+# @param[in,out] my_args (death.Arguments) Argument manager
+# @param[in] section Name of the current action
+#
 def add_specific_arguments(my_args, section):
     my_args.add("r", "remote", haveParam=True, desc="Name of the remote server")
     my_args.add_arg(
@@ -45,15 +41,15 @@ def add_specific_arguments(my_args, section):
     )
 
 
-##
-## @brief Execute the action required.
-##
-## @return error value [0 .. 50] the <0 value is reserved system ==> else, what you want.
-##         None : No error (return program out 0)
-##         -10 : ACTION is not existing
-##         -11 : ACTION execution system error
-##         -12 : ACTION Wrong parameters
-##
+#
+# @brief Execute the action required.
+#
+# @return error value [0 .. 50] the <0 value is reserved system ==> else, what you want.
+#         None : No error (return program out 0)
+#         -10 : ACTION is not existing
+#         -11 : ACTION execution system error
+#         -12 : ACTION Wrong parameters
+#
 def execute(_arguments):
     argument_remote_name = ""
     branch_to_checkout = ""
@@ -64,13 +60,7 @@ def execute(_arguments):
         elif elem.get_option_name() == "branch":
             branch_to_checkout = elem.get_arg()
         else:
-            debug.error(
-                "Wrong argument: '"
-                + elem.get_option_name()
-                + "' '"
-                + elem.get_arg()
-                + "'"
-            )
+            debug.error("Wrong argument: '" + elem.get_option_name() + "' '" + elem.get_arg() + "'")
 
     # check system is OK
     manifest.check_lutin_is_init()
@@ -81,10 +71,8 @@ def execute(_arguments):
     configuration.set_branch(branch_to_checkout)
     configuration.store()
 
-    file_source_manifest = os.path.join(
-        env.get_island_path_manifest(), configuration.get_manifest_name()
-    )
-    if os.path.exists(file_source_manifest) == False:
+    file_source_manifest = os.path.join(env.get_island_path_manifest(), configuration.get_manifest_name())
+    if os.path.exists(file_source_manifest) is False:
         debug.error("Missing manifest file : '" + str(file_source_manifest) + "'")
 
     mani = manifest.Manifest(file_source_manifest)
@@ -96,12 +84,7 @@ def execute(_arguments):
     for elem in all_project:
         id_element += 1
         base_display = tools.get_list_base_display(id_element, len(all_project), elem)
-        if (
-            status.checkout_elem(
-                elem, argument_remote_name, branch_to_checkout, base_display
-            )
-            == False
-        ):
+        if status.checkout_elem(elem, argument_remote_name, branch_to_checkout, base_display) is False:
             have_error = True
-    if have_error == True:
+    if have_error is True:
         return env.ret_action_fail

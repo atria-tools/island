@@ -1,12 +1,10 @@
-#!/usr/bin/python
 # -*- coding: utf-8 -*-
-##
-## @author Edouard DUPIN
-##
-## @copyright 2012, Edouard DUPIN, all right reserved
-##
-## @license MPL v2.0 (see license file)
-##
+"""Action script for status.
+
+@author Edouard DUPIN
+@copyright 2012, Edouard DUPIN, all right reserved
+@license MPL v2.0 (see license file)
+"""
 
 import os
 
@@ -23,19 +21,19 @@ from island import (
 )
 
 
-##
-## @brief Get the global description of the current action
-## @return (string) the description string (fist line if reserved for the overview, all is for the specific display)
-##
+#
+# @brief Get the global description of the current action
+# @return (string) the description string (fist line if reserved for the overview, all is for the specific display)
+#
 def help():
     return "Get the status of all the repositories"
 
 
-##
-## @brief Add argument to the specific action
-## @param[in,out] my_args (death.Arguments) Argument manager
-## @param[in] section Name of the currect action
-##
+#
+# @brief Add argument to the specific action
+# @param[in,out] my_args (death.Arguments) Argument manager
+# @param[in] section Name of the currect action
+#
 def add_specific_arguments(_my_args, _section):
     _my_args.add("r", "remote", haveParam=True, desc="Name of the remote server")
     _my_args.add(
@@ -46,15 +44,15 @@ def add_specific_arguments(_my_args, _section):
     )
 
 
-##
-## @brief Execute the action required.
-##
-## @return error value [0 .. 50] the <0 value is reserved system ==> else, what you want.
-##         None : No error (return program out 0)
-##         -10 : ACTION is not existing
-##         -11 : ACTION execution system error
-##         -12 : ACTION Wrong parameters
-##
+#
+# @brief Execute the action required.
+#
+# @return error value [0 .. 50] the <0 value is reserved system ==> else, what you want.
+#         None : No error (return program out 0)
+#         -10 : ACTION is not existing
+#         -11 : ACTION execution system error
+#         -12 : ACTION Wrong parameters
+#
 def execute(_arguments):
     argument_remote_name = ""
     argument_display_tag = False
@@ -65,29 +63,19 @@ def execute(_arguments):
         elif elem.get_option_name() == "tags":
             argument_display_tag = True
         else:
-            debug.error(
-                "Wrong argument: '"
-                + elem.get_option_name()
-                + "' '"
-                + elem.get_arg()
-                + "'"
-            )
+            debug.error("Wrong argument: '" + elem.get_option_name() + "' '" + elem.get_arg() + "'")
 
     # check system is OK
     manifest.check_lutin_is_init()
     configuration = config.get_unique_config()
 
-    file_source_manifest = os.path.join(
-        env.get_island_path_manifest(), configuration.get_manifest_name()
-    )
-    if os.path.exists(file_source_manifest) == False:
+    file_source_manifest = os.path.join(env.get_island_path_manifest(), configuration.get_manifest_name())
+    if os.path.exists(file_source_manifest) is False:
         debug.error("Missing manifest file : '" + str(file_source_manifest) + "'")
 
     mani = manifest.Manifest(file_source_manifest)
-    is_modify_manifest = commands.check_repository_is_modify(
-        env.get_island_path_manifest()
-    )
-    if is_modify_manifest == True:
+    is_modify_manifest = commands.check_repository_is_modify(env.get_island_path_manifest())
+    if is_modify_manifest is True:
         debug.info("!!!!!!!!!!!! MANIFEST is modify !!!!!!!!")
 
     all_project = mani.get_all_configs()
@@ -96,19 +84,15 @@ def execute(_arguments):
 
     elem = configuration.get_manifest_config()
     base_display = tools.get_list_base_display(id_element, len(all_project), elem)
-    status.display_status(
-        elem, argument_remote_name, argument_display_tag, id_element, base_display
-    )
+    status.display_status(elem, argument_remote_name, argument_display_tag, id_element, base_display)
 
     is_behind = False
     for elem in all_project:
         id_element += 1
         base_display = tools.get_list_base_display(id_element, len(all_project), elem)
-        ret = status.display_status(
-            elem, argument_remote_name, argument_display_tag, id_element, base_display
-        )
+        ret = status.display_status(elem, argument_remote_name, argument_display_tag, id_element, base_display)
         if ret != None:
             is_behind = True
 
-    if is_behind == True:
-        return env.ret_action_need_updtate
+    if is_behind is True:
+        return env.ret_action_need_update

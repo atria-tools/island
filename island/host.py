@@ -7,13 +7,10 @@
 @license MPL v2.0 (see license file)
 """
 import platform
-import sys
 
-# Local import
 from realog import debug
 
 
-# print os.name # ==> 'posix'
 if platform.system() == "Linux":
     OS = "Linux"
 elif platform.system() == "Windows":
@@ -21,6 +18,6 @@ elif platform.system() == "Windows":
 elif platform.system() == "Darwin":
     OS = "MacOs"
 else:
-    debug.error("Unknow the Host OS ... '" + platform.system() + "'")
+    debug.error(f"Unknown the Host OS ... '{platform.system()}'")
 
-debug.debug("host.OS = " + OS)
+debug.debug("host.OS = {OS}")

@@ -1,12 +1,10 @@
-#!/usr/bin/python
 # -*- coding: utf-8 -*-
-##
-## @author Edouard DUPIN
-##
-## @copyright 2012, Edouard DUPIN, all right reserved
-##
-## @license MPL v2.0 (see license file)
-##
+"""Action script for sync.
+
+@author Edouard DUPIN
+@copyright 2012, Edouard DUPIN, all right reserved
+@license MPL v2.0 (see license file)
+"""
 
 import os
 
@@ -23,27 +21,27 @@ from island import (
 )
 
 
-##
-## @brief Get the global description of the current action
-## @return (string) the description string (fist line if reserved for the overview, all is for the specific display)
-##
+#
+# @brief Get the global description of the current action
+# @return (string) the description string (fist line if reserved for the overview, all is for the specific display)
+#
 def help():
     return "Syncronize all the repository referenced"
 
 
-##
-## @brief at the end of the help wa have the example section
-## @return (string) the Example description string
-##
+#
+# @brief at the end of the help wa have the example section
+# @return (string) the Example description string
+#
 def help_example():
     return "island init https://git.heeroyui.org/atria-tools/island.git"
 
 
-##
-## @brief Add argument to the specific action
-## @param[in,out] my_args (death.Arguments) Argument manager
-## @param[in] section Name of the currect action
-##
+#
+# @brief Add argument to the specific action
+# @param[in,out] my_args (death.Arguments) Argument manager
+# @param[in] section Name of the currect action
+#
 def add_specific_arguments(my_args, section):
     my_args.add(
         "d",
@@ -53,15 +51,15 @@ def add_specific_arguments(my_args, section):
     )
 
 
-##
-## @brief Execute the action required.
-##
-## @return error value [0 .. 50] the <0 value is reserved system ==> else, what you want.
-##         None : No error (return program out 0)
-##         -10 : ACTION is not existing
-##         -11 : ACTION execution system error
-##         -12 : ACTION Wrong parameters
-##
+#
+# @brief Execute the action required.
+#
+# @return error value [0 .. 50] the <0 value is reserved system ==> else, what you want.
+#         None : No error (return program out 0)
+#         -10 : ACTION is not existing
+#         -11 : ACTION execution system error
+#         -12 : ACTION Wrong parameters
+#
 def execute(_arguments):
     just_download = False
     for elem in _arguments:
@@ -69,13 +67,7 @@ def execute(_arguments):
             just_download = True
             debug.info("find remote name: '" + elem.get_arg() + "'")
         else:
-            debug.error(
-                "SYNC Wrong argument: '"
-                + elem.get_option_name()
-                + "' '"
-                + elem.get_arg()
-                + "'"
-            )
+            debug.error("SYNC Wrong argument: '" + elem.get_option_name() + "' '" + elem.get_arg() + "'")
 
     # check system is OK
     manifest.check_lutin_is_init()
@@ -85,18 +77,14 @@ def execute(_arguments):
     # TODO: Load Old manifect to check diff ...
 
     debug.info("update manifest : '" + str(env.get_island_path_manifest()) + "'")
-    is_modify_manifest = commands.check_repository_is_modify(
-        env.get_island_path_manifest()
-    )
-    if is_modify_manifest == True:
+    is_modify_manifest = commands.check_repository_is_modify(env.get_island_path_manifest())
+    if is_modify_manifest is True:
         commands.fetch(env.get_island_path_manifest(), "origin")
     else:
         commands.pull(env.get_island_path_manifest(), "origin")
 
-    file_source_manifest = os.path.join(
-        env.get_island_path_manifest(), configuration.get_manifest_name()
-    )
-    if os.path.exists(file_source_manifest) == False:
+    file_source_manifest = os.path.join(env.get_island_path_manifest(), configuration.get_manifest_name())
+    if os.path.exists(file_source_manifest) is False:
         debug.error("Missing manifest file : '" + str(file_source_manifest) + "'")
 
     mani = manifest.Manifest(file_source_manifest)
@@ -113,16 +101,13 @@ def execute(_arguments):
         git_repo_path = os.path.join(env.get_island_root_path(), elem.path)
         if elem.tag != None:
             debug.warning("Need to select a specific tag version ... " + elem.tag)
-        if os.path.exists(git_repo_path) == False:
+        if os.path.exists(git_repo_path) is False:
             # this is a new clone ==> this is easy ...
             # clone the manifest repository
             address_manifest = ""
-            ### example git@git.plouf.com:basic_folder
+            # example git@git.plouf.com:basic_folder
             address_manifest = elem.select_remote["fetch"]
-            if (
-                elem.select_remote["fetch"][0:4] == "git@"
-                and len(elem.select_remote["fetch"][4:].split(":")) <= 1
-            ):
+            if elem.select_remote["fetch"][0:4] == "git@" and len(elem.select_remote["fetch"][4:].split(":")) <= 1:
                 address_manifest += ":"
             else:
                 address_manifest += "/"
@@ -157,10 +142,7 @@ def execute(_arguments):
                 debug.verbose("Add global mirror: " + str(mirror) + " (done)")
             # debug.info("plop " + str(elem.select_remote.keys()))
             # check submodule if requested:
-            if (
-                elem.select_remote["sync"] == True
-                and os.path.exists(os.path.join(git_repo_path, ".gitmodules")) == True
-            ):
+            if elem.select_remote["sync"] is True and os.path.exists(os.path.join(git_repo_path, ".gitmodules")) is True:
                 debug.info("    ==> update submodule")
                 cmd = "git submodule init"
                 ret = multiprocess.run_command_direct(cmd, cwd=git_repo_path)
@@ -181,17 +163,13 @@ def execute(_arguments):
                     continue
             continue
 
-        if just_download == True:
+        if just_download is True:
             debug.info("SYNC: Already downloaded")
             continue
 
-        if os.path.exists(os.path.join(git_repo_path, ".git")) == False:
+        if os.path.exists(os.path.join(git_repo_path, ".git")) is False:
             # path already exist but it is not used to as a git repo ==> this is an error
-            debug.error(
-                "path '"
-                + git_repo_path
-                + "' is already existing but not used for a git repository. Clean it and restart"
-            )
+            debug.error("path '" + git_repo_path + "' is already existing but not used for a git repository. Clean it and restart")
 
         # simply update the repository ...
         debug.verbose("Fetching project: ")
@@ -201,30 +179,21 @@ def execute(_arguments):
         is_modify = commands.check_repository_is_modify(git_repo_path)
         select_branch = commands.get_current_branch(git_repo_path)
 
-        if is_modify == True:
+        if is_modify is True:
             # fetch the repository
             commands.fetch(git_repo_path, elem.select_remote["name"])
-            debug.warning(
-                "["
-                + elem.name
-                + "] Not update ==> the repository is modified (just fetch)"
-            )
+            debug.warning("[" + elem.name + "] Not update ==> the repository is modified (just fetch)")
             continue
         commands.pull(git_repo_path, elem.select_remote["name"])
 
-        debug.verbose(
-            "select branch = '" + select_branch + "' track: '" + str(ret_track) + "'"
-        )
+        debug.verbose("select branch = '" + select_branch + "' track: '" + str(ret_track) + "'")
         # check submodule if requested:
-        if (
-            elem.select_remote["sync"] == True
-            and os.path.exists(os.path.join(git_repo_path, ".gitmodules")) == True
-        ):
+        if elem.select_remote["sync"] is True and os.path.exists(os.path.join(git_repo_path, ".gitmodules")) is True:
             debug.info("    ==> sync submodule")
-            commands.submodule_sync(git_repo_path)
+            commands.submodule_sync(git_repo_path, elem.select_remote["name"])
 
-    ## Update the links:
+    # Update the links:
     have_error = update_links.update(configuration, mani, "sync-local")
-    if have_error == True:
+    if have_error is True:
         return -1
     return None

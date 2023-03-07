@@ -75,7 +75,7 @@ def file_size(path):
 def file_read_data(path, binary=False):
     if not os.path.isfile(path):
         return ""
-    if binary == True:
+    if binary is True:
         file = open(path, "rb")
     else:
         file = open(path, "r")
@@ -103,9 +103,7 @@ def version_string_to_list(version):
         return [0, 0, 0]
     elems = version.split("-")
     if len(elems[0].split(".")) <= 1:
-        debug.error(
-            "Can not parde a version with wrong version model '" + version + "'"
-        )
+        debug.error("Can not parde a version with wrong version model '" + version + "'")
     for elem in elems[0].split("."):
         out.append(int(elem))
     if len(elems) >= 2:
@@ -113,14 +111,14 @@ def version_string_to_list(version):
     return out
 
 
-##
-## @brief Write data in a specific path.
-## @param[in] path Path of the data might be written.
-## @param[in] data Data To write in the file.
-## @param[in] only_if_new (default: False) Write data only if data is different.
-## @return True Something has been copied
-## @return False Nothing has been copied
-##
+#
+# @brief Write data in a specific path.
+# @param[in] path Path of the data might be written.
+# @param[in] data Data To write in the file.
+# @param[in] only_if_new (default: False) Write data only if data is different.
+# @return True Something has been copied
+# @return False Nothing has been copied
+#
 def file_write_data(path, data: str, only_if_new: bool = False):
     if only_if_new is True:
         if os.path.exists(path) is True:
@@ -129,14 +127,13 @@ def file_write_data(path, data: str, only_if_new: bool = False):
                 return False
     # real write of data:
     create_directory_of_file(path)
-    file = open(path, "w")
-    file.write(data)
-    file.close()
+    with open(path, "w") as file:
+        file.write(data)
     return True
 
 
 def list_to_str(list):
-    if type(list) == type(str()):
+    if isinstance(list, str):
         return list + " "
     else:
         result = ""
@@ -147,9 +144,9 @@ def list_to_str(list):
 
 
 def add_prefix(prefix, list):
-    if type(list) == type(None):
+    if list is None:
         return ""
-    if type(list) == type(str()):
+    if isinstance(list, str):
         return prefix + list
     else:
         if len(list) == 0:
@@ -163,7 +160,7 @@ def add_prefix(prefix, list):
 
 def store_command(cmd_line, file):
     # write cmd line only after to prevent errors ...
-    if file == "" or file == None:
+    if file == "" or file is None:
         return
     debug.verbose("create cmd file: " + file)
     # Create directory:
@@ -182,33 +179,30 @@ def get_type_string(in_type):
         return "list"
     elif type(in_type) == dict:
         return "dict"
-    return "unknow"
+    return "unknown"
 
 
-## List tools:
+# List tools:
 def list_append_and_check(listout, newElement, order):
     for element in listout:
         if element == newElement:
             return
     listout.append(newElement)
-    if order == True:
-        if type(newElement) is not dict:
-            listout.sort()
+    if order is True and not isinstance(newElement, dict):
+        listout.sort()
 
 
 def list_append_to(out_list, in_list, order=False):
     if type(in_list) == str:
         list_append_and_check(out_list, in_list, order)
     elif type(in_list) == list:
-        # mulyiple imput in the list ...
+        # multiple input in the list ...
         for elem in in_list:
             list_append_and_check(out_list, elem, order)
     elif type(in_list) == dict:
         list_append_and_check(out_list, in_list, order)
     else:
-        debug.warning(
-            "can not add in list other than {list/dict/str} : " + str(type(in_list))
-        )
+        debug.warning(f"can not add in list other than {list/dict/str} : {type(in_list)}")
 
 
 def list_append_to_2(listout, module, in_list, order=False):
@@ -223,12 +217,12 @@ def list_append_to_2(listout, module, in_list, order=False):
     list_append_to(listout[module], in_list, order)
 
 
-##
-## @brief The vertion number can be set in an external file to permit to have a singe position to change when create a vew version
-## @param[in] path_module (string) Path of the module position
-## @param[in] filename_or_version (string or list) Path of the version or the real version lint parameter
-## @return (list) List of version number
-##
+#
+# @brief The version number can be set in an external file to permit to have a singe position to change when create a vew version
+# @param[in] path_module (string) Path of the module position
+# @param[in] filename_or_version (string or list) Path of the version or the real version lint parameter
+# @return (list) List of version number
+#
 def get_version_from_file_or_direct(path_module, filename_or_version):
     # check case of iser set the version directly
     if type(filename_or_version) == list:
@@ -236,37 +230,21 @@ def get_version_from_file_or_direct(path_module, filename_or_version):
     # this use a version file
     file_data = file_read_data(os.path.join(path_module, filename_or_version))
     if len(file_data) == 0:
-        debug.warning(
-            "not enought data in the file version size=0 "
-            + path_module
-            + " / "
-            + filename_or_version
-        )
+        debug.warning("not enough data in the file version size=0 " + path_module + " / " + filename_or_version)
         return [0, 0, 0]
     lines = file_data.split("\n")
     if len(lines) != 1:
         debug.warning(
-            "More thatn one line in the file version ==> bas case use mode: 'XX', XX.YYY', 'XX.Y.ZZZ' or 'XX.Y-dev' : "
-            + path_module
-            + " / "
-            + filename_or_version
+            f"More than one line in the file version ==> bas case use mode: 'XX', XX.YYY', 'XX.Y.ZZZ' or 'XX.Y-dev' : {path_module} / {filename_or_version}"
         )
         return [0, 0, 0]
     line = lines[0]
-    debug.debug("Parse line: '" + line + "'")
+    debug.debug(f"Parse line: '{line}'")
     # check if we have "-dev"
     dev_mode = ""
     list_tiret = line.split("-")
     if len(list_tiret) > 2:
-        debug.warning(
-            "more than one '-' in version file "
-            + str(filename_or_version)
-            + " : '"
-            + str(list_tiret)
-            + "' in '"
-            + path_module
-            + "'"
-        )
+        debug.warning(f"more than one '-' in version file {filename_or_version} : '{list_tiret}' in '{path_module}'")
     if len(list_tiret) >= 2:
         dev_mode = list_tiret[1]
         line = list_tiret[0]
@@ -276,29 +254,24 @@ def get_version_from_file_or_direct(path_module, filename_or_version):
         out.append(int(elem))
     if dev_mode != "":
         out.append(dev_mode)
-    debug.debug("    ==> " + str(out))
+    debug.debug(f"    ==> {out}")
     return out
 
 
-##
-## @brief Get the list of the authors frim an input list or a file
-## @param[in] path_module (string) Path of the module position
-## @param[in] filename_or_version (string or list) Path of the author file or the real list of authors
-## @return (list) List of authors
-##
+#
+# @brief Get the list of the authors from an input list or a file
+# @param[in] path_module (string) Path of the module position
+# @param[in] filename_or_version (string or list) Path of the author file or the real list of authors
+# @return (list) List of authors
+#
 def get_maintainer_from_file_or_direct(path_module, filename_or_author):
-    # check case of iser set the version directly
-    if type(filename_or_author) == list:
+    # check case of it is set the version directly
+    if isinstance(filename_or_author, list):
         return filename_or_author
     # this use a version file
     file_data = file_read_data(os.path.join(path_module, filename_or_author))
     if len(file_data) == 0:
-        debug.warning(
-            "not enought data in the file author size=0 "
-            + path_module
-            + " / "
-            + filename_or_author
-        )
+        debug.warning(f"not enough data in the file author size=0 {path_module}/{filename_or_author}")
         return []
     # One user by line and # for comment line
     out = []
@@ -335,9 +308,9 @@ def remove_element(data, to_remove):
 
 
 def get_list_base_display(id, count, elem):
-    if env.get_display_folder_instead_of_git_name() == False:
-        return str(id) + "/" + str(count) + " : " + str(elem.name)
-    return str(id) + "/" + str(count) + " : " + str(elem.path)
+    if env.get_display_folder_instead_of_git_name() is False:
+        return f"{id}/{count} : {elem.name}"
+    return f"{id}/{count} : {elem.path}"
 
 
 is_first_time_sleep = True
@@ -345,15 +318,11 @@ is_first_time_sleep = True
 
 def wait_for_server_if_needed():
     global is_first_time_sleep
-    if is_first_time_sleep == False:
+    if is_first_time_sleep is False:
         is_first_time_sleep = True
         return
     if env.get_wait_between_sever_command() != 0:
-        debug.info(
-            "Wait for server contrition ("
-            + str(env.get_wait_between_sever_command())
-            + " s)"
-        )
+        debug.info(f"Wait for server contrition ({env.get_wait_between_sever_command()} s)")
         time.sleep(env.get_wait_between_sever_command())
 
 
@@ -362,7 +331,7 @@ def filter_name_and_file(root, list_files, filter):
     tmp_list = fnmatch.filter(list_files, filter)
     out = []
     for elem in tmp_list:
-        if os.path.isfile(os.path.join(root, elem)) == True:
+        if os.path.isfile(os.path.join(root, elem)) is True:
             out.append(elem)
     return out
 
@@ -382,37 +351,31 @@ def exclude_list(list_elements, filter):
 
 def import_path_local(path, limit_sub_folder=1, exclude_path=[], base_name="*"):
     out = []
-    debug.debug("island files: " + str(path) + " [START] " + str(limit_sub_folder))
+    debug.debug(f"island files: {path} [START] {limit_sub_folder}")
     if limit_sub_folder == 0:
-        debug.verbose("Subparsing limitation append ...")
+        debug.verbose("Sub-parsing limitation append ...")
         return []
     list_files = get_list_sub_files(path)
     # filter elements:
-    debug.debug("island files: " + str(path) + " : " + str(list_files))
+    debug.debug(f"island files: {path} : {list_files}")
     tmp_list_island_file = filter_name_and_file(path, list_files, base_name)
-    debug.debug(
-        "island files (filtered): " + str(path) + " : " + str(tmp_list_island_file)
-    )
+    debug.debug(f"island files (filtered): {path} : {tmp_list_island_file}")
     # Import the module:
     for filename in tmp_list_island_file:
         out.append(os.path.join(path, filename))
-        debug.debug("     Find a file : '" + str(out[-1]) + "'")
+        debug.debug(f"     Find a file : '{out[-1]}'")
     list_folders_full = get_list_sub_path(path)
     list_folders = []
     for elem in list_folders_full:
         if elem in exclude_path:
-            debug.verbose(
-                "find '" + str(elem) + "' in exclude_path=" + str(exclude_path)
-            )
+            debug.verbose(f"find '{elem}' in exclude_path={exclude_path}")
             continue
         list_folders.append(os.path.join(path, elem))
     # check if we need to parse sub_folder
     if len(list_folders) != 0:
-        debug.debug("     Find a folder : " + str(list_folders))
+        debug.debug(f"     Find a folder : {list_folders}")
         for folder in list_folders:
-            tmp_out = import_path_local(
-                folder, limit_sub_folder - 1, exclude_path, base_name
-            )
+            tmp_out = import_path_local(folder, limit_sub_folder - 1, exclude_path, base_name)
             # add all the elements:
             for elem in tmp_out:
                 out.append(elem)
