@@ -152,7 +152,7 @@ def execute(_arguments):
 
         version_path_file = os.path.join(git_repo_path, "version.txt")
         # update version file:
-        tools.file_write_data(version_path_file, tools.version_to_string(new_version_description))
+        tools.file_write_data(version_path_file, tools.version_to_string(new_version_description) + "\n")
         commands.add_file(git_repo_path, version_path_file)
         commands.commit_all(
             git_repo_path,
@@ -162,7 +162,7 @@ def execute(_arguments):
         commands.checkout(git_repo_path, source_branch)
         commands.reset_hard(git_repo_path, destination_branch)
         new_version_description.append("dev")
-        tools.file_write_data(version_path_file, tools.version_to_string(new_version_description))
+        tools.file_write_data(version_path_file, tools.version_to_string(new_version_description) + "\n")
         commands.add_file(git_repo_path, version_path_file)
         commands.commit_all(git_repo_path, status.default_update_message)
         commands.checkout(git_repo_path, destination_branch)

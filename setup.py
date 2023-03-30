@@ -55,9 +55,9 @@ setup(
         "lxml",
         "realog",
         "death",
+        "PyYAML",
     ],
     include_package_data=True,
-    zip_safe=False,
 )
 
 # To developp: sudo ./setup.py install
