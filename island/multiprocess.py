@@ -7,17 +7,12 @@
 @license MPL v2.0 (see license file)
 """
 
-import os
 import shlex
 import subprocess
 import sys
-import threading
-import time
 
 # Local import
 from realog import debug
-
-from . import env, tools
 
 
 def generic_display_error(
