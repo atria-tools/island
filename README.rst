@@ -86,6 +86,26 @@ Show the status of the workspace
 
   island status
 
+Manual set in production:
+=========================
+
+install generic tools for deployment
+```bash
+pip3 install twine
+```
+
+Create the new version:
+
+```bash
+# Clean previous packages
+rm -rf dist/
+# Compile the package
+python3 -m build
+# Upload the package
+python3 -m twine upload dist/*
+```
+
+
 TODO list
 ---------
 
@@ -123,4 +143,3 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-
