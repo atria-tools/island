@@ -1,32 +1,16 @@
 Lutin
 =====
 
-`island` is a generic source downloader and syncronizer is a FREE software tool.
+`island` is a generic source downloader and synchronizer is a FREE software tool.
 
-It is compatible with basic format of repo-git manifest. This project is created to be easyest to read with simple interface
+It is compatible with basic format of repo-git manifest. This project is created to be easiest to read with simple interface
 (no internal git usage, but user level git usage) The main point to create the "fork" is the non-support of repo of relativity
-in submodule of git (submodule reference with ../xxx.git) This point is really important when you want to have a rellocable
-manifest and project with submodule. The simpl eexample is the atria-soft / generic-library / musicdsp that are availlable on
+in submodule of git (submodule reference with ../xxx.git) This point is really important when you want to have a relocate
+manifest and project with submodule. The simpl example is the atria-soft / generic-library / musicdsp that are available on
 github, gitlab, bitbucket and personal server.
 
 
-.. image:: https://badge.fury.io/py/island.png
-    :target: https://pypi.python.org/pypi/island
-
-Release (master)
-----------------
-
-.. image:: https://travis-ci.org/HeeroYui/island.svg?branch=master
-    :target: https://travis-ci.org/HeeroYui/island
-
-
-
-Developement (dev)
-------------------
-
-.. image:: https://travis-ci.org/HeeroYui/island.svg?branch=dev
-    :target: https://travis-ci.org/HeeroYui/island
-
+![https://badge.fury.io/py/island.png](https://badge.fury.io/py/island.png))
 
 Instructions
 ------------
@@ -78,13 +62,23 @@ Download and synchronize the sources:
 
   island sync
 
-Select all branch availlable in the worktree: (checkout origin/dev in dev branch and track it, do nothing if the branch does not exist)
+Select all branch available in the work-tree: (checkout origin/dev in dev branch and track it, do nothing if the branch does not exist)
 
   island checkout dev
 
 Show the status of the workspace
 
   island status
+
+Develop in local (with virtual env):
+====================================
+
+Create your development environment:
+```bash
+source ./develop.env
+```
+
+Run the application . ```island --help```
 
 Manual set in production:
 =========================

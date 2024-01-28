@@ -1,2 +1,33 @@
+[build-system]
+    requires = ["setuptools", "setuptools-scm"]
+    build-backend = "setuptools.build_meta"
+
+[project]
+    name = "island"
+    version = "1.1.0"
+    requires-python = ">=3.7"
+    dependencies = ["lxml", "realog", "death", "PyYAML"]
+    description = "island generic source manager (like repo in simple mode)"
+    readme = "README.md"
+    authors = [
+        {name = "Edouard DUPIN", email = "yui.heero@gmail.com" } # Optional
+    ]
+    license = {text = "MPL-2"}
+    classifiers = [  
+        "Development Status :: 2 - Pre-Alpha",
+        "License :: OSI Approved :: Mozilla Public License 2.0 (MPL 2.0)",
+        "Programming Language :: Python",
+        "Topic :: Software Development :: Build Tools"
+    ]
+    keywords = ["source", "manager", "repo", "qisrc", "lutin"]
+
+[project.urls]
+    "Homepage" = "http://github.com/HeeroYui/island"
+    "Bug Reports" = "http://github.com/HeeroYui/island/issues"
+    "Source" = "http://github.com/HeeroYui/island"
+
 [tool.black]
-line-length = 150
+    line-length = 150
+
+[project.scripts]
+    island = "island.bin_island:main"

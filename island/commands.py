@@ -17,7 +17,6 @@ import stat
 from realog import debug
 
 from . import (
-    debug,
     env,
     multiprocess,
 )
