@@ -56,7 +56,7 @@ def execute(_arguments):
         debug.error("pull Wrong argument: '" + elem.get_option_name() + "' '" + elem.get_arg() + "'")
 
     # check system is OK
-    manifest.check_lutin_is_init()
+    manifest.check_island_is_init()
 
     configuration = config.get_unique_config()
 

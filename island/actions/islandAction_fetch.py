@@ -56,7 +56,7 @@ def execute(_arguments):
             debug.error("Wrong argument: '" + elem.get_option_name() + "' '" + elem.get_arg() + "'")
 
     # check system is OK
-    manifest.check_lutin_is_init()
+    manifest.check_island_is_init()
 
     debug.info("fetch manifest : '" + str(env.get_island_path_manifest()) + "'")
     commands.fetch(env.get_island_path_manifest(), "origin")

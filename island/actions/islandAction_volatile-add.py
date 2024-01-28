@@ -81,7 +81,7 @@ def execute(_arguments):
     debug.info("Add 'volatile' repository: '" + address_git + "' path='" + path + "'")
 
     # check system is OK
-    manifest.check_lutin_is_init()
+    manifest.check_island_is_init()
 
     # Update the current configuration:
     conf = config.get_unique_config()

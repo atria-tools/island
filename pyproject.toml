@@ -4,7 +4,6 @@
 
 [project]
     name = "island"
-    version = "1.1.0"
     requires-python = ">=3.7"
     dependencies = ["lxml", "realog", "death", "PyYAML"]
     description = "island generic source manager (like repo in simple mode)"
@@ -20,14 +19,19 @@
         "Topic :: Software Development :: Build Tools"
     ]
     keywords = ["source", "manager", "repo", "qisrc", "lutin"]
+    dynamic = ["version"]
+
+[project.scripts]
+    island = "island.bin_island:main"
 
 [project.urls]
     "Homepage" = "http://github.com/HeeroYui/island"
     "Bug Reports" = "http://github.com/HeeroYui/island/issues"
     "Source" = "http://github.com/HeeroYui/island"
 
+[tool.setuptools.dynamic]
+    version = {file = "version.txt"}
+
 [tool.black]
     line-length = 150
 
-[project.scripts]
-    island = "island.bin_island:main"

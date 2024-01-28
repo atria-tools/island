@@ -29,22 +29,22 @@ from . import (
 )
 
 
-def is_lutin_init():
-    if os.path.exists(env.get_island_path()) is False:
+def is_island_init():
+    if not os.path.exists(env.get_island_path()):
         debug.verbose(f"Island is not init: path does not exist: '{env.get_island_path()}'")
         return False
-    if os.path.exists(env.get_island_path_config()) is False and os.path.exists(env.get_island_path_config_old()) is False:
-        debug.verbose(f"Island is not init: config does not exist: '{env.get_island_path_config()}' or '{env.get_island_path_config_old()}'")
+    if not os.path.exists(env.get_island_path_config()):
+        debug.verbose(f"Island is not init: config does not exist: '{env.get_island_path_config()}'")
         return False
-    if os.path.exists(env.get_island_path_manifest()) is False:
+    if not os.path.exists(env.get_island_path_manifest()):
         debug.verbose(f"Island is not init: Manifest does not exist: '{env.get_island_path_manifest()}'")
         return False
     return True
 
 
-def check_lutin_is_init():
+def check_island_is_init():
     # check if .XXX exist (create it if needed)
-    if not is_lutin_init():
+    if not is_island_init():
         debug.error(f"System not init: missing config: '{env.get_island_path()}'. Call <island init> first")
         exit(-1)
 

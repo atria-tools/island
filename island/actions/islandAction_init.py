@@ -75,7 +75,7 @@ def execute(_arguments):
     debug.info("Init with: '" + address_manifest + "' branch='" + branch + "' name of manifest='" + manifest_name + "'")
 
     # check if .XXX exist (create it if needed)
-    if manifest.is_lutin_init() is True:
+    if manifest.is_island_init() is True:
         debug.error("System already init: path already exist: '" + str(env.get_island_path()) + "'")
 
     tools.create_directory(env.get_island_path())

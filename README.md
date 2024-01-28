@@ -73,9 +73,16 @@ Show the status of the workspace
 Develop in local (with virtual env):
 ====================================
 
+see: https://setuptools.pypa.io/en/latest/userguide/development_mode.html
+
 Create your development environment:
 ```bash
-source ./develop.env
+# Create a virtual environment
+python -m venv .venv
+# Activate the python virtual environment
+source .venv/bin/activate
+# Install the package in editable mode (dynamic use of files) 
+pip install --editable .
 ```
 
 Run the application . ```island --help```
@@ -92,7 +99,7 @@ Create the new version:
 
 ```bash
 # Clean previous packages
-rm -rf dist/
+ \rm -rf dist/
 # Compile the package
 python3 -m build
 # Upload the package

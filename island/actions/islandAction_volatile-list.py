@@ -44,7 +44,7 @@ def execute(_arguments):
         debug.error("Wrong argument: '" + elem.get_option_name() + "' '" + elem.get_arg() + "'")
 
     # check system is OK
-    manifest.check_lutin_is_init()
+    manifest.check_island_is_init()
 
     conf = config.get_unique_config()
     volatiles = conf.get_volatile()
