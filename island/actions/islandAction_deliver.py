@@ -59,14 +59,22 @@ def execute(_arguments):
             debug.info("find destination branch name: '" + elem.get_arg() + "'")
             argument_to = elem.get_arg()
         else:
-            debug.error("Wrong argument: '" + elem.get_option_name() + "' '" + elem.get_arg() + "'")
+            debug.error(
+                "Wrong argument: '"
+                + elem.get_option_name()
+                + "' '"
+                + elem.get_arg()
+                + "'"
+            )
 
     # check system is OK
     manifest.check_island_is_init()
 
     configuration = config.get_unique_config()
 
-    file_source_manifest = os.path.join(env.get_island_path_manifest(), configuration.get_manifest_name())
+    file_source_manifest = os.path.join(
+        env.get_island_path_manifest(), configuration.get_manifest_name()
+    )
     if os.path.exists(file_source_manifest) is False:
         debug.error("Missing manifest file : '" + str(file_source_manifest) + "'")
 
@@ -80,7 +88,9 @@ def execute(_arguments):
         destination_branch = argument_to
 
     all_project = mani.get_all_configs()
-    debug.info("Check if all project are on master: " + str(len(all_project)) + " projects")
+    debug.info(
+        "Check if all project are on master: " + str(len(all_project)) + " projects"
+    )
     id_element = 0
     deliver_available = True
     for elem in all_project:
@@ -107,9 +117,13 @@ def execute(_arguments):
     for elem in all_project:
         id_element += 1
         base_display = tools.get_list_base_display(id_element, len(all_project), elem)
-        debug.info("deliver: ========================================================================")
+        debug.info(
+            "deliver: ========================================================================"
+        )
         debug.info("deliver: == " + base_display)
-        debug.info("deliver: ========================================================================")
+        debug.info(
+            "deliver: ========================================================================"
+        )
 
         git_repo_path = os.path.join(env.get_island_root_path(), elem.path)
         # Check the validity of the version,
@@ -152,17 +166,31 @@ def execute(_arguments):
 
         version_path_file = os.path.join(git_repo_path, "version.txt")
         # update version file:
-        tools.file_write_data(version_path_file, tools.version_to_string(new_version_description) + "\n")
-        commands.add_file(git_repo_path, version_path_file)
+        tools.file_write_data(
+            version_path_file, tools.version_to_string(new_version_description) + "\n"
+        )
+        if commands.call_island_release_script(git_repo_path):
+            commands.add_all(git_repo_path)
+        else:
+            commands.add_file(git_repo_path, version_path_file)
         commands.commit_all(
             git_repo_path,
             "[RELEASE] Release v" + tools.version_to_string(new_version_description),
         )
-        commands.tag(git_repo_path, "v" + tools.version_to_string(new_version_description))
+        commands.tag(
+            git_repo_path, "v" + tools.version_to_string(new_version_description)
+        )
         commands.checkout(git_repo_path, source_branch)
         commands.reset_hard(git_repo_path, destination_branch)
+        # add a 1 at the version (development mode is to prevent the system to min consider snapshot as official versions)
+        new_version_description[2] += 1
         new_version_description.append("dev")
-        tools.file_write_data(version_path_file, tools.version_to_string(new_version_description) + "\n")
-        commands.add_file(git_repo_path, version_path_file)
+        tools.file_write_data(
+            version_path_file, tools.version_to_string(new_version_description) + "\n"
+        )
+        if commands.call_island_release_script(git_repo_path):
+            commands.add_all(git_repo_path)
+        else:
+            commands.add_file(git_repo_path, version_path_file)
         commands.commit_all(git_repo_path, status.default_update_message)
         commands.checkout(git_repo_path, destination_branch)
