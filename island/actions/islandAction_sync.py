@@ -190,7 +190,7 @@ def execute(_arguments):
             continue
         commands.pull(git_repo_path, elem.select_remote["name"])
 
-        debug.verbose("select branch = '" + select_branch + "' track: '" + str(ret_track) + "'")
+        debug.verbose("select branch = '" + str(select_branch) + "' track: '" + str(ret_track) + "'")
         # check submodule if requested:
         if elem.select_remote["sync"] is True and os.path.exists(os.path.join(git_repo_path, ".gitmodules")) is True:
             debug.info("    ==> sync submodule")

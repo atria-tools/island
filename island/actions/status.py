@@ -42,6 +42,10 @@ def display_status(elem, argument_remote_name, argument_display_tag, id_element,
     list_branch = commands.get_list_branch_all(git_repo_path)
     select_branch = commands.get_current_branch(git_repo_path)
     debug.verbose("List all branch: " + str(list_branch))
+    if select_branch == None:
+        # a repository without any commit (empty on the server) has no branch at all
+        debug.info(base_display + volatile + "\r\t\t\t\t\t\t\t     (NO COMMIT)")
+        return
     if select_branch[: len(base_name_of_a_tagged_branch)] != base_name_of_a_tagged_branch:
         # get tracking branch
         tracking_remote_branch = commands.get_tracking_branch(git_repo_path, argument_remote_name, select_branch)
