@@ -421,7 +421,7 @@ def deliver_push(elem, argument_remote_name, destination_branch, source_branch, 
     tracking_remote_branch = commands.get_tracking_branch(git_repo_path, argument_remote_name, destination_branch)
     if tracking_remote_branch == None:
         debug.warning("deliver-push: " + base_display + " ==> '" + destination_branch + "' have no tracking branch")
-        deliver_available = False
+        return
     sha_1_destination_tracking = commands.get_sha1_for_branch(git_repo_path, tracking_remote_branch)
     if sha_1_destination == sha_1_destination_tracking:
         debug.info("deliver-push: " + base_display + " ==> '" + destination_branch + "' && '" + tracking_remote_branch + "' have the same sha1")
@@ -431,8 +431,8 @@ def deliver_push(elem, argument_remote_name, destination_branch, source_branch, 
     sha_1_source = commands.get_sha1_for_branch(git_repo_path, source_branch)
     tracking_remote_branch = commands.get_tracking_branch(git_repo_path, argument_remote_name, source_branch)
     if tracking_remote_branch == None:
-        debug.info("deliver-push: " + base_display + " ==> '" + source_branch + "' have no tracking branch")
-        deliver_available = False
+        debug.warning("deliver-push: " + base_display + " ==> '" + source_branch + "' have no tracking branch")
+        return
     sha_1_source_tracking = commands.get_sha1_for_branch(git_repo_path, tracking_remote_branch)
     if sha_1_source == sha_1_source_tracking:
         debug.info("deliver-push: " + base_display + " ==> '" + source_branch + "' && '" + tracking_remote_branch + "' have the same sha1")
