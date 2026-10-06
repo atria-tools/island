@@ -3,7 +3,7 @@
 from pathlib import Path
 import re
 
-from conftest import git, run_island
+from conftest import SERVER, git, run_island
 
 
 def status_lines(output: str) -> dict[str, str]:
@@ -29,13 +29,28 @@ def test_sync_clones_every_project_on_the_default_branch(workspace: Path) -> Non
     assert (workspace / "empty" / ".git").is_dir()
 
 
+def test_sync_clones_on_the_default_branch_of_the_manifest(workspace: Path) -> None:
+    assert git("branch", "--show-current", cwd=workspace / "alpha").strip() == "dev"
+    assert git("branch", "--show-current", cwd=workspace / "libs" / "beta").strip() == "dev"
+
+
+def test_sync_keeps_the_branch_of_the_server_when_the_default_one_is_missing(tmp_path: Path, servers: Path) -> None:
+    workspace = tmp_path / "other"
+    workspace.mkdir()
+    run_island("init", SERVER + ":manifest.git", cwd=workspace)
+    result = run_island("sync", cwd=workspace)
+    assert "has no branch 'dev': clone its default branch" in result.stdout
+    assert git("branch", "--show-current", cwd=workspace / "solo").strip() == "main"
+
+
 def test_status_shows_each_project_and_an_empty_one(workspace: Path) -> None:
     result = run_island("status", cwd=workspace)
     assert "Traceback" not in result.stderr, result.stderr
     lines = status_lines(result.stdout)
     assert lines[".island/manifest"] == "(main -> origin/main)"
-    assert lines["alpha"].endswith("-> origin/main)")
-    assert lines["libs/beta"].endswith("-> origin/main)")
+    assert lines["alpha"] == "(dev -> origin/dev)"
+    assert lines["libs/beta"] == "(dev -> origin/dev)"
+    assert lines["solo"] == "(main -> origin/main)"
     assert lines["empty"] == "(NO COMMIT)"
 
 
@@ -52,10 +67,10 @@ def test_status_works_from_a_sub_folder(workspace: Path) -> None:
 
 
 def test_checkout_switches_the_projects_to_a_branch(workspace: Path) -> None:
-    result = run_island("checkout", "dev", cwd=workspace)
+    result = run_island("checkout", "main", cwd=workspace)
     assert "Traceback" not in result.stderr, result.stderr
-    assert git("branch", "--show-current", cwd=workspace / "alpha").strip() == "dev"
-    assert git("branch", "--show-current", cwd=workspace / "libs" / "beta").strip() == "dev"
+    assert git("branch", "--show-current", cwd=workspace / "alpha").strip() == "main"
+    assert git("branch", "--show-current", cwd=workspace / "libs" / "beta").strip() == "main"
 
 
 def test_sync_pulls_a_new_commit(workspace: Path, servers: Path) -> None:
@@ -63,7 +78,7 @@ def test_sync_pulls_a_new_commit(workspace: Path, servers: Path) -> None:
     (work / "NEW.md").write_text("new\n")
     git("add", ".", cwd=work)
     git("commit", "--quiet", "-m", "second", cwd=work)
-    git("push", "--quiet", "origin", "HEAD:main", cwd=work)
+    git("push", "--quiet", "origin", "HEAD:dev", cwd=work)
     result = run_island("sync", cwd=workspace)
     assert "Traceback" not in result.stderr, result.stderr
     assert (workspace / "alpha" / "NEW.md").exists()

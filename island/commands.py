@@ -397,13 +397,35 @@ def rebase(path_repository, destination):
     return return_value
 
 
+def remote_has_branch(address, branch_name):
+    """Tell whether the repository at an address has a branch.
+
+    :param address: Address of the repository on the server
+    :param branch_name: Name of the branch
+    :return: True when the branch exists on the server
+    """
+    cmd = "git ls-remote --exit-code --heads " + address + " " + branch_name
+    debug.verbose("execute : " + cmd)
+    return multiprocess.run_command(cmd)[0] == 0
+
+
 def clone(path_repository, address, branch_name=None, origin=None):
+    """Clone a repository, on a branch when the server has it, else on its default branch.
+
+    :param path_repository: Folder of the clone
+    :param address: Address of the repository on the server
+    :param branch_name: Branch to check out (None or "": the default branch of the server)
+    :param origin: Name of the remote (None or "": 'origin')
+    """
     if address == None or address == "":
         raise ValueError("Missing address")
     cmd = "git clone " + address
-    if branch_name != None and branch_name == "":
-        cmd += " --branch " + branch_name
-    if origin != None and origin == "":
+    if branch_name != None and branch_name != "":
+        if remote_has_branch(address, branch_name):
+            cmd += " --branch " + branch_name
+        else:
+            debug.warning("'" + address + "' has no branch '" + branch_name + "': clone its default branch")
+    if origin != None and origin != "":
         cmd += " --origin " + origin
     if path_repository != None and path_repository != "":
         cmd += " " + path_repository

@@ -34,7 +34,7 @@ def help():
 # @param[in] section Name of the currect action
 #
 def add_specific_arguments(my_args, section):
-    my_args.add("b", "branch", haveParam=True, desc="Select branch to display")
+    my_args.add("b", "branch", haveParam=True, desc="Branch of the manifest (default: the default branch of the server)")
     my_args.add("m", "manifest", haveParam=True, desc="Name of the manifest")
     my_args.add("k", "ssh-key", haveParam=True, desc="Ssh private key used to access on the git servers (set in all the repository)")
     my_args.add("u", "user-name", haveParam=True, desc="Git user name (set in all the repository)")
@@ -55,7 +55,7 @@ def execute(_arguments):
         debug.error("Missing argument to execute the current action ...")
 
     # the configuration available:
-    branch = "master"
+    branch = ""  # the default branch of the server
     manifest_name = "default.xml"
     address_manifest = ""
     ssh_key = ""

@@ -203,7 +203,7 @@ class ManifestVSC:
             if conf.select_remote == None:
                 debug.error(f"missing remote for project: {conf.name}")
 
-            conf.branch = default["revision"]
+            conf.branch = default["default-branch"]
             out.append(conf)
         # create a temporary variable to transmit the remote to includes
         upper_remotes_forward = copy.deepcopy(upper_remotes)
@@ -556,7 +556,7 @@ class Manifest:
             if conf.select_remote == None:
                 debug.error(f"missing remote for project: {conf.name}")
 
-            conf.branch = default["revision"]
+            conf.branch = default["default-branch"]
             out.append(conf)
         # create a temporary variable to transmit the remote to includes
         upper_remotes_forward = copy.deepcopy(upper_remotes)

@@ -24,6 +24,7 @@ MANIFEST = """<?xml version="1.0" encoding="UTF-8"?>
 	<project name="alpha.git" path="alpha"/>
 	<project name="beta.git" path="libs/beta"/>
 	<project name="empty.git" path="empty"/>
+	<project name="solo.git" path="solo"/>
 	<link source=".island/manifest/default.xml" destination="manifest.xml"/>
 </manifest>
 """
@@ -34,8 +35,8 @@ def git(*args: str, cwd: Path) -> str:
     return subprocess.run(["git", *args], cwd=cwd, check=True, capture_output=True, text=True).stdout
 
 
-def make_server_repository(servers: Path, name: str, files: dict[str, str] | None) -> None:
-    """Create a bare repository on the local server, with 'main' and 'dev' when files are given (none: an empty one)."""
+def make_server_repository(servers: Path, name: str, files: dict[str, str] | None, branches: tuple[str, ...] = ("main", "dev")) -> None:
+    """Create a bare repository on the local server, with its branches when files are given (none: an empty one)."""
     bare = servers / name
     git("init", "--quiet", "--bare", "--initial-branch=main", str(bare), cwd=servers)
     if files is None:
@@ -46,7 +47,7 @@ def make_server_repository(servers: Path, name: str, files: dict[str, str] | Non
         (work / file_name).write_text(content)
     git("add", ".", cwd=work)
     git("commit", "--quiet", "-m", "first", cwd=work)
-    git("push", "--quiet", "origin", "HEAD:main", "HEAD:dev", cwd=work)
+    git("push", "--quiet", "origin", *(f"HEAD:{branch}" for branch in branches), cwd=work)
 
 
 @pytest.fixture
@@ -72,6 +73,7 @@ def servers(tmp_path: Path, isolated_git: Path) -> Path:
     make_server_repository(servers, "alpha.git", {"README.md": "alpha\n"})
     make_server_repository(servers, "beta.git", {"README.md": "beta\n"})
     make_server_repository(servers, "empty.git", None)
+    make_server_repository(servers, "solo.git", {"README.md": "solo\n"}, branches=("main",))
     return servers
 
 
@@ -95,7 +97,7 @@ def workspace(tmp_path: Path, servers: Path) -> Path:
     """A workspace initialized on the local manifest and synchronized."""
     workspace = tmp_path / "workspace"
     workspace.mkdir()
-    result = run_island("init", SERVER + ":manifest.git", "--branch=main", cwd=workspace)
+    result = run_island("init", SERVER + ":manifest.git", cwd=workspace)
     assert result.returncode == 0, result.stdout + result.stderr
     result = run_island("sync", cwd=workspace)
     assert result.returncode == 0, result.stdout + result.stderr
