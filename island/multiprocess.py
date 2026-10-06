@@ -47,14 +47,6 @@ def generic_display_error(
             debug.warning("ERROR GIT(" + type_name + "): Unknow error return_value=" + str(return_value[0]))
 
 
-def run_command_direct_shell(cmd_line, cwd=None, shell=False):
-    # prepare command line:
-    args = shlex.split(cmd_line)
-    debug.verbose("cmd = " + str(args))
-    subprocess.check_call(args, shell=shell)
-    return ""
-
-
 #
 # @brief Execute the command and ruturn generate data
 #
