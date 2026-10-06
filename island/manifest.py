@@ -77,7 +77,7 @@ class ManifestVSC:
     def __init__(self, manifest_yaml: str) -> None:
         self.manifest_yaml = manifest_yaml
         self.projects: list[dict] = []
-        self.default = None
+        self.default: dict[str, Any] | None = None
         self.default_base = {
             "remote": "origin",
             "revision": "master",  # todo: rename 'branch-release'
@@ -219,7 +219,7 @@ class Manifest:
     def __init__(self, manifest_xml: str) -> None:
         self.manifest_xml = manifest_xml
         self.projects: list[dict] = []
-        self.default = None
+        self.default: dict[str, Any] | None = None
         self.default_base = {
             "remote": "origin",
             "revision": "master",  # todo: rename 'branch-release'
@@ -239,7 +239,7 @@ class Manifest:
         # check error in manifest (double path ...)
         self._check_double_path([])
 
-    def get_links(self) -> dict[str, Any]:
+    def get_links(self) -> list[dict]:
         return self.links
 
     def _load(self) -> None:
@@ -257,9 +257,9 @@ class Manifest:
                 fetch = ""
                 for attr in child.attrib:
                     if attr == "name":
-                        name = child.attrib[attr]
+                        name = str(child.attrib[attr])
                     elif attr == "fetch":
-                        fetch = child.attrib[attr]
+                        fetch = str(child.attrib[attr])
                         if len(fetch) >= 2 and fetch[:2] == "..":
                             # we have a relative island manifest ==> use local manifest origin to get the full origin
                             cmd = "git remote get-url origin"
@@ -282,7 +282,7 @@ class Manifest:
                             fetch = fetch[:-1]
                     else:
                         debug.error(
-                            f"(l:{child.sourceline}) Parsing the manifest : unknown '{child.tag}'  attribute : '{attr}', available:[name,fetch]"
+                            f"(l:{child.sourceline}) Parsing the manifest : unknown '{child.tag}'  attribute : '{attr!s}', available:[name,fetch]"
                         )
                 debug.debug(f"(l:{child.sourceline})     find '{child.tag}' : name='{name}' fetch='{fetch}'")
                 # parse the sub global mirror list
@@ -294,14 +294,14 @@ class Manifest:
                         mirror_fetch = ""
                         for attr_2 in child_2.attrib:
                             if attr_2 == "name":
-                                mirror_name = child_2.attrib[attr_2]
+                                mirror_name = str(child_2.attrib[attr_2])
                             elif attr_2 == "fetch":
-                                mirror_fetch = child_2.attrib[attr_2]
+                                mirror_fetch = str(child_2.attrib[attr_2])
                                 while len(mirror_fetch) > 1 and (mirror_fetch[-1] == "\\" or mirror_fetch[-1] == "/"):
                                     mirror_fetch = mirror_fetch[:-1]
                             else:
                                 debug.error(
-                                    f"(l:{child_2.sourceline}) Parsing the manifest : unknown '{child_2.tag}'  attribute : '{attr_2}', available:[name,fetch]"
+                                    f"(l:{child_2.sourceline}) Parsing the manifest : unknown '{child_2.tag}'  attribute : '{attr_2!s}', available:[name,fetch]"
                                 )
                         debug.debug(f"mirror: '{mirror_name}' '{mirror_fetch}'")
                         if mirror_name == "":
@@ -324,15 +324,15 @@ class Manifest:
                 name = ""
                 for attr in child.attrib:
                     if attr == "type":
-                        type_manifest = child.attrib[attr]
+                        type_manifest = str(child.attrib[attr])
                         if type_manifest not in ["vcs"]:
                             debug.error(
                                 f"(l:{child.sourceline}) Parsing the manifest: {child.tag} attribute '{attr}={type_manifest}' value available: [vcs]"
                             )
                     elif attr == "name":
-                        name = child.attrib[attr]
+                        name = str(child.attrib[attr])
                     else:
-                        debug.error(f"(l:{child.sourceline}) Parsing the manifest : unknown '{child.tag}'  attribute : '{attr}', available:[name]")
+                        debug.error(f"(l:{child.sourceline}) Parsing the manifest : unknown '{child.tag}'  attribute : '{attr!s}', available:[name]")
                 new_name_yaml = os.path.join(os.path.dirname(self.manifest_xml), name)
                 if os.path.exists(new_name_yaml) is False:
                     debug.error(f"(l:{child.sourceline}) The file does not exist : '{new_name_yaml}'")
@@ -342,9 +342,9 @@ class Manifest:
                 name = ""
                 for attr in child.attrib:
                     if attr == "name":
-                        name = child.attrib[attr]
+                        name = str(child.attrib[attr])
                     else:
-                        debug.error(f"(l:{child.sourceline}) Parsing the manifest : unknown '{child.tag}'  attribute : '{attr}', available:[name]")
+                        debug.error(f"(l:{child.sourceline}) Parsing the manifest : unknown '{child.tag}'  attribute : '{attr!s}', available:[name]")
                 debug.debug(f"(l:{child.sourceline})     find '{child.tag}' : name='{name}'")
                 # check if the file exist ...
                 new_name_xml = os.path.join(os.path.dirname(self.manifest_xml), name)
@@ -362,19 +362,19 @@ class Manifest:
 
                 for child_2 in child:
                     if child_2.tag == "branch-release":
-                        deliver_master = child_2.text
+                        deliver_master = child_2.text or ""
                     elif child_2.tag == "branch-develop":
-                        deliver_source = child_2.text
+                        deliver_source = child_2.text or ""
                     elif child_2.tag == "default-branch":
-                        default_branch = child_2.text
+                        default_branch = child_2.text or ""
                     elif child_2.tag == "default-remote":
-                        remote = child_2.text
+                        remote = child_2.text or ""
                     elif child_2.tag == "deliver-mode":
-                        deliver_mode = child_2.text
+                        deliver_mode = child_2.text or ""
                         if deliver_mode not in ["merge", "fast_forward"]:
                             debug.error(f"(l:{child.sourceline}) Parsing the manifest: option 'deliver-mode' value available: [merge,fast_forward]")
                     elif child_2.tag == "synchronize-submodule":
-                        sync_tmp = child_2.text
+                        sync_tmp = child_2.text or ""
                         if sync_tmp.lower() == "true" or sync_tmp == "1" or sync_tmp.lower() == "yes":
                             sync = True
                         elif sync_tmp.lower() == "false" or sync_tmp == "0" or sync_tmp.lower() == "no":
@@ -412,14 +412,14 @@ class Manifest:
                 tag_sha1 = None
                 for attr in child.attrib:
                     if attr == "name":
-                        name = child.attrib[attr]
+                        name = str(child.attrib[attr])
                     elif attr == "path":
-                        path = child.attrib[attr]
+                        path = str(child.attrib[attr])
                     elif attr == "tag":
-                        tag_sha1 = child.attrib[attr]
+                        tag_sha1 = str(child.attrib[attr])
                     else:
                         debug.error(
-                            f"(l:{child.sourceline}) Parsing the manifest: unknown '{child.tag}'  attribute : '{attr}', available:[name,tag,sync-s]"
+                            f"(l:{child.sourceline}) Parsing the manifest: unknown '{child.tag}'  attribute : '{attr!s}', available:[name,tag,sync-s]"
                         )
                 if name == "":
                     debug.error(
@@ -440,12 +440,12 @@ class Manifest:
                 destination = ""
                 for attr in child.attrib:
                     if attr == "source":
-                        source = child.attrib[attr]
+                        source = str(child.attrib[attr])
                     elif attr == "destination":
-                        destination = child.attrib[attr]
+                        destination = str(child.attrib[attr])
                     else:
                         debug.error(
-                            f"(l:{child.sourceline}) Parsing the manifest: unknown '{child.tag}'  attribute : '{attr}', available:[source,destination]"
+                            f"(l:{child.sourceline}) Parsing the manifest: unknown '{child.tag}'  attribute : '{attr!s}', available:[source,destination]"
                         )
                 if source == "":
                     debug.error(
@@ -609,9 +609,9 @@ def tag_manifest(manifest_xml_filename, all_tags):
             name = ""
             for attr in child.attrib:
                 if attr == "name":
-                    name = child.attrib[attr]
+                    name = str(child.attrib[attr])
                 else:
-                    debug.error(f"(l:{child.sourceline}) Parsing the manifest : unknown '{child.tag}'  attribute : '{attr}', available:[name]")
+                    debug.error(f"(l:{child.sourceline}) Parsing the manifest : unknown '{child.tag}'  attribute : '{attr!s}', available:[name]")
             debug.debug(f"(l:{child.sourceline})     find '{child.tag}' : name='{name}'")
             # check if the file exist ...
             new_name_xml = os.path.join(os.path.dirname(manifest_xml_filename), name)
@@ -625,12 +625,12 @@ def tag_manifest(manifest_xml_filename, all_tags):
             name = ""
             for attr in child.attrib:
                 if attr == "name":
-                    name = child.attrib[attr]
+                    name = str(child.attrib[attr])
                 elif attr in ("path", "tag"):
                     continue
                 else:
                     debug.error(
-                        f"(l:{child.sourceline}) Parsing the manifest: unknown '{child.tag}'  attribute : '{attr}', available:[name,tag,sync-s]"
+                        f"(l:{child.sourceline}) Parsing the manifest: unknown '{child.tag}'  attribute : '{attr!s}', available:[name,tag,sync-s]"
                     )
             if name == "":
                 debug.error(f"(l:{child.sourceline}) Parsing the manifest: '{child.tag}'  missing attribute: 'name' ==> specify the git to clone.")
@@ -662,7 +662,7 @@ def tag_clear(manifest_xml_filename):
         return False
     for child in root:
         if isinstance(child, etree._Comment):
-            debug.verbose("(l:{child.sourceline})     comment='{child.text}'")
+            debug.verbose(f"(l:{child.sourceline})     comment='{child.text}'")
             continue
         if child.tag == "remote":
             continue
@@ -670,9 +670,9 @@ def tag_clear(manifest_xml_filename):
             name = ""
             for attr in child.attrib:
                 if attr == "name":
-                    name = child.attrib[attr]
+                    name = str(child.attrib[attr])
                 else:
-                    debug.error(f"(l:{child.sourceline}) Parsing the manifest : unknown '{child.tag}'  attribute : '{attr}', available:[name]")
+                    debug.error(f"(l:{child.sourceline}) Parsing the manifest : unknown '{child.tag}'  attribute : '{attr!s}', available:[name]")
             debug.debug("(l:{child.sourceline})     find '{child.tag}' : name='{name}'")
             # check if the file exist ...
             new_name_xml = os.path.join(os.path.dirname(manifest_xml_filename), name)

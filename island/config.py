@@ -8,6 +8,7 @@
 import copy
 import json
 import os
+from typing import Any
 
 # Local import
 from realog import debug
@@ -29,8 +30,8 @@ class Config:
         self._ssh_key = ""
         self._user_name = ""
         self._user_email = ""
-        self._volatiles = []
-        self._current_link = []
+        self._volatiles: list[dict[str, str]] = []
+        self._current_link: list[dict[str, str]] = []
         self.load()
 
     def load(self) -> bool:
@@ -64,7 +65,7 @@ class Config:
         return False
 
     def store(self) -> bool:
-        data = {}
+        data: dict[str, Any] = {}
         data["repo"] = self._repo
         data["branch"] = self._branch
         data["manifest_name"] = self._manifest_name
@@ -141,13 +142,6 @@ class Config:
                 return False
         self._current_link.append({"source": source, "destination": destination})
         return True
-
-    def remove_link(self, destination) -> None:
-        for elem in self._current_link:
-            if elem["destination"] == destination:
-                del self._current_link[elem]
-                return
-        debug.warning("Request remove link that does not exist")
 
     def clear_links(self):
         self._current_link = []

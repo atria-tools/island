@@ -59,3 +59,14 @@ lines-after-imports = 2
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+[tool.mypy]
+python_version = "3.11"
+files = ["island", "tests"]
+warn_unused_ignores = true
+warn_redundant_casts = true
+
+[[tool.mypy.overrides]]
+# the libraries of the same author, without type information
+module = ["realog", "realog.*", "death", "death.*"]
+ignore_missing_imports = true
