@@ -16,6 +16,16 @@ def status_lines(output: str) -> dict[str, str]:
     return lines
 
 
+def result_lines(output: str) -> dict[str, str]:
+    """The result of each project of an action run on several projects at a time, by path."""
+    lines = {}
+    for line in output.split("\n"):
+        match = re.match(r"\[\s*\d+/\d+\] (\S+)\s+(.*)$", line)
+        if match:
+            lines[match.group(1)] = match.group(2).strip()
+    return lines
+
+
 def test_help_lists_the_actions(tmp_path: Path, isolated_git: Path) -> None:
     result = run_island("--help", cwd=tmp_path)
     for action in ("init", "sync", "status", "checkout", "ssh-key", "user"):
@@ -263,4 +273,34 @@ def test_init_fails_on_a_manifest_it_cannot_clone(tmp_path: Path, servers: Path)
     workspace = tmp_path / "other"
     workspace.mkdir()
     result = run_island("init", SERVER + ":missing.git", cwd=workspace)
+    assert result.returncode != 0
+
+
+def test_fetch_tells_what_each_project_has_to_pull(workspace: Path, servers: Path) -> None:
+    work = servers / "work-alpha.git"
+    for index in range(2):
+        (work / f"NEW{index}.md").write_text("new\n")
+        git("add", ".", cwd=work)
+        git("commit", "--quiet", "-m", f"new {index}", cwd=work)
+    git("push", "--quiet", "origin", "HEAD:dev", cwd=work)
+    git("checkout", "--quiet", "-b", "local-only", cwd=workspace / "libs" / "beta")
+    result = run_island("fetch", cwd=workspace)
+    assert result.returncode == 0, result.stdout + result.stderr
+    lines = result_lines(result.stdout)
+    assert lines["alpha"] == "to pull    dev: 2 new on origin/dev"
+    assert lines["libs/beta"] == "no upstream local-only has no tracking branch"
+    assert lines["solo"] == "up to date main"
+    assert lines["empty"] == "empty      no commit"
+    assert lines[".island/manifest"] == "up to date main"
+    assert "fetch: 5 projects in " in result.stdout
+    # nothing is pulled
+    assert (workspace / "alpha" / "NEW0.md").exists() is False
+
+
+def test_fetch_goes_on_after_a_project_it_cannot_fetch(workspace: Path) -> None:
+    git("remote", "set-url", "origin", "git@island.test:missing.git", cwd=workspace / "alpha")
+    result = run_island("fetch", cwd=workspace)
+    lines = result_lines(result.stdout)
+    assert lines["alpha"].startswith("error")
+    assert lines["solo"] == "up to date main"
     assert result.returncode != 0

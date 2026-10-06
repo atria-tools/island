@@ -16,8 +16,10 @@ from island import (
     config,
     env,
     manifest,
-    tools,
+    parallel,
 )
+from island.parallel import ProjectResult, Status
+from island.repo_config import RepoConfig
 
 
 def help() -> str:
@@ -26,6 +28,35 @@ def help() -> str:
 
 def add_specific_arguments(my_args: Arguments, section: str) -> None:
     my_args.add("r", "remote", haveParam=True, desc="Name of the remote server")
+
+
+def fetch_project(elem: RepoConfig, remote_name: str) -> ProjectResult:
+    """Fetch a project, then tell how its branch stands against its tracking branch."""
+    git_repo_path = os.path.join(env.get_island_root_path(), elem.path)
+    if os.path.exists(git_repo_path) is False:
+        return ProjectResult(Status.SKIPPED, "missing", "not downloaded (island sync)")
+    if os.path.exists(os.path.join(git_repo_path, ".git")) is False:
+        return ProjectResult(Status.ERROR, "error", "the folder exists but is not a git repository")
+    ret = commands.fetch(git_repo_path, remote_name)
+    if ret.returncode != 0:
+        return ProjectResult(Status.ERROR, "error", ret.stderr.split("\n")[-1])
+    return compare_with_tracking_branch(git_repo_path)
+
+
+def compare_with_tracking_branch(git_repo_path: str) -> ProjectResult:
+    """Tell how the current branch of a repository stands against its tracking branch."""
+    select_branch = commands.get_current_branch(git_repo_path)
+    if select_branch is None:
+        return ProjectResult(Status.SKIPPED, "empty", "no commit")
+    tracking_branch = commands.get_current_tracking_branch(git_repo_path)
+    if tracking_branch is None:
+        return ProjectResult(Status.WARNING, "no upstream", select_branch + " has no tracking branch")
+    behind = commands.count_commits(git_repo_path, "HEAD", tracking_branch)
+    ahead = commands.count_commits(git_repo_path, tracking_branch, "HEAD")
+    to_push = f", {ahead} to push" if ahead != 0 else ""
+    if behind != 0:
+        return ProjectResult(Status.CHANGED, "to pull", f"{select_branch}: {behind} new on {tracking_branch}{to_push}")
+    return ProjectResult(Status.OK, "up to date", select_branch + to_push)
 
 
 def execute(_arguments: list[ArgElement]) -> int | None:
@@ -40,37 +71,21 @@ def execute(_arguments: list[ArgElement]) -> int | None:
     # check system is OK
     manifest.check_island_is_init()
 
-    debug.info("fetch manifest : '" + str(env.get_island_path_manifest()) + "'")
-    commands.fetch(env.get_island_path_manifest(), "origin")
-
     configuration = config.get_unique_config()
     file_source_manifest = os.path.join(env.get_island_path_manifest(), configuration.get_manifest_name())
     if os.path.exists(file_source_manifest) is False:
         debug.error("Missing manifest file : '" + str(file_source_manifest) + "'")
     mani = manifest.Manifest(file_source_manifest)
 
-    all_project = mani.get_all_configs()
-    debug.info("fetch : " + str(len(all_project)) + " projects")
-    for id_element, elem in enumerate(all_project, start=1):
-        # configure remote name:
-        if argument_remote_name == "":
-            argument_remote_name = elem.select_remote["name"]
+    manifest_config = configuration.get_manifest_config()
+    all_project = [manifest_config, *mani.get_all_configs()]
 
-        base_display = tools.get_list_base_display(id_element, len(all_project), elem)
-        debug.info("fetch: " + base_display)
-        tools.wait_for_server_if_needed()
-        # debug.debug("elem : " + str(elem))
-        git_repo_path = os.path.join(env.get_island_root_path(), elem.path)
-        if os.path.exists(git_repo_path) is False:
-            debug.error("can not fetch project that not exist")
-            continue
+    def job(elem: RepoConfig) -> ProjectResult:
+        # the manifest is always fetched from its origin
+        remote_name = argument_remote_name if argument_remote_name != "" and elem is not manifest_config else elem.select_remote["name"]
+        return fetch_project(elem, remote_name)
 
-        if os.path.exists(os.path.join(git_repo_path, ".git")) is False:
-            # path already exist but it is not used to as a git repo ==> this is an error
-            debug.error("path '" + git_repo_path + "' is already existing but not used for a git repository. Clean it and restart")
-
-        # simply update the repository ...
-        debug.verbose("Fetching project: ")
-
-        commands.fetch(git_repo_path, argument_remote_name)
+    results = parallel.run_on_projects("fetch", all_project, job)
+    if parallel.has_error(results):
+        return env.ret_action_fail
     return None

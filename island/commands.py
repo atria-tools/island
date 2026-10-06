@@ -194,7 +194,7 @@ def get_current_tracking_branch(path_repository: str) -> str | None:
     debug.verbose("execute : " + cmd)
     return_value = multiprocess.run_command(cmd, cwd=path_repository)
     if return_value[0] != 0 or return_value[1] in ("", "@{u}"):
-        debug.warning("in '" + path_repository + "' no tracking branch is specify")
+        debug.verbose("in '" + path_repository + "' no tracking branch is specify")
         return None
     return return_value[1]
 
@@ -435,8 +435,19 @@ def fetch(path_repository: str, remote_name: str, prune: bool = True) -> multipr
         cmd += " --prune"
     debug.verbose("execute : " + cmd)
     return_value = multiprocess.run_command(cmd, cwd=path_repository)
-    multiprocess.generic_display_error(return_value, "fetch")
+    # git tells what it fetched on the error output: only a failure is shown
+    multiprocess.generic_display_error(return_value, "fetch", error_only=True)
     return return_value
+
+
+def count_commits(path_repository: str, from_ref: str, to_ref: str) -> int:
+    """Count the commits of to_ref that from_ref has not (0 when git cannot tell)."""
+    cmd = "git rev-list --count " + from_ref + ".." + to_ref
+    debug.verbose("execute : " + cmd)
+    return_value = multiprocess.run_command(cmd, cwd=path_repository)
+    if return_value.returncode != 0 or not return_value.stdout.isdigit():
+        return 0
+    return int(return_value.stdout)
 
 
 def pull(path_repository: str, remote_name: str, prune: bool = True) -> multiprocess.CommandResult:
