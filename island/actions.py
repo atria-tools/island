@@ -138,7 +138,7 @@ def execute(action_name, argument_start_id):
         for elem in my_under_args:
             debug.debug("    " + str(elem.get_option_name()) + "='" + str(elem.get_arg()) + "'")
         ret = the_action.execute(my_under_args)
-        if ret == None:
+        if ret is None:
             return 0
         if ret < 0:
             debug.info("    ==========================")

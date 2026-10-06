@@ -27,10 +27,7 @@ def get_current_path(file) -> str:
 
 
 def create_directory(path):
-    try:
-        os.stat(path)
-    except:
-        os.makedirs(path)
+    os.makedirs(path, exist_ok=True)
 
 
 def create_directory_of_file(file):
@@ -88,7 +85,7 @@ def version_to_string(version):
     version_ID = ""
     for id in version:
         if len(version_ID) != 0:
-            if type(id) == str:
+            if isinstance(id, str):
                 version_ID += "-"
             else:
                 version_ID += "."
@@ -173,11 +170,11 @@ def store_command(cmd_line, file):
 
 
 def get_type_string(in_type):
-    if type(in_type) == str:
+    if isinstance(in_type, str):
         return "string"
-    elif type(in_type) == list:
+    elif isinstance(in_type, list):
         return "list"
-    elif type(in_type) == dict:
+    elif isinstance(in_type, dict):
         return "dict"
     return "unknown"
 
@@ -193,13 +190,13 @@ def list_append_and_check(listout, newElement, order):
 
 
 def list_append_to(out_list, in_list, order=False):
-    if type(in_list) == str:
+    if isinstance(in_list, str):
         list_append_and_check(out_list, in_list, order)
-    elif type(in_list) == list:
+    elif isinstance(in_list, list):
         # multiple input in the list ...
         for elem in in_list:
             list_append_and_check(out_list, elem, order)
-    elif type(in_list) == dict:
+    elif isinstance(in_list, dict):
         list_append_and_check(out_list, in_list, order)
     else:
         debug.warning(f"can not add in list other than {list / dict / str} : {type(in_list)}")
@@ -207,7 +204,7 @@ def list_append_to(out_list, in_list, order=False):
 
 def list_append_to_2(listout, module, in_list, order=False):
     # sepcial cse of bool
-    if type(in_list) == bool:
+    if isinstance(in_list, bool):
         listout[module] = in_list
         return
     # add list in the Map
@@ -225,7 +222,7 @@ def list_append_to_2(listout, module, in_list, order=False):
 #
 def get_version_from_file_or_direct(path_module, filename_or_version):
     # check case of iser set the version directly
-    if type(filename_or_version) == list:
+    if isinstance(filename_or_version, list):
         return filename_or_version
     # this use a version file
     file_data = file_read_data(os.path.join(path_module, filename_or_version))
@@ -288,14 +285,14 @@ def get_maintainer_from_file_or_direct(path_module, filename_or_author):
 def remove_element(data, to_remove):
     base_data = []
     for elem in data:
-        if type(elem) == list:
+        if isinstance(elem, list):
             for elem2 in elem:
                 base_data.append(elem2)
         else:
             base_data.append(elem)
     base_remove = []
     for elem in to_remove:
-        if type(elem) == list:
+        if isinstance(elem, list):
             for elem2 in elem:
                 base_remove.append(elem2)
         else:

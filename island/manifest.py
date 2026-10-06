@@ -198,7 +198,7 @@ class ManifestVSC:
                     # copy the submodule synchronization
                     conf.select_remote["sync"] = default["sync"]
                     break
-            if conf.select_remote == None:
+            if conf.select_remote is None:
                 debug.error(f"missing remote for project: {conf.name}")
 
             conf.branch = default["default-branch"]
@@ -253,7 +253,7 @@ class Manifest:
         if root.tag != "manifest":
             debug.error(f"(l:{root.sourceline}) in '{self.manifest_xml}' have not main xml node='manifest'")
         for child in root:
-            if type(child) == etree._Comment:
+            if isinstance(child, etree._Comment):
                 debug.verbose(f"(l:{child.sourceline})     comment='{child.text}'")
                 continue
             if child.tag == "remote":
@@ -504,8 +504,8 @@ class Manifest:
 
     def get_all_configs(self, default=None, upper_remotes=[]):
         out = []
-        if default == None:
-            if self.default != None:
+        if default is None:
+            if self.default is not None:
                 default = copy.deepcopy(self.default)
             else:
                 default = copy.deepcopy(self.default_base)
@@ -551,7 +551,7 @@ class Manifest:
                     # copy the submodule synchronization
                     conf.select_remote["sync"] = default["sync"]
                     break
-            if conf.select_remote == None:
+            if conf.select_remote is None:
                 debug.error(f"missing remote for project: {conf.name}")
 
             conf.branch = default["default-branch"]
@@ -613,7 +613,7 @@ def tag_manifest(manifest_xml_filename, all_tags):
         debug.error(f"(l:{root.sourceline}) in '{manifest_xml_filename}' have not main xml node='manifest'")
         return False
     for child in root:
-        if type(child) == etree._Comment:
+        if isinstance(child, etree._Comment):
             debug.verbose(f"(l:{child.sourceline})     comment='{child.text}'")
             continue
         if child.tag == "remote":
@@ -636,15 +636,11 @@ def tag_manifest(manifest_xml_filename, all_tags):
             continue
         if child.tag == "project":
             name = ""
-            path = ""
-            tag_sha1 = None
             for attr in child.attrib:
                 if attr == "name":
                     name = child.attrib[attr]
-                elif attr == "path":
-                    path = child.attrib[attr]
-                elif attr == "tag":
-                    tag_sha1 = child.attrib[attr]
+                elif attr in ("path", "tag"):
+                    continue
                 else:
                     debug.error(
                         f"(l:{child.sourceline}) Parsing the manifest: unknown '{child.tag}'  attribute : '{attr}', available:[name,tag,sync-s]"
@@ -677,7 +673,7 @@ def tag_clear(manifest_xml_filename):
         debug.error(f"(l:{root.sourceline}) in '{manifest_xml_filename}' have not main xml node='manifest'")
         return False
     for child in root:
-        if type(child) == etree._Comment:
+        if isinstance(child, etree._Comment):
             debug.verbose("(l:{child.sourceline})     comment='{child.text}'")
             continue
         if child.tag == "remote":

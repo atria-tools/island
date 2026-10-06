@@ -40,14 +40,14 @@ def display_status(elem, argument_remote_name, argument_display_tag, id_element,
     list_branch = commands.get_list_branch_all(git_repo_path)
     select_branch = commands.get_current_branch(git_repo_path)
     debug.verbose("List all branch: " + str(list_branch))
-    if select_branch == None:
+    if select_branch is None:
         # a repository without any commit (empty on the server) has no branch at all
         debug.info(base_display + volatile + "\r\t\t\t\t\t\t\t     (NO COMMIT)")
         return
     if select_branch[: len(base_name_of_a_tagged_branch)] != base_name_of_a_tagged_branch:
         # get tracking branch
         tracking_remote_branch = commands.get_tracking_branch(git_repo_path, argument_remote_name, select_branch)
-        if tracking_remote_branch == None:
+        if tracking_remote_branch is None:
             debug.info(base_display + volatile + "\r\t\t\t\t\t\t\t     (NO BRANCH)")
             return
     else:
@@ -148,7 +148,7 @@ def deliver_check(
     debug.debug("    ==> check have tracking branch")
     # check if we have a remote traking branch
     tracking_remote_branch = commands.get_tracking_branch(git_repo_path, argument_remote_name, select_branch)
-    if tracking_remote_branch == None:
+    if tracking_remote_branch is None:
         debug.warning("deliver-ckeck: " + base_display + " ==> MUST have a remote tracking branch")
         deliver_available = False
 
@@ -165,7 +165,7 @@ def deliver_check(
     debug.debug("    ==> check have tracking branch")
     # check if we have a remote traking branch
     tracking_remote_branch = commands.get_tracking_branch(git_repo_path, argument_remote_name, select_branch)
-    if tracking_remote_branch == None:
+    if tracking_remote_branch is None:
         debug.warning("deliver-ckeck: " + base_display + " ==> MUST have a remote tracking branch")
         deliver_available = False
 
@@ -210,7 +210,7 @@ def checkout_elem(elem, argument_remote_name, branch_to_checkout, base_display):
         if elem.volatile is True:
             debug.info("checkout " + base_display + " ==> Can not checkout for 'volatile' repository")
             return True
-        if elem.tag == None:
+        if elem.tag is None:
             debug.info("checkout " + base_display + " ==> Can not checkout for '''None''' Tag")
             return True
     # check if we are on the good branch:
@@ -224,7 +224,7 @@ def checkout_elem(elem, argument_remote_name, branch_to_checkout, base_display):
         cmd = "git checkout " + branch_to_checkout
         debug.verbose("execute : " + cmd)
         ret = multiprocess.run_command(cmd, cwd=git_repo_path)
-        if ret[0] != 0 and ret[1] != "" and ret != False:
+        if ret is not False and ret[0] != 0 and ret[1] != "":
             debug.info("'" + str(ret) + "'")
             debug.error("checkout " + base_display + " ==> Can not checkout to the correct branch")
             return False
@@ -235,7 +235,7 @@ def checkout_elem(elem, argument_remote_name, branch_to_checkout, base_display):
     list_tags = commands.get_tags(git_repo_path)
     if branch_to_checkout in list_tags:
         is_tag = True
-        if elem.tag == None:
+        if elem.tag is None:
             elem.tag = branch_to_checkout
             branch_to_checkout = base_name_of_a_tagged_branch + str(elem.tag)
 
@@ -252,7 +252,7 @@ def checkout_elem(elem, argument_remote_name, branch_to_checkout, base_display):
         # + " --track " + elem.select_remote["name"] + "/" + branch_to_checkout
         debug.verbose("execute : " + cmd)
         ret = multiprocess.run_command(cmd, cwd=git_repo_path)
-        if ret[1] != "" and ret != False:
+        if ret is not False and ret[1] != "":
             debug.info("'" + str(ret) + "'")
             debug.error("checkout " + base_display + " ==> Can not checkout to the correct branch")
             return False
@@ -269,7 +269,7 @@ def checkout_elem(elem, argument_remote_name, branch_to_checkout, base_display):
     # + " --track " + elem.select_remote["name"] + "/" + branch_to_checkout
     debug.verbose("execute : " + cmd)
     ret = multiprocess.run_command(cmd, cwd=git_repo_path)
-    if ret[1] != "" and ret != False:
+    if ret is not False and ret[1] != "":
         debug.info("'" + str(ret) + "'")
         debug.error("checkout " + base_display + " ==> Can not checkout to the correct tags")
         return False
@@ -417,7 +417,7 @@ def deliver_push(elem, argument_remote_name, destination_branch, source_branch, 
     # check sha1 of destination_branch
     sha_1_destination = commands.get_sha1_for_branch(git_repo_path, destination_branch)
     tracking_remote_branch = commands.get_tracking_branch(git_repo_path, argument_remote_name, destination_branch)
-    if tracking_remote_branch == None:
+    if tracking_remote_branch is None:
         debug.warning("deliver-push: " + base_display + " ==> '" + destination_branch + "' have no tracking branch")
         return
     sha_1_destination_tracking = commands.get_sha1_for_branch(git_repo_path, tracking_remote_branch)
@@ -428,7 +428,7 @@ def deliver_push(elem, argument_remote_name, destination_branch, source_branch, 
     # check sha1 of source_branch
     sha_1_source = commands.get_sha1_for_branch(git_repo_path, source_branch)
     tracking_remote_branch = commands.get_tracking_branch(git_repo_path, argument_remote_name, source_branch)
-    if tracking_remote_branch == None:
+    if tracking_remote_branch is None:
         debug.warning("deliver-push: " + base_display + " ==> '" + source_branch + "' have no tracking branch")
         return
     sha_1_source_tracking = commands.get_sha1_for_branch(git_repo_path, tracking_remote_branch)

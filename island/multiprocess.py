@@ -78,10 +78,8 @@ def run_command_direct(cmd_line, cwd=None):
                 debug.info("path = " + cwd)
         """
         p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=cwd)
-    except subprocess.CalledProcessError as e:
-        debug.error("subprocess.CalledProcessError : " + str(args))
-    except:
-        debug.error("Exception on : " + str(args))
+    except Exception as ex:
+        debug.error(f"Exception : {args} ==> {ex}")
     # launch the subprocess:
     output, err = p.communicate()
     if sys.version_info >= (3, 0):
@@ -89,7 +87,7 @@ def run_command_direct(cmd_line, cwd=None):
         err = err.decode("utf-8")
     # Check errors:
     if p.returncode == 0:
-        if output == None:
+        if output is None:
             return err[:-1]
         return output[:-1]
     else:

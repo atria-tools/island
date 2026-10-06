@@ -88,7 +88,7 @@ def execute(_arguments):
         return env.ret_action_fail
 
     all_tags = check_all_tags(mani)
-    if all_tags == None:
+    if all_tags is None:
         debug.error("Need the Tags are set in sub-repository", crash=False)
         return env.ret_action_fail
 
@@ -102,12 +102,9 @@ def execute(_arguments):
     git_repo_path = os.path.join(env.get_island_root_path(), elem.path)
     # Check the validity of the version,
     version_description, add_in_version_management = status.get_current_version_repo(git_repo_path)
-    if version_description == None:
+    if version_description is None:
         return env.ret_action_fail
     debug.info("manifest-deliver:     ==> version: " + str(version_description))
-
-    # go to the dev branch
-    select_branch = commands.get_current_branch(git_repo_path)
 
     # create new repo tag
     new_version_description = status.create_new_version_repo(
@@ -118,7 +115,7 @@ def execute(_arguments):
         destination_branch,
     )
     debug.info("new version: " + str(new_version_description))
-    if new_version_description == None:
+    if new_version_description is None:
         return
     # merge branch
     commands.checkout(git_repo_path, destination_branch)

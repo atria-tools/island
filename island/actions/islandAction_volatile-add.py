@@ -82,7 +82,7 @@ def execute(_arguments):
     conf = config.get_unique_config()
     # TODO: Check if the local path does not exist in the manifest
 
-    if False == conf.add_volatile(address_git, path):
+    if conf.add_volatile(address_git, path) is False:
         return env.ret_action_executing_system_error
     conf.store()
     return None

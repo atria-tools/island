@@ -41,13 +41,16 @@ version = { file = "version.txt" }
 line-length = 150
 target-version = "py311"
 
-[tool.pytest.ini_options]
-testpaths = ["tests"]
-
 [tool.ruff.lint]
-select = ["I"]
+select = ["E", "W", "F", "I"]
+ignore = [
+    "E501", # the formatter sets the length of the lines; it does not cut the long messages
+]
 
 [tool.ruff.lint.isort]
 known-first-party = ["island"]
 force-sort-within-sections = true
 lines-after-imports = 2
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

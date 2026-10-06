@@ -90,7 +90,7 @@ def execute(_arguments):
         id_element += 1
         base_display = tools.get_list_base_display(id_element, len(all_project), elem)
         ret = status.display_status(elem, argument_remote_name, argument_display_tag, id_element, base_display)
-        if ret != None:
+        if ret is not None:
             is_behind = True
 
     if is_behind is True:

@@ -34,7 +34,7 @@ def get_ssh_command(ssh_key):
 
 def select_ssh_key(ssh_key):
     # all the next git commands use this key (needed for the clone that have no local configuration)
-    if ssh_key == None or ssh_key == "":
+    if ssh_key is None or ssh_key == "":
         return
     if os.path.isfile(ssh_key) is False:
         debug.warning("The ssh key does not exist: '" + ssh_key + "'")
@@ -222,7 +222,7 @@ def get_specific_commit_message(path_repository, sha_1):
 
 
 def get_sha1_for_branch(path_repository, branch_name):
-    if branch_name == None or branch_name == "":
+    if branch_name is None or branch_name == "":
         return None
     cmd = "git rev-parse " + branch_name
     debug.verbose("execute : " + cmd)
@@ -252,7 +252,7 @@ def get_tags(path_repository):
 
 
 def get_tags_remote(path_repository, remote_name):
-    if remote_name == "" or remote_name == None:
+    if remote_name == "" or remote_name is None:
         return get_current_tracking_branch(path_repository)
     cmd = "git ls-remote --tags " + remote_name
     debug.verbose("execute : " + cmd)
@@ -282,7 +282,7 @@ def get_tags_remote(path_repository, remote_name):
 
 def get_tracking_branch(path_repository, remote_name, select_branch):
     # get tracking branch
-    if remote_name == "" or remote_name == None:
+    if remote_name == "" or remote_name is None:
         return get_current_tracking_branch(path_repository)
     list_branch_remote = get_list_branch_remote(path_repository)
     debug.extreme_verbose("check if exist " + remote_name + "/" + select_branch + " in " + str(list_branch_remote))
@@ -293,7 +293,7 @@ def get_tracking_branch(path_repository, remote_name, select_branch):
 
 
 def merge_branch_on_master(path_repository, branch_name, merge_force=True, branch_destination="master"):
-    if branch_name == None or branch_name == "":
+    if branch_name is None or branch_name == "":
         raise ValueError("Missing branch name")
     cmd = "git merge "
     if merge_force is True:
@@ -360,7 +360,7 @@ def tag(path_repository, tag_name):
 
 
 def checkout(path_repository, branch_name):
-    if branch_name == None or branch_name == "":
+    if branch_name is None or branch_name == "":
         raise ValueError("Missing branch name")
     cmd = "git checkout " + branch_name
     debug.verbose("execute : " + cmd)
@@ -371,7 +371,7 @@ def checkout(path_repository, branch_name):
 
 
 def reset_hard(path_repository, destination):
-    if destination == None or destination == "":
+    if destination is None or destination == "":
         raise ValueError("Missing destination 'sha1' or 'branch name'")
     cmd = "git reset --hard " + destination
     debug.verbose("execute : " + cmd)
@@ -382,7 +382,7 @@ def reset_hard(path_repository, destination):
 
 
 def rebase(path_repository, destination):
-    if destination == None or destination == "":
+    if destination is None or destination == "":
         raise ValueError("Missing destination 'sha1' or 'branch name'")
     cmd = "git rebase " + destination
     debug.verbose("execute : " + cmd)
@@ -412,17 +412,17 @@ def clone(path_repository, address, branch_name=None, origin=None):
     :param branch_name: Branch to check out (None or "": the default branch of the server)
     :param origin: Name of the remote (None or "": 'origin')
     """
-    if address == None or address == "":
+    if address is None or address == "":
         raise ValueError("Missing address")
     cmd = "git clone " + address
-    if branch_name != None and branch_name != "":
+    if branch_name is not None and branch_name != "":
         if remote_has_branch(address, branch_name):
             cmd += " --branch " + branch_name
         else:
             debug.warning("'" + address + "' has no branch '" + branch_name + "': clone its default branch")
-    if origin != None and origin != "":
+    if origin is not None and origin != "":
         cmd += " --origin " + origin
-    if path_repository != None and path_repository != "":
+    if path_repository is not None and path_repository != "":
         cmd += " " + path_repository
     debug.verbose("execute : " + cmd)
     if os.path.exists(path_repository) is True:
@@ -444,7 +444,7 @@ def fetch(path_repository, remote_name, prune=True):
 
 
 def pull(path_repository, remote_name, prune=True):
-    if remote_name == None or remote_name == "":
+    if remote_name is None or remote_name == "":
         raise ValueError("Missing remote_name")
     cmd = "git pull " + remote_name
     if prune is True:
@@ -456,7 +456,7 @@ def pull(path_repository, remote_name, prune=True):
 
 
 def push(path_repository, remote_name, elements):
-    if remote_name == None or remote_name == "":
+    if remote_name is None or remote_name == "":
         raise ValueError("Missing remote_name")
     if len(elements) == 0:
         raise ValueError("No elements to push on server")
@@ -474,20 +474,10 @@ def submodule_sync(path_repository, remote_name):
     debug.verbose("execute : " + cmd)
     return_value = multiprocess.run_command(cmd, cwd=path_repository)
     multiprocess.generic_display_error(return_value, "submodule_sync")
-    """
-	if ret[:31] == "Synchronizing submodule url for":
-		#all is good ...
-		debug.info("    " + ret)
-	elif     ret != "" \
-	     and ret != False:
-		# all is good, ready to get the system work corectly
-		debug.info("'" + ret + "'")
-		debug.error("Can not sync submodules ... ")
-	"""
 
 
 def get_forward(path_repository, branch_name):
-    if branch_name == None or branch_name == "":
+    if branch_name is None or branch_name == "":
         raise ValueError("Missing branch_name")
     select_branch = get_current_branch(path_repository)
     # get tracking branch
@@ -506,7 +496,7 @@ def is_forward(path_repository, branch_name):
 
 
 def get_behind(path_repository, branch_name):
-    if branch_name == None or branch_name == "":
+    if branch_name is None or branch_name == "":
         raise ValueError("Missing branch_name")
     select_branch = get_current_branch(path_repository)
     # get tracking branch

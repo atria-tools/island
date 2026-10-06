@@ -73,9 +73,9 @@ def execute(_arguments):
 
     destination_branch = mani.deliver_master
     source_branch = mani.deliver_develop
-    if argument_from != None:
+    if argument_from is not None:
         source_branch = argument_from
-    if argument_to != None:
+    if argument_to is not None:
         destination_branch = argument_to
 
     all_project = mani.get_all_configs()
@@ -116,12 +116,9 @@ def execute(_arguments):
             version_description,
             add_in_version_management,
         ) = status.get_current_version_repo(git_repo_path)
-        if version_description == None:
+        if version_description is None:
             continue
         debug.info("deliver:     ==> version: " + str(version_description))
-
-        # go to the dev branch
-        select_branch = commands.get_current_branch(git_repo_path)
 
         # Checkout destination branch:
         commands.checkout(git_repo_path, destination_branch)
@@ -135,7 +132,7 @@ def execute(_arguments):
             destination_branch,
         )
         debug.info("new version: " + str(new_version_description))
-        if new_version_description == None:
+        if new_version_description is None:
             continue
         # merge branch
         if mani.deliver_mode == "merge":

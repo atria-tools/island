@@ -100,7 +100,7 @@ def execute(_arguments):
         tools.wait_for_server_if_needed()
         # debug.debug("elem : " + str(elem))
         git_repo_path = os.path.join(env.get_island_root_path(), elem.path)
-        if elem.tag != None:
+        if elem.tag is not None:
             debug.warning("Need to select a specific tag version ... " + elem.tag)
         if os.path.exists(git_repo_path) is False:
             # this is a new clone ==> this is easy ...
@@ -120,7 +120,7 @@ def execute(_arguments):
                 branch_name=elem.branch,
                 origin=elem.select_remote["name"],
             )
-            if ret[0] != "" and ret[0] != False:
+            if ret[0] != 0:
                 # all is good, ready to get the system work corectly
                 debug.info("'" + str(ret) + "'")
                 debug.error("Clone repository does not work ... ")
@@ -135,7 +135,7 @@ def execute(_arguments):
                     cmd += "/"
                 cmd += elem.name
                 ret = multiprocess.run_command_direct(cmd, cwd=git_repo_path)
-                if ret != "" and ret != False:
+                if ret is not False and ret != "":
                     # all is good, ready to get the system work corectly
                     debug.info("'" + str(ret) + "'")
                     debug.warning("Can not add global mirror ... ")
@@ -147,7 +147,7 @@ def execute(_arguments):
                 debug.info("    ==> update submodule")
                 cmd = "git submodule init"
                 ret = multiprocess.run_command_direct(cmd, cwd=git_repo_path)
-                if ret != "" and ret != False:
+                if ret is not False and ret != "":
                     # all is good, ready to get the system work corectly
                     debug.info("'" + str(ret) + "'")
                     debug.error("Can not init submodules ... ")
@@ -157,7 +157,7 @@ def execute(_arguments):
                 if ret[:16] == "Submodule path '":
                     # all is good ...
                     debug.info("    " + ret)
-                elif ret != "" and ret != False:
+                elif ret is not False and ret != "":
                     # all is good, ready to get the system work corectly
                     debug.info("'" + str(ret) + "'")
                     debug.error("Can not init submodules ... ")

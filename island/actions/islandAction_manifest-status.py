@@ -64,5 +64,5 @@ def execute(_arguments):
     elem = configuration.get_manifest_config()
     base_display = tools.get_list_base_display(0, 0, elem)
     ret = status.display_status(elem, argument_remote_name, argument_display_tag, 0, base_display)
-    if ret != None:
+    if ret is not None:
         return env.ret_action_need_update
