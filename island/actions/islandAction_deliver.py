@@ -12,137 +12,72 @@ from death.Arguments import Arguments
 from realog import debug
 
 from island import (
-    commands,
     config,
+    deliver,
     env,
     manifest,
-    tools,
 )
-from island.actions import status
 
 
 def help() -> str:
-    return "Deliver the current repository (develop & master MUST be up to date and you MUST be on master)"
+    return "Deliver the projects: release their develop branch on their release branch, with a new version"
 
 
-def add_specific_arguments(_my_args: Arguments, _section: str) -> None:
-    _my_args.add("f", "from", haveParam=True, desc="source branche to deliver")
-    _my_args.add("t", "to", haveParam=True, desc="desticantion branche of the deliver")
+def help_example() -> str:
+    return "island deliver\nisland deliver --yes --bump=minor --push\nisland --filter=etk deliver"
 
 
-def execute(_arguments: list[ArgElement]) -> int | None:
-    argument_from = None
-    argument_to = None
-    for elem in _arguments:
-        if elem.get_option_name() == "from":
-            debug.info("find source branch name: '" + elem.get_arg() + "'")
-            argument_from = elem.get_arg()
-        elif elem.get_option_name() == "to":
-            debug.info("find destination branch name: '" + elem.get_arg() + "'")
-            argument_to = elem.get_arg()
-        else:
+def add_specific_arguments(my_args: Arguments, section: str) -> None:
+    my_args.add("f", "from", haveParam=True, desc="Source branch to deliver (default: branch-develop of the manifest)")
+    my_args.add("t", "to", haveParam=True, desc="Destination branch of the delivery (default: branch-release of the manifest)")
+    my_args.add("y", "yes", desc="Deliver without asking")
+    my_args.add("b", "bump", haveParam=True, desc="Step of every version: patch, minor or major (default: proposed from the commits)")
+    my_args.add("p", "push", desc="Push the deliveries at the end (as deliver-push)")
+
+
+def parse_options(arguments: list[ArgElement], names: tuple[str, ...]) -> dict[str, str]:
+    """Read the options of a deliver action; a step of version must be patch, minor or major."""
+    options: dict[str, str] = {}
+    for elem in arguments:
+        if elem.get_option_name() not in names:
             debug.error("Wrong argument: '" + elem.get_option_name() + "' '" + elem.get_arg() + "'")
+        options[elem.get_option_name()] = elem.get_arg()
+    if "bump" in options and deliver.parse_bump(options["bump"]) is None:
+        debug.error(f"Wrong step of version: '{options['bump']}', available: {', '.join(deliver.BUMPS)}", ret_value=env.ret_action_wrong_parameters)
+    return options
 
-    # check system is OK
+
+def load_manifest() -> tuple[config.Config, manifest.Manifest]:
     manifest.check_island_is_init()
-
     configuration = config.get_unique_config()
-
     file_source_manifest = os.path.join(env.get_island_path_manifest(), configuration.get_manifest_name())
     if os.path.exists(file_source_manifest) is False:
         debug.error("Missing manifest file : '" + str(file_source_manifest) + "'")
+    return configuration, manifest.Manifest(file_source_manifest)
 
-    mani = manifest.Manifest(file_source_manifest)
 
-    destination_branch = mani.deliver_master
-    source_branch = mani.deliver_develop
-    if argument_from is not None:
-        source_branch = argument_from
-    if argument_to is not None:
-        destination_branch = argument_to
+def execute(_arguments: list[ArgElement]) -> int | None:
+    options = parse_options(_arguments, ("from", "to", "yes", "bump", "push"))
+    _configuration, mani = load_manifest()
+    source = options.get("from", mani.deliver_develop)
+    destination = options.get("to", mani.deliver_master)
 
     all_project = mani.get_all_configs()
-    debug.info("Check if all project are on master: " + str(len(all_project)) + " projects")
-    deliver_available = True
-    for id_element, elem in enumerate(all_project, start=1):
-        base_display = tools.get_list_base_display(id_element, len(all_project), elem)
-        debug.verbose("deliver-ckeck: " + base_display)
-        if (
-            status.deliver_check(
-                elem,
-                "origin",  # TODO: argument_remote_name,
-                id_element,
-                base_display,
-                source_branch,
-                destination_branch,
-            )
-            is False
-        ):
-            deliver_available = False
-    if deliver_available is False:
-        debug.error("deliver-ckeck: Correct the warning to validate the Merge")
+    plans, has_error = deliver.check_projects(all_project, source, destination)
+    if has_error:
+        print("Correct the errors above, or leave these projects out with --filter.")
+        return env.ret_action_fail
+    if len(plans) == 0:
+        print("Nothing to deliver.")
         return None
-    debug.info("deliver-ckeck: ==> All is OK")
-    for id_element, elem in enumerate(all_project, start=1):
-        base_display = tools.get_list_base_display(id_element, len(all_project), elem)
-        debug.info("deliver: ========================================================================")
-        debug.info("deliver: == " + base_display)
-        debug.info("deliver: ========================================================================")
-
-        git_repo_path = os.path.join(env.get_island_root_path(), elem.path)
-        # Check the validity of the version,
-        (
-            version_description,
-            add_in_version_management,
-        ) = status.get_current_version_repo(git_repo_path)
-        if version_description is None:
-            continue
-        debug.info("deliver:     ==> version: " + str(version_description))
-
-        # Checkout destination branch:
-        commands.checkout(git_repo_path, destination_branch)
-
-        # create new repo tag
-        new_version_description = status.create_new_version_repo(
-            git_repo_path,
-            version_description,
-            add_in_version_management,
-            source_branch,
-            destination_branch,
-        )
-        debug.info("new version: " + str(new_version_description))
-        if new_version_description is None:
-            continue
-        # merge branch
-        merge_force = mani.deliver_mode == "merge"
-        commands.merge_branch_on_master(
-            git_repo_path,
-            source_branch,
-            merge_force,
-            branch_destination=destination_branch,
-        )
-
-        version_path_file = os.path.join(git_repo_path, "version.txt")
-        # update version file:
-        tools.file_write_data(version_path_file, tools.version_to_string(new_version_description) + "\n")
-        if commands.call_island_release_script(git_repo_path):
-            commands.add_all(git_repo_path)
-        else:
-            commands.add_file(git_repo_path, version_path_file)
-        commands.commit_all(
-            git_repo_path,
-            "[RELEASE] Release v" + tools.version_to_string(new_version_description),
-        )
-        commands.tag(git_repo_path, "v" + tools.version_to_string(new_version_description))
-        commands.checkout(git_repo_path, source_branch)
-        commands.reset_hard(git_repo_path, destination_branch)
-        # add a 1 at the version (development mode is to prevent the system to min consider snapshot as official versions)
-        next_version: list[int | str] = [new_version_description[0], new_version_description[1], new_version_description[2] + 1, "dev"]
-        tools.file_write_data(version_path_file, tools.version_to_string(next_version) + "\n")
-        if commands.call_island_release_script(git_repo_path):
-            commands.add_all(git_repo_path)
-        else:
-            commands.add_file(git_repo_path, version_path_file)
-        commands.commit_all(git_repo_path, status.default_update_message)
-        commands.checkout(git_repo_path, destination_branch)
+    plans = deliver.confirm_plans(plans, deliver.parse_bump(options.get("bump")), "yes" in options)
+    if len(plans) == 0:
+        return None
+    if deliver.deliver_plans(plans, mani.deliver_mode):
+        return env.ret_action_fail
+    if "push" not in options:
+        print("Push them with: island deliver-push")
+        return None
+    if deliver.push_projects([plan.project for plan in plans], [destination, source]):
+        return env.ret_action_fail
     return None

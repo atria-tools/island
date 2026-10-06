@@ -79,8 +79,8 @@ def servers(tmp_path: Path, isolated_git: Path) -> Path:
     return servers
 
 
-def run_island(*args: str, cwd: Path) -> subprocess.CompletedProcess[str]:
-    """Run island as a user does, from a folder of the workspace.
+def run_island(*args: str, cwd: Path, answers: str = "") -> subprocess.CompletedProcess[str]:
+    """Run island as a user does, from a folder of the workspace, answering its questions with the lines of answers.
 
     The output is decoded by hand: the text mode would turn the carriage returns of the display into new lines.
     """
@@ -90,6 +90,7 @@ def run_island(*args: str, cwd: Path) -> subprocess.CompletedProcess[str]:
         capture_output=True,
         env=os.environ.copy(),
         check=False,
+        input=answers.encode(),
     )
     return subprocess.CompletedProcess(result.args, result.returncode, result.stdout.decode(), result.stderr.decode())
 
