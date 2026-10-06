@@ -232,9 +232,9 @@ def get_tags(path_repository):
 
 
 def get_tags_remote(path_repository, remote_name):
-    if remote_name == "" or remote_name is None:
-        return get_current_tracking_branch(path_repository)
-    cmd = "git ls-remote --tags " + remote_name
+    cmd = "git ls-remote --tags"
+    if remote_name is not None and remote_name != "":
+        cmd += " " + remote_name
     debug.verbose("execute : " + cmd)
     return_value = multiprocess.run_command(cmd, cwd=path_repository)
     multiprocess.generic_display_error(return_value, "get_tags_remote", error_only=True)
