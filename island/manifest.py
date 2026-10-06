@@ -253,7 +253,7 @@ class Manifest:
         tree = etree.parse(self.manifest_xml)
         root = tree.getroot()
         if root.tag != "manifest":
-            debug.error(f"(l:{child.sourceline}) in '{file}' have not main xml node='manifest'")
+            debug.error(f"(l:{root.sourceline}) in '{self.manifest_xml}' have not main xml node='manifest'")
         for child in root:
             if type(child) == etree._Comment:
                 debug.verbose(f"(l:{child.sourceline})     comment='{child.text}'")
@@ -393,7 +393,7 @@ class Manifest:
                             sync = False
                         else:
                             debug.error(
-                                f"(l:{child.sourceline}) Parsing the manifest : unknown '{child.tag}/{child2.tag}', value:'{sync}' available:[true,1,yes,false,0,no]"
+                                f"(l:{child_2.sourceline}) Parsing the manifest : unknown '{child.tag}/{child_2.tag}', value:'{sync_tmp}' available:[true,1,yes,false,0,no]"
                             )
                     else:
                         debug.error(
@@ -612,7 +612,7 @@ def tag_manifest(manifest_xml_filename, all_tags):
     root = tree.getroot()
     includes = []
     if root.tag != "manifest":
-        debug.error("(l:{child.sourceline}) in '{file}' have not main xml node='manifest'")
+        debug.error(f"(l:{root.sourceline}) in '{manifest_xml_filename}' have not main xml node='manifest'")
         return False
     for child in root:
         if type(child) == etree._Comment:
@@ -676,7 +676,7 @@ def tag_clear(manifest_xml_filename):
     root = tree.getroot()
     includes = []
     if root.tag != "manifest":
-        debug.error("(l:{child.sourceline}) in '{file}' have not main xml node='manifest'")
+        debug.error(f"(l:{root.sourceline}) in '{manifest_xml_filename}' have not main xml node='manifest'")
         return False
     for child in root:
         if type(child) == etree._Comment:

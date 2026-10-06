@@ -78,3 +78,19 @@ def test_user_and_ssh_key_are_set_in_every_repository(workspace: Path, isolated_
         assert git("config", "user.name", cwd=path).strip() == "Somebody"
         assert git("config", "user.email", cwd=path).strip() == "somebody@island.invalid"
         assert str(key) in git("config", "core.sshCommand", cwd=path)
+
+
+def test_a_wrong_manifest_root_is_told(workspace: Path) -> None:
+    manifest = workspace / ".island" / "manifest" / "default.xml"
+    manifest.write_text(manifest.read_text().replace("manifest>", "manifesto>"))
+    result = run_island("status", cwd=workspace)
+    assert "NameError" not in result.stderr, result.stderr
+    assert "have not main xml node='manifest'" in result.stdout
+
+
+def test_a_wrong_submodule_option_is_told(workspace: Path) -> None:
+    manifest = workspace / ".island" / "manifest" / "default.xml"
+    manifest.write_text(manifest.read_text().replace(">true</synchronize-submodule>", ">maybe</synchronize-submodule>"))
+    result = run_island("status", cwd=workspace)
+    assert "NameError" not in result.stderr, result.stderr
+    assert "value:'maybe' available:[true,1,yes,false,0,no]" in result.stdout

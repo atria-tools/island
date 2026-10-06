@@ -168,7 +168,7 @@ def check_all_tags(mani):
         git_repo_path = os.path.join(env.get_island_root_path(), elem.path)
         if os.path.exists(git_repo_path) is False:
             debug.error(
-                base_display + volatile + "\r\t\t\t\t\t\t\t\t\t" + "     (not download)",
+                base_display + "\r\t\t\t\t\t\t\t\t\t" + "     (not download)",
                 crash=False,
             )
             check_have_error = True
