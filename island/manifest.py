@@ -160,12 +160,13 @@ class _ManifestBase:
                 elem_include["manifest"]._check_double_path(list_path, space + "    ")
 
     def get_all_configs(
-        self, default: ManifestDefault | None = None, upper_remotes: list[repo_config.Remote] | None = None
+        self, default: ManifestDefault | None = None, upper_remotes: list[repo_config.Remote] | None = None, use_filter: bool = True
     ) -> list[repo_config.RepoConfig]:
         """Get the configuration of every project: those of this manifest, of the manifests it includes or imports, and the volatile ones.
 
         :param default: Options of the parent manifest (None: this manifest is the top one)
         :param upper_remotes: Remotes of the parent manifests
+        :param use_filter: Keep only the projects of the option --filter (False: all of them)
         :return: the configuration of each project
         """
         if upper_remotes is None:
@@ -178,7 +179,7 @@ class _ManifestBase:
         # add all local project
         for elem in self.projects:
             debug.verbose(f"parse element {elem}")
-            if env.need_process_with_filter(elem["name"]) is False:
+            if use_filter and env.need_process_with_filter(elem["name"]) is False:
                 debug.info(f"Filter repository: {elem['name']}")
                 continue
             conf = repo_config.RepoConfig()
@@ -207,7 +208,7 @@ class _ManifestBase:
         # add all include and import project
         for elem_sub in self.includes + self.imports:
             if elem_sub["manifest"] is not None:
-                out.extend(elem_sub["manifest"].get_all_configs(default, upper_remotes_forward))
+                out.extend(elem_sub["manifest"].get_all_configs(default, upper_remotes_forward, use_filter))
         if is_top_manifest:
             out.extend(self._get_volatile_configs())
         return out

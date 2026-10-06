@@ -19,7 +19,7 @@ other patch.
 @license MPL v2.0 (see license file)
 """
 
-from collections.abc import Callable, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
 import os
 import re
@@ -29,7 +29,7 @@ from typing import Literal
 from lxml import etree
 from realog import debug
 
-from . import commands, env, multiprocess, parallel, tools
+from . import commands, env, maven, multiprocess, parallel, tools
 from .parallel import ProjectResult, Status
 from .repo_config import RepoConfig
 
@@ -39,7 +39,14 @@ BUMPS: tuple[Bump, ...] = ("patch", "minor", "major")
 
 # the subject of the commit that starts the next version on the source branch (the second one was used before)
 DEV_VERSION_MESSAGES = ("[VERSION] update dev tag version", "[DEV] update dev tag version")
+# the subject of the commit of a project that follows the new versions of its dependencies
+FOLLOW_PREFIX = "[DEV] Follow "
 VERSION_FILE = "version.txt"
+
+
+def is_island_commit(subject: str) -> bool:
+    """Tell a commit island made itself (a version, a dependency followed): it is nothing to deliver."""
+    return subject in DEV_VERSION_MESSAGES or subject.startswith(FOLLOW_PREFIX)
 
 
 class DeliverError(Exception):
@@ -111,9 +118,9 @@ class Version:
             return Version([major, minor + 1, 0])
         return Version([major, minor, patch + 1])
 
-    def next_dev(self) -> "Version":
-        """The version developed after this release: the next patch, being developed."""
-        return Version([self.numbers[0], self.numbers[1], self.numbers[2] + 1], "dev")
+    def next_dev(self, suffix: str = "dev") -> "Version":
+        """The version developed after this release: the next patch, being developed (-dev, -SNAPSHOT for Maven)."""
+        return Version([self.numbers[0], self.numbers[1], self.numbers[2] + 1], suffix)
 
 
 def parse_bump(text: str | None) -> Bump | None:
@@ -152,20 +159,52 @@ class DeliverPlan:
     destination_exists: bool  # False: the first delivery creates it
     subjects: list[str] = field(default_factory=list)
     bump: Bump = "patch"
+    pom: maven.Pom | None = None  # the pom of the source branch, for a Maven project
+    # the version of each dependency of the workspace in the release (released versions only), then on the source branch
+    dependency_pins: dict[str, str] = field(default_factory=dict)
+    dev_dependencies: dict[str, str] = field(default_factory=dict)
+    # a project never released with nothing new: delivered only when asked, or when a delivered project needs it
+    unreleased: bool = False
+    # never released: its version is the one it develops (a pom in 0.1.0 is released in 0.1.0 at first)
+    first_release: bool = False
 
     @property
     def new_version(self) -> Version:
+        if self.first_release and self.version.suffix == "" and self.version.numbers != [0, 0, 0]:
+            return Version(self.version.numbers, "first").release(self.bump)
         return self.version.release(self.bump)
+
+    @property
+    def version_file(self) -> str:
+        """Where the version is: version.txt, else the pom of a Maven project."""
+        return VERSION_FILE if self.has_version_file or self.pom is None else maven.POM_FILE
+
+    @property
+    def dev_version(self) -> Version:
+        """The version the source branch develops after the delivery."""
+        return self.new_version.next_dev("dev" if self.version_file == VERSION_FILE else "SNAPSHOT")
+
+    @property
+    def pom_dev_version(self) -> str:
+        return str(self.new_version.next_dev("SNAPSHOT"))
 
     @property
     def tag(self) -> str:
         return "v" + str(self.new_version)
 
+    @property
+    def current(self) -> str:
+        """The version before the delivery, as the plan shows it."""
+        if self.has_version_file is False and self.pom is None:
+            return "new " + VERSION_FILE
+        return str(self.version) + (" never released" if self.first_release else "")
+
     def describe(self) -> str:
-        current = str(self.version) if self.has_version_file else "new " + VERSION_FILE
-        text = f"{current} -> {self.new_version} ({self.bump}), {len(self.subjects)} commit{'s' if len(self.subjects) > 1 else ''}"
+        text = f"{self.current} -> {self.new_version} ({self.bump}), {len(self.subjects)} commit{'s' if len(self.subjects) > 1 else ''}"
         if self.destination_exists is False:
             text += ", creates " + self.destination
+        if len(self.dependency_pins) != 0:
+            text += ", with " + ", ".join(f"{key.split(':')[-1]} {version}" for key, version in self.dependency_pins.items())
         return text
 
 
@@ -218,15 +257,29 @@ def check_project(elem: RepoConfig, source: str, destination: str, extra_subject
                 f"{destination} has {apart} commit{'s' if apart > 1 else ''} that {source} has not: merge it in {source} first",
             ), None
 
-    subjects = [subject for subject in _subjects(path, destination_ref, source_ref) if subject not in DEV_VERSION_MESSAGES] + list(extra_subjects)
+    subjects = [subject for subject in _subjects(path, destination_ref, source_ref) if is_island_commit(subject) is False] + list(extra_subjects)
+    pom = None
+    pom_text = _git(path, "show", f"{source_ref}:{maven.POM_FILE}")
+    if pom_text.returncode == 0:
+        try:
+            pom = maven.parse_pom(pom_text.stdout)
+        except ValueError as ex:
+            return ProjectResult(Status.ERROR, "error", f"{maven.POM_FILE}: {ex}"), None
     version_text = _git(path, "show", f"{source_ref}:{VERSION_FILE}")
-    version = Version.parse(version_text.stdout if version_text.returncode == 0 else "")
-    if len(subjects) == 0:
-        return ProjectResult(
-            Status.OK, "up to date", f"{version if version_text.returncode == 0 else 'no ' + VERSION_FILE}, nothing to deliver"
-        ), None
+    # version.txt first, else the pom of a Maven project
+    version_source = version_text.stdout if version_text.returncode == 0 else (pom.version if pom is not None else "")
+    version = Version.parse(version_source)
+    known = version_text.returncode == 0 or pom is not None
+    first_release = release_tag(path, remote, destination) is None
+    unreleased = len(subjects) == 0 and first_release
+    if len(subjects) == 0 and unreleased is False:
+        return ProjectResult(Status.OK, "up to date", f"{version if known else 'no ' + VERSION_FILE}, nothing to deliver"), None
     if commands.check_repository_is_modify(path) is True:
+        if unreleased:
+            return ProjectResult(Status.WARNING, "unreleased", "never released, local changes: it can not be delivered now"), None
         return ProjectResult(Status.ERROR, "modified", "local changes: commit or stash them first"), None
+    if unreleased:
+        subjects = ["first release"]
     plan = DeliverPlan(
         project=elem,
         path=path,
@@ -238,26 +291,31 @@ def check_project(elem: RepoConfig, source: str, destination: str, extra_subject
         destination_exists=destination_ref is not None,
         subjects=subjects,
         bump=suggest_bump(subjects),
+        pom=pom,
+        unreleased=unreleased,
+        first_release=first_release,
     )
     error = check_tag(plan)
     if error is not None:
         return error, None
+    if unreleased:
+        return ProjectResult(Status.OK, "unreleased", f"{version if known else 'no ' + VERSION_FILE}, never released"), plan
     return ProjectResult(Status.CHANGED, "to deliver", plan.describe()), plan
 
 
 def check_tag(plan: DeliverPlan) -> ProjectResult | None:
     """Refuse a version whose tag exists already, here or on the server (the fetch took the tags)."""
     if _ref_exists(plan.path, "refs/tags/" + plan.tag):
-        return ProjectResult(Status.ERROR, "tag exists", f"{plan.tag} exists already: raise the version of {VERSION_FILE} in {plan.source}")
+        return ProjectResult(Status.ERROR, "tag exists", f"{plan.tag} exists already: raise the version of {plan.version_file} in {plan.source}")
     return None
 
 
-def check_projects(
+def check_all(
     projects: Sequence[RepoConfig], source: str, destination: str, action: str = "deliver-check", extra_subjects: Sequence[str] = ()
-) -> tuple[list[DeliverPlan], bool]:
+) -> list[tuple[RepoConfig, ProjectResult, DeliverPlan | None]]:
     """Check the projects several at a time.
 
-    :return: the plans of the projects to deliver, and True when a project is in error
+    :return: for each project, its result and its plan (None: nothing it can deliver)
     """
     plans: dict[int, DeliverPlan] = {}
 
@@ -268,7 +326,18 @@ def check_projects(
         return result
 
     results = parallel.run_on_projects(action, projects, job)
-    return [plans[id(elem)] for elem in projects if id(elem) in plans], parallel.has_error(results)
+    return [(elem, result, plans.get(id(elem))) for elem, result in zip(projects, results, strict=True)]
+
+
+def check_projects(
+    projects: Sequence[RepoConfig], source: str, destination: str, action: str = "deliver-check", extra_subjects: Sequence[str] = ()
+) -> tuple[list[DeliverPlan], bool]:
+    """Check the projects several at a time.
+
+    :return: the plans of the projects to deliver (the never released ones too), and True when a project is in error
+    """
+    checked = check_all(projects, source, destination, action, extra_subjects)
+    return [plan for _, _, plan in checked if plan is not None], any(result.status is Status.ERROR for _, result, _ in checked)
 
 
 # ----------------------------------------------------------------------------------------------------
@@ -324,6 +393,237 @@ def pin_changes(manifest_elem: RepoConfig, destination: str, manifest_name: str,
 
 
 # ----------------------------------------------------------------------------------------------------
+# Maven: the dependencies between the projects of the workspace
+# ----------------------------------------------------------------------------------------------------
+
+
+@dataclass
+class MavenProject:
+    """A project of the workspace that has a pom, as it is developed."""
+
+    project: RepoConfig
+    path: str
+    pom: maven.Pom
+    branch: str  # the branch it is developed on: the source branch, else its current branch
+    ref: str  # where its pom is read: that branch, local or on the server
+    release: str | None  # its last release on the destination branch (without the v)
+    destination_ref: str | None
+
+
+def read_workspace(projects: Sequence[RepoConfig], source: str, destination: str) -> tuple[dict[str, MavenProject], list[str]]:
+    """Read the pom of each project of the workspace on the branch it is developed on.
+
+    :return: the Maven projects by key (groupId:artifactId), and the errors (a pom island can not read, a cycle)
+    """
+    workspace: dict[str, MavenProject] = {}
+    errors: list[str] = []
+    for elem in projects:
+        path = os.path.join(env.get_island_root_path(), elem.path)
+        if elem.volatile is True or os.path.exists(os.path.join(path, ".git")) is False:
+            continue
+        current = commands.get_current_branch(path)
+        if current is None:
+            continue
+        remote = elem.select_remote["name"]
+        if _ref_exists(path, source):
+            branch, ref = source, source
+        elif _ref_exists(path, f"{remote}/{source}"):
+            branch, ref = source, f"{remote}/{source}"
+        else:
+            branch, ref = current, current
+        ret = _git(path, "show", f"{ref}:{maven.POM_FILE}")
+        if ret.returncode != 0:
+            continue
+        try:
+            pom = maven.parse_pom(ret.stdout)
+        except ValueError as ex:
+            errors.append(f"{parallel.project_name(elem)}: {maven.POM_FILE}: {ex}")
+            continue
+        destination_ref = next((name for name in (destination, f"{remote}/{destination}") if _ref_exists(path, name)), None)
+        tag = release_tag(path, remote, destination)
+        workspace[pom.key] = MavenProject(elem, path, pom, branch, ref, None if tag is None else tag.removeprefix("v"), destination_ref)
+    try:
+        maven.dependency_order({key: [dependency.key for dependency in info.pom.dependencies] for key, info in workspace.items()})
+    except ValueError as ex:
+        errors.append(str(ex))
+    return workspace, errors
+
+
+@dataclass
+class Chain:
+    """What the dependencies between the projects ask of a delivery."""
+
+    errors: list[str] = field(default_factory=list)
+    warnings: list[str] = field(default_factory=list)
+    # the projects not delivered that follow the new versions of their dependencies: key -> {dependency key: version}
+    follows: dict[str, dict[str, str]] = field(default_factory=dict)
+    # the projects a delivered project needs (never released, or with commits to deliver), and which projects need them
+    added: list[DeliverPlan] = field(default_factory=list)
+    needed_by: dict[str, list[str]] = field(default_factory=dict)
+
+
+def _artifact(key: str) -> str:
+    return key.split(":")[-1]
+
+
+def _pending_commits(info: MavenProject) -> int:
+    """The commits of a project not delivered yet (island's own ones apart)."""
+    return len([subject for subject in _subjects(info.path, info.destination_ref, info.ref) if is_island_commit(subject) is False])
+
+
+def _released_dependencies(info: MavenProject, version: str, cache: dict[tuple[str, str], dict[str, str]]) -> dict[str, str]:
+    """The dependencies of the workspace of a release of a project, as its pom gives them."""
+    if (info.pom.key, version) not in cache:
+        ret = _git(info.path, "show", f"v{version}:{maven.POM_FILE}")
+        dependencies: dict[str, str] = {}
+        if ret.returncode == 0:
+            try:
+                dependencies = {dependency.key: dependency.version for dependency in maven.parse_pom(ret.stdout).dependencies}
+            except ValueError:
+                dependencies = {}
+        cache[(info.pom.key, version)] = dependencies
+    return cache[(info.pom.key, version)]
+
+
+def chain_plans(plans: Sequence[DeliverPlan], workspace: Mapping[str, MavenProject], optional: Mapping[str, DeliverPlan] | None = None) -> Chain:
+    """Set the versions of the dependencies of each delivered project, and check the delivery holds together.
+
+    A release depends on releases only: the one delivered with it, else the last one of the dependency, which
+    must have nothing left to deliver. On the source branch a project depends on the version its dependencies
+    develop (-SNAPSHOT): the projects not delivered follow the new ones.
+
+    :param optional: The plans of the projects not asked for, by key: one a delivered project needs joins Chain.added
+    """
+    optional = optional or {}
+    chain = Chain()
+    planned = {plan.pom.key: plan for plan in plans if plan.pom is not None}
+
+    def dev_version(key: str) -> str:
+        return planned[key].pom_dev_version if key in planned else workspace[key].pom.version
+
+    for key, plan in planned.items():
+        assert plan.pom is not None
+        plan.dependency_pins.clear()
+        plan.dev_dependencies.clear()
+        name = parallel.project_name(plan.project)
+        for dependency in plan.pom.dependencies:
+            if dependency.key not in workspace or dependency.key == key:
+                continue
+            info = workspace[dependency.key]
+            dependency_name = parallel.project_name(info.project)
+            if info.project.private and plan.project.private is False:
+                chain.errors.append(f"{name} is public and depends on {dependency_name}, which is private")
+            if dependency.key in planned:
+                pin = str(planned[dependency.key].new_version)
+            elif dependency.key in optional:
+                if optional[dependency.key] not in chain.added:
+                    chain.added.append(optional[dependency.key])
+                chain.needed_by.setdefault(dependency_name, []).append(name)
+                continue
+            elif info.release is None:
+                chain.errors.append(f"{name} depends on {dependency_name}, which has no release: deliver it too")
+                continue
+            else:
+                pending = _pending_commits(info)
+                if pending != 0:
+                    chain.errors.append(
+                        f"{name} depends on {dependency_name}, which has {pending} commit{'s' if pending > 1 else ''} to deliver: deliver it too"
+                    )
+                pin = info.release
+            plan.dependency_pins[dependency.key] = pin
+            plan.dev_dependencies[dependency.key] = dev_version(dependency.key)
+    for key, info in workspace.items():
+        if key in planned:
+            continue
+        changes = {
+            dependency.key: dev_version(dependency.key)
+            for dependency in info.pom.dependencies
+            if dependency.key in planned and dependency.version != dev_version(dependency.key)
+        }
+        if len(changes) == 0:
+            continue
+        if commands.check_repository_is_modify(info.path):
+            chain.errors.append(
+                f"{parallel.project_name(info.project)} has local changes: it can not follow {', '.join(_artifact(name) for name in changes)}"
+            )
+        chain.follows[key] = changes
+    chain.warnings.extend(_divergences(planned, workspace))
+    return chain
+
+
+def _divergences(planned: Mapping[str, DeliverPlan], workspace: Mapping[str, MavenProject]) -> list[str]:
+    """Tell a release that would pull two versions of the same project of the workspace."""
+    warnings = []
+    cache: dict[tuple[str, str], dict[str, str]] = {}
+    for key, plan in planned.items():
+        if plan.project.private:
+            continue
+        versions: dict[str, dict[str, str]] = {}  # dependency key -> version -> through which project
+        todo = [(dependency, version, _artifact(key)) for dependency, version in plan.dependency_pins.items()]
+        seen = set()
+        while todo:
+            dependency, version, through = todo.pop()
+            versions.setdefault(dependency, {}).setdefault(version, through)
+            if (dependency, version) in seen or dependency not in workspace:
+                continue
+            seen.add((dependency, version))
+            if dependency in planned and str(planned[dependency].new_version) == version:
+                below = planned[dependency].dependency_pins
+            else:
+                below = _released_dependencies(workspace[dependency], version, cache)
+            todo.extend((name, below_version, _artifact(dependency)) for name, below_version in below.items() if name in workspace)
+        for dependency, found in sorted(versions.items()):
+            if len(found) > 1:
+                detail = ", ".join(f"{version} through {through}" for version, through in sorted(found.items()))
+                warnings.append(
+                    f"{parallel.project_name(plan.project)} {plan.new_version} pulls {_artifact(dependency)} in several versions: {detail}"
+                )
+    return warnings
+
+
+def chain_and_complete(plans: list[DeliverPlan], workspace: Mapping[str, MavenProject], optional: Mapping[str, DeliverPlan]) -> Chain:
+    """Chain the plans, adding to them the projects they need (never released, or with commits to deliver), until none is missing."""
+    needed_by: dict[str, list[str]] = {}
+    while True:
+        chain = chain_plans(plans, workspace, optional)
+        for name, needers in chain.needed_by.items():
+            needed_by.setdefault(name, []).extend(needer for needer in needers if needer not in needed_by.get(name, []))
+        if len(chain.added) == 0:
+            chain.needed_by = needed_by
+            return chain
+        plans.extend(plan for plan in chain.added if plan not in plans)
+
+
+def follow_projects(workspace: Mapping[str, MavenProject], chain: Chain) -> bool:
+    """Commit, on the branch each project is developed on, the new versions of its dependencies.
+
+    :return: True when a project failed
+    """
+    followers = {id(workspace[key].project): (workspace[key], changes) for key, changes in chain.follows.items()}
+    if len(followers) == 0:
+        return False
+
+    def job(elem: RepoConfig) -> ProjectResult:
+        info, changes = followers[id(elem)]
+        original_branch = commands.get_current_branch(info.path) or info.branch
+        text = ", ".join(f"{_artifact(name)} {version}" for name, version in changes.items())
+        try:
+            if _ref_exists(info.path, info.branch) is False:
+                _git_or_fail(info.path, "follow", "branch", "--track", info.branch, info.ref)
+            _git_or_fail(info.path, "follow", "checkout", "--quiet", info.branch)
+            maven.write_versions(info.path, None, changes)
+            _git_or_fail(info.path, "follow", "add", maven.POM_FILE)
+            _git_or_fail(info.path, "follow", "commit", "--quiet", "--message", FOLLOW_PREFIX + text)
+        except (DeliverError, ValueError) as ex:
+            _git(info.path, "checkout", "--quiet", original_branch)
+            return ProjectResult(Status.ERROR, "error", str(ex))
+        _git(info.path, "checkout", "--quiet", original_branch)
+        return ProjectResult(Status.CHANGED, "follows", f"{text} on {info.branch}")
+
+    return parallel.has_error(parallel.run_on_projects("follow", [info.project for info, _ in followers.values()], job))
+
+
+# ----------------------------------------------------------------------------------------------------
 # plan: shown, then accepted (or changed) once
 # ----------------------------------------------------------------------------------------------------
 
@@ -335,39 +635,58 @@ def _ask(question: str) -> str:
         return ""
 
 
-def confirm_plans(plans: list[DeliverPlan], forced_bump: Bump | None, assume_yes: bool) -> list[DeliverPlan]:
+def confirm_plans(
+    plans: list[DeliverPlan], forced_bump: Bump | None, assume_yes: bool, validate: Callable[[list[DeliverPlan]], Chain] | None = None
+) -> tuple[list[DeliverPlan], Chain]:
     """Show the plan and ask to go on; [e]dit asks the step of each project.
 
-    :return: the plans to deliver (none when the user stops)
+    :param validate: Checks the plan (the dependencies between the projects) each time it is shown
+    :return: the plans to deliver (none when the user stops or the plan is wrong), and what the check found
     """
     if forced_bump is not None:
         for plan in plans:
             plan.bump = forced_bump
     while True:
+        chain = validate(plans) if validate is not None else Chain()
         width = max(len(parallel.project_name(plan.project)) for plan in plans)
         print(f"Deliver {len(plans)} project{'s' if len(plans) > 1 else ''}:")
         for plan in plans:
             print(f"    {parallel.project_name(plan.project):<{width}}  {plan.describe()}")
+        for name, needers in sorted(chain.needed_by.items()):
+            print(f"Added, needed by {', '.join(needers)}: {name}")
+        if len(chain.follows) != 0:
+            print("Then follow the new versions on the branch they are developed on:")
+            print("    " + ", ".join(sorted(_artifact(key) for key in chain.follows)))
+        for warning in chain.warnings:
+            print("Warning: " + warning)
+        for error in chain.errors:
+            print("Error: " + error)
+        if len(chain.errors) != 0 and assume_yes is True:
+            print("Delivery stopped: nothing changed.")
+            return [], chain
         if assume_yes is True:
-            return plans
-        answer = _ask("Deliver them? [y]es, [n]o, [e]dit the versions: ")
-        if answer in ("y", "yes", "o", "oui"):
-            return plans
+            return plans, chain
+        if len(chain.errors) != 0:
+            answer = _ask("The plan can not be delivered: [e]dit the versions, [n]o: ")
+        else:
+            answer = _ask("Deliver them? [y]es, [n]o, [e]dit the versions: ")
+        if answer in ("y", "yes", "o", "oui") and len(chain.errors) == 0:
+            return plans, chain
         if answer in ("e", "edit"):
             plans = edit_plans(plans)
             if len(plans) == 0:
                 print("Nothing to deliver.")
-                return []
+                return [], Chain()
             continue
         print("Delivery canceled (nothing changed; --yes delivers without asking).")
-        return []
+        return [], Chain()
 
 
 def edit_plans(plans: list[DeliverPlan]) -> list[DeliverPlan]:
     """Ask the step of each project: Enter keeps the proposal, s(kip) leaves the project out."""
     kept = []
     for plan in plans:
-        print(f"{parallel.project_name(plan.project)} {plan.version if plan.has_version_file else '(new ' + VERSION_FILE + ')'}:")
+        print(f"{parallel.project_name(plan.project)} {plan.current}:")
         for subject in plan.subjects[-15:]:
             print("    " + subject)
         if len(plan.subjects) > 15:
@@ -400,14 +719,25 @@ def edit_plans(plans: list[DeliverPlan]) -> list[DeliverPlan]:
 # ----------------------------------------------------------------------------------------------------
 
 
-def _write_version(plan: DeliverPlan, version: Version, step: str, hook: Callable[[str], None] | None) -> None:
-    tools.file_write_data(os.path.join(plan.path, VERSION_FILE), str(version) + "\n")
+def _write_version(plan: DeliverPlan, dev: bool, step: str, hook: Callable[[str], None] | None) -> None:
+    """Write the version of the release (or of the source branch after it) in version.txt and in the pom."""
+    if plan.has_version_file or plan.pom is None:
+        version = plan.new_version.next_dev() if dev else plan.new_version
+        tools.file_write_data(os.path.join(plan.path, VERSION_FILE), str(version) + "\n")
+        _git_or_fail(plan.path, step, "add", VERSION_FILE)
+    if plan.pom is not None:
+        try:
+            if dev:
+                maven.write_versions(plan.path, plan.pom_dev_version, plan.dev_dependencies)
+            else:
+                maven.write_versions(plan.path, str(plan.new_version), plan.dependency_pins)
+        except ValueError as ex:
+            raise DeliverError(f"{step}: {maven.POM_FILE}: {ex}") from ex
     if hook is not None:
         hook(plan.path)
     if commands.call_island_release_script(plan.path):
         debug.info("release script of " + plan.path + " done")
     _git_or_fail(plan.path, step, "add", "--update")
-    _git_or_fail(plan.path, step, "add", VERSION_FILE)
 
 
 def deliver_project(
@@ -445,20 +775,21 @@ def deliver_project(
         else:
             _git_or_fail(path, step, "checkout", "--quiet", "-b", plan.destination, plan.source)
         step = "release " + str(release)
-        _write_version(plan, release, step, on_release)
-        _git_or_fail(path, step, "commit", "--quiet", "--message", f"[RELEASE] Release v{release}")
+        _write_version(plan, False, step, on_release)
+        # the release commit may change nothing (a first release in the version of the pom): it carries the tag all the same
+        _git_or_fail(path, step, "commit", "--quiet", "--allow-empty", "--message", f"[RELEASE] Release v{release}")
         _git_or_fail(path, step, "tag", "--annotate", plan.tag, "--message", f"[TAG] create tag {plan.tag}")
         step = "bring " + plan.source + " to the release"
         _git_or_fail(path, step, "checkout", "--quiet", plan.source)
         _git_or_fail(path, step, "merge", "--ff-only", plan.destination)
-        step = "start " + str(release.next_dev())
-        _write_version(plan, release.next_dev(), step, on_dev)
+        step = "start " + str(plan.dev_version)
+        _write_version(plan, True, step, on_dev)
         _git_or_fail(path, step, "commit", "--quiet", "--message", DEV_VERSION_MESSAGES[0])
     except DeliverError as ex:
         _git(path, "checkout", "--quiet", original_branch)
         return ProjectResult(Status.ERROR, "error", f"{ex} (stopped there, nothing pushed)")
     _git(path, "checkout", "--quiet", original_branch)
-    return ProjectResult(Status.CHANGED, "delivered", f"{plan.tag} on {plan.destination}, {plan.source} at {release.next_dev()}")
+    return ProjectResult(Status.CHANGED, "delivered", f"{plan.tag} on {plan.destination}, {plan.source} at {plan.dev_version}")
 
 
 def deliver_plans(
@@ -521,9 +852,17 @@ def push_project(elem: RepoConfig, branches: Sequence[str], remote: str | None =
     if _ref_exists(path, branches[0]):
         merged = _git(path, "tag", "--merged", branches[0]).stdout.split("\n")
         tags = [tag for tag in merged if tag != "" and tag not in remote_tags]
-    # a delivery is a release branch or a tag the server has not: the work in progress of the source branch alone is not pushed
+    # a delivery is a release branch or a tag the server has not, or the commits island made (versions followed):
+    # the work in progress of the source branch alone is not pushed
     if len(tags) == 0 and branches[0] not in to_push:
-        return ProjectResult(Status.OK, "up to date", "no delivery to push")
+        island_only = [
+            branch
+            for branch in to_push
+            if _ref_exists(path, f"{remote}/{branch}") and all(is_island_commit(subject) for subject in _subjects(path, f"{remote}/{branch}", branch))
+        ]
+        if len(island_only) == 0:
+            return ProjectResult(Status.OK, "up to date", "no delivery to push")
+        to_push = island_only
     to_push.extend(tags)
     ret = _git(path, "push", "--set-upstream", remote, *to_push)
     if ret.returncode != 0:

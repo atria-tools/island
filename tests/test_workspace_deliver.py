@@ -26,7 +26,7 @@ def test_deliver_releases_the_projects_with_new_commits(workspace: Path) -> None
     assert result.returncode == 0, result.stdout + result.stderr
     assert "    alpha  new version.txt -> 0.1.0 (minor), 2 commits" in result.stdout
     checks = result_lines(result.stdout.split("Deliver 1 project:")[0])
-    assert checks["libs/beta"] == "up to date no version.txt, nothing to deliver"
+    assert checks["libs/beta"] == "unreleased no version.txt, never released"
     assert checks["solo"] == "no dev     no branch dev: nothing is developed apart"
     assert checks["empty"] == "empty      no commit"
     assert result_lines(result.stdout.split("Deliver 1 project:")[1])["alpha"] == "delivered  v0.1.0 on main, dev at 0.1.1-dev"

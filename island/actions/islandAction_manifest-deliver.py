@@ -50,7 +50,7 @@ def execute(_arguments: list[ArgElement]) -> int | None:
     if len(plans) == 0:
         print("Nothing to deliver: the manifest and its pins did not change.")
         return None
-    plans = deliver.confirm_plans(plans, deliver.parse_bump(options.get("bump")), "yes" in options)
+    plans, _chain = deliver.confirm_plans(plans, deliver.parse_bump(options.get("bump")), "yes" in options)
     if len(plans) == 0:
         return None
 
