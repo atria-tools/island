@@ -73,6 +73,6 @@ ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
 # the modules fully annotated, the others join them one by one
-module = ["island.env", "island.tools", "island.multiprocess", "island.repo_config", "island.commands", "island.config"]
+module = ["island.env", "island.tools", "island.multiprocess", "island.repo_config", "island.commands", "island.config", "island.manifest"]
 disallow_untyped_defs = true
 disallow_incomplete_defs = true

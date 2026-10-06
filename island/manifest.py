@@ -7,7 +7,7 @@
 
 import copy
 import os
-from typing import Any
+from typing import NotRequired, TypedDict
 
 from lxml import etree
 
@@ -27,7 +27,7 @@ from . import (
 )
 
 
-def is_island_init():
+def is_island_init() -> bool:
     if not os.path.exists(env.get_island_path()):
         debug.verbose(f"Island is not init: path does not exist: '{env.get_island_path()}'")
         return False
@@ -40,14 +40,14 @@ def is_island_init():
     return True
 
 
-def check_island_is_init():
+def check_island_is_init() -> None:
     # check if .XXX exist (create it if needed)
     if not is_island_init():
         debug.error(f"System not init: missing config: '{env.get_island_path()}'. Call <island init> first")
         exit(-1)
 
 
-def configure_all_repository(configuration, previous_config):
+def configure_all_repository(configuration: "config.Config", previous_config: dict[str, str]) -> int:
     """Apply the configuration of the workspace on all the downloaded repository (manifest included).
 
     :param configuration: Configuration of the workspace.
@@ -73,19 +73,54 @@ def configure_all_repository(configuration, previous_config):
     return len(list_path)
 
 
-class ManifestVSC:
-    def __init__(self, manifest_yaml: str) -> None:
-        self.manifest_yaml = manifest_yaml
-        self.projects: list[dict] = []
-        self.default: dict[str, Any] | None = None
-        self.default_base = {
+class ProjectEntry(TypedDict):
+    """A project as a manifest lists it."""
+
+    name: str
+    path: str  # "": the name of the repository
+    tag: str | None
+
+
+class SubManifest(TypedDict):
+    """A manifest that a manifest includes (xml) or imports (vcs .repos file)."""
+
+    name: str
+    path: str
+    manifest: "_ManifestBase | None"
+
+
+# the options of a manifest (the 'option' node)
+ManifestDefault = TypedDict(
+    "ManifestDefault",
+    {
+        "remote": str,
+        "revision": str,  # todo: rename 'branch-release'
+        "sync": bool,
+        "branch-develop": str,
+        "default-branch": str,
+        "deliver-mode": NotRequired[str],
+    },
+)
+
+
+class _ManifestBase:
+    """What the manifests share: their projects and remotes, and the configurations of the projects."""
+
+    def __init__(self, file: str) -> None:
+        self.file = file
+        self.projects: list[ProjectEntry] = []
+        self.default: ManifestDefault | None = None
+        self.default_base: ManifestDefault = {
             "remote": "origin",
-            "revision": "master",  # todo: rename 'branch-release'
+            "revision": "master",
             "sync": False,
             "branch-develop": "dev",
             "default-branch": "dev",
         }
-        self.remotes: list[dict] = []
+        self.remotes: list[repo_config.Remote] = []
+        self.includes: list[SubManifest] = []
+        self.imports: list[SubManifest] = []
+        self.links: list[dict[str, str]] = []
         self.deliver_master = "master"
         self.deliver_develop = "develop"
         self.deliver_mode = "merge"
@@ -94,65 +129,50 @@ class ManifestVSC:
         # check error in manifest (double path ...)
         self._check_double_path([])
 
-    def get_links(self):
-        return []
+    def _load(self) -> None:
+        raise NotImplementedError
 
-    def _load(self):
-        debug.debug(f"manifest VSC: '{self.manifest_yaml}'")
-        data = {}
-        with open(self.manifest_yaml) as f:
-            data = yaml.load(f, Loader=SafeLoader)
-        if "repositories" not in data:
-            debug.error(f"in '{self.manifest_yaml}' VSC manifest: missing root key: repositories ")
-        for name, value in data["repositories"].items():
-            if "type" in value and value["type"] != "git":
-                debug.error(f"in '{self.manifest_yaml}' VSC manifest: unsupported type: '{value['type']}' for {name}")
-            if "url" not in value:
-                debug.error(f"in '{self.manifest_yaml}' VSC manifest: missing 'url' for {name}")
-            url = value["url"]
-            # TODO: Manage URL remote element ==> dynamic add !!! and manage http(s)://xxx.yyy/*
-            url_split = url.split(":")
-            if len(url_split) > 1:
-                url = url_split[-1]
-            version = None
-            if "version" in value:
-                version = str(value["version"])
-            self.projects.append(
-                {
-                    "name": url,
-                    "path": name,
-                    "tag": version,
-                }
-            )
+    def get_links(self) -> list[dict[str, str]]:
+        return self.links
 
-    def _create_path_with_elem(self, element):
-        # debug.info(f"create path : {json.dumps(element)}")
+    def _create_path_with_elem(self, element: ProjectEntry) -> str:
         path = element["path"]
         if path == "":
             path = element["name"]
             if len(path) >= 4 and path[-4:] == ".git":
                 path = path[:-4]
-        # debug.info(f"    generate path {path}")
         return path
 
-    def _check_double_path(self, list_path=None, space=""):
+    def _check_double_path(self, list_path: list[str] | None = None, space: str = "") -> None:
         if list_path is None:
             list_path = []
-        # debug.debug(f"{space}check path : '{self.manifest_yaml}'")
+        debug.debug(f"{space}check path : '{self.file}'")
         for elem in self.projects:
             path = self._create_path_with_elem(elem)
             debug.debug(f"{space}    check path:'{path}'")
             if path in list_path:
                 debug.error(f"Check Manifest error : double use of the path '{path}'")
             list_path.append(path)
+        for elem_include in self.includes:
+            if elem_include["manifest"] is not None:
+                elem_include["manifest"]._check_double_path(list_path, space + "    ")
 
-    def get_all_configs(self, default=None, upper_remotes=None):
+    def get_all_configs(
+        self, default: ManifestDefault | None = None, upper_remotes: list[repo_config.Remote] | None = None
+    ) -> list[repo_config.RepoConfig]:
+        """Get the configuration of every project: those of this manifest, of the manifests it includes or imports, and the volatile ones.
+
+        :param default: Options of the parent manifest (None: this manifest is the top one)
+        :param upper_remotes: Remotes of the parent manifests
+        :return: the configuration of each project
+        """
         if upper_remotes is None:
             upper_remotes = []
-        out = []
+        out: list[repo_config.RepoConfig] = []
+        # the top manifest is called without default; the included ones get it from their parent
+        is_top_manifest = default is None
         if default is None:
             default = copy.deepcopy(self.default) if self.default is not None else copy.deepcopy(self.default_base)
-        # debug.error(f" self.default={self.default}")
         # add all local project
         for elem in self.projects:
             debug.verbose(f"parse element {elem}")
@@ -165,89 +185,80 @@ class ManifestVSC:
             conf.path = self._create_path_with_elem(elem)
 
             # add default remote for the project (search in inherited element)
-            for remote in self.remotes:
-                debug.verbose(f"    Local Remote: {remote}")
-                if remote["name"] == default["remote"]:
-                    conf.remotes.append(remote)
+            conf.remotes = [remote for remote in self.remotes if remote["name"] == default["remote"]]
             if len(conf.remotes) == 0:
-                for remote in upper_remotes:
-                    debug.verbose(f"    upper Remote: {remote}")
-                    if remote["name"] == default["remote"]:
-                        conf.remotes.append(remote)
+                conf.remotes = [remote for remote in upper_remotes if remote["name"] == default["remote"]]
             if len(conf.remotes) == 0:
                 debug.error(
                     f"    No remote detected: {len(conf.remotes)} for {conf.name} with default remote name : {default['remote']} self remote: {self.remotes}"
                 )
-
-            # select default remote:
-            conf.select_remote = None
-            debug.debug(f"    remotes count: {len(conf.remotes)}")
-            for remote in conf.remotes:
-                debug.debug(f"    remote={remote}")
-                debug.debug(f"    Check remote : {remote['name']} == {default['remote']}")
-                debug.verbose(f"          remote={remote}")
-                debug.verbose(f"          default={default}")
-                if remote["name"] == default["remote"]:
-                    conf.select_remote = copy.deepcopy(remote)
-                    debug.debug(f"    copy select={conf.select_remote}")
-
-                    # copy the submodule synchronization
-                    conf.select_remote["sync"] = default["sync"]
-                    break
-            if conf.select_remote is None:
-                debug.error(f"missing remote for project: {conf.name}")
-
+                continue
+            # select default remote, with the submodule synchronization of the manifest
+            conf.select_remote = copy.deepcopy(conf.remotes[0])
+            conf.select_remote["sync"] = default["sync"]
+            debug.debug(f"    copy select={conf.select_remote}")
             conf.branch = default["default-branch"]
             out.append(conf)
         # create a temporary variable to transmit the remote to includes
-        upper_remotes_forward = copy.deepcopy(upper_remotes)
-        for remote in self.remotes:
-            upper_remotes_forward.append(remote)
+        upper_remotes_forward = copy.deepcopy(upper_remotes) + self.remotes
+        # add all include and import project
+        for elem_sub in self.includes + self.imports:
+            if elem_sub["manifest"] is not None:
+                out.extend(elem_sub["manifest"].get_all_configs(default, upper_remotes_forward))
+        if is_top_manifest:
+            out.extend(self._get_volatile_configs())
+        return out
 
-        if False:
-            debug.info("list of all repo:")
-            for elem in out:
-                debug.info(f"    '{elem.name}'")
-                debug.info(f"        path: {elem.path}")
-                debug.info(f"        remotes: {elem.remotes}")
-                debug.info(f"        select_remote: {elem.select_remote}")
-                debug.info(f"        branch: {elem.branch}")
+    def _get_volatile_configs(self) -> list[repo_config.RepoConfig]:
+        """Get the configuration of the volatile projects: those the workspace adds to its manifest."""
+        out = []
+        for elem in config.get_unique_config().get_volatile():
+            conf = repo_config.RepoConfig()
+            base_volatile, repo_volatile = repo_config.split_repo(elem["git_address"])
+            conf.name = repo_volatile
+            conf.path = elem["path"]
+            conf.branch = "master"
+            conf.volatile = True
+            conf.remotes = [{"name": "origin", "fetch": base_volatile, "mirror": []}]
+            conf.select_remote = {"name": "origin", "fetch": base_volatile, "sync": False, "mirror": []}
+            out.append(conf)
         return out
 
 
-class Manifest:
-    def __init__(self, manifest_xml: str) -> None:
-        self.manifest_xml = manifest_xml
-        self.projects: list[dict] = []
-        self.default: dict[str, Any] | None = None
-        self.default_base = {
-            "remote": "origin",
-            "revision": "master",  # todo: rename 'branch-release'
-            "sync": False,
-            "branch-develop": "dev",
-            "default-branch": "dev",
-        }
-        self.remotes: list[dict] = []
-        self.includes: list[dict] = []
-        self.imports: list[dict] = []
-        self.links: list[dict] = []
-        self.deliver_master = "master"
-        self.deliver_develop = "develop"
-        self.deliver_mode = "merge"
-        # load the manifest
-        self._load()
-        # check error in manifest (double path ...)
-        self._check_double_path([])
-
-    def get_links(self) -> list[dict]:
-        return self.links
+class ManifestVSC(_ManifestBase):
+    """A vcs .repos file that a manifest imports: a list of repositories, fetched from the remotes of the manifest."""
 
     def _load(self) -> None:
-        debug.debug(f"manifest : '{self.manifest_xml}'")
-        tree = etree.parse(self.manifest_xml)
+        debug.debug(f"manifest VSC: '{self.file}'")
+        with open(self.file) as f:
+            data = yaml.load(f, Loader=SafeLoader)
+        if "repositories" not in data:
+            debug.error(f"in '{self.file}' VSC manifest: missing root key: repositories ")
+        for name, value in data["repositories"].items():
+            if "type" in value and value["type"] != "git":
+                debug.error(f"in '{self.file}' VSC manifest: unsupported type: '{value['type']}' for {name}")
+            if "url" not in value:
+                debug.error(f"in '{self.file}' VSC manifest: missing 'url' for {name}")
+            url = value["url"]
+            # TODO: Manage URL remote element ==> dynamic add !!! and manage http(s)://xxx.yyy/*
+            url_split = url.split(":")
+            if len(url_split) > 1:
+                url = url_split[-1]
+            version = None
+            if "version" in value:
+                version = str(value["version"])
+            self.projects.append(ProjectEntry(name=url, path=name, tag=version))
+
+
+class Manifest(_ManifestBase):
+    """A manifest in xml: remotes, options, projects, links, and other manifests included or imported."""
+
+    def _load(self) -> None:
+        debug.debug(f"manifest : '{self.file}'")
+        tree = etree.parse(self.file)
         root = tree.getroot()
         if root.tag != "manifest":
-            debug.error(f"(l:{root.sourceline}) in '{self.manifest_xml}' have not main xml node='manifest'")
+            debug.error(f"(l:{root.sourceline}) in '{self.file}' have not main xml node='manifest'")
         for child in root:
             if isinstance(child, etree._Comment):
                 debug.verbose(f"(l:{child.sourceline})     comment='{child.text}'")
@@ -285,7 +296,7 @@ class Manifest:
                         )
                 debug.debug(f"(l:{child.sourceline})     find '{child.tag}' : name='{name}' fetch='{fetch}'")
                 # parse the sub global mirror list
-                mirror_list = []
+                mirror_list: list[repo_config.Mirror] = []
                 for child_2 in child:
                     if child_2.tag == "mirror":
                         # find a new mirror
@@ -307,15 +318,10 @@ class Manifest:
                             debug.error(f"(l:{child_2.sourceline}) Missing mirror 'name'")
                         if mirror_fetch == "":
                             debug.error(f"(l:{child_2.sourceline}) Missing mirror 'fetch'")
-                        mirror_list.append(
-                            {
-                                "name": mirror_name,
-                                "fetch": mirror_fetch,
-                            }
-                        )
+                        mirror_list.append(repo_config.Mirror(name=mirror_name, fetch=mirror_fetch))
                     else:
                         debug.error(f"(l:{child_2.sourceline}) Parsing the manifest : unknown '{child_2.tag}', available:[mirror]")
-                self.remotes.append({"name": name, "fetch": fetch, "mirror": mirror_list})
+                self.remotes.append(repo_config.Remote(name=name, fetch=fetch, mirror=mirror_list))
                 continue
 
             if child.tag == "import":
@@ -332,10 +338,10 @@ class Manifest:
                         name = str(child.attrib[attr])
                     else:
                         debug.error(f"(l:{child.sourceline}) Parsing the manifest : unknown '{child.tag}'  attribute : '{attr!s}', available:[name]")
-                new_name_yaml = os.path.join(os.path.dirname(self.manifest_xml), name)
+                new_name_yaml = os.path.join(os.path.dirname(self.file), name)
                 if os.path.exists(new_name_yaml) is False:
                     debug.error(f"(l:{child.sourceline}) The file does not exist : '{new_name_yaml}'")
-                self.imports.append({"name": name, "path": new_name_yaml, "type": type_manifest})
+                self.imports.append(SubManifest(name=name, path=new_name_yaml, manifest=None))
                 continue
             if child.tag == "include":
                 name = ""
@@ -346,10 +352,10 @@ class Manifest:
                         debug.error(f"(l:{child.sourceline}) Parsing the manifest : unknown '{child.tag}'  attribute : '{attr!s}', available:[name]")
                 debug.debug(f"(l:{child.sourceline})     find '{child.tag}' : name='{name}'")
                 # check if the file exist ...
-                new_name_xml = os.path.join(os.path.dirname(self.manifest_xml), name)
+                new_name_xml = os.path.join(os.path.dirname(self.file), name)
                 if os.path.exists(new_name_xml) is False:
                     debug.error(f"(l:{child.sourceline}) The file does not exist : '{new_name_xml}'")
-                self.includes.append({"name": name, "path": new_name_xml, "manifest": None})
+                self.includes.append(SubManifest(name=name, path=new_name_xml, manifest=None))
                 continue
             if child.tag == "option":
                 remote = "origin"
@@ -408,7 +414,7 @@ class Manifest:
             if child.tag == "project":
                 name = ""
                 path = ""
-                tag_sha1 = None
+                tag_sha1: str | None = None
                 for attr in child.attrib:
                     if attr == "name":
                         name = str(child.attrib[attr])
@@ -424,13 +430,7 @@ class Manifest:
                     debug.error(
                         f"(l:{child.sourceline}) Parsing the manifest: '{child.tag}'  missing attribute: 'name' ==> specify the git to clone ..."
                     )
-                self.projects.append(
-                    {
-                        "name": name,
-                        "path": path,
-                        "tag": tag_sha1,
-                    }
-                )
+                self.projects.append(ProjectEntry(name=name, path=path, tag=tag_sha1))
                 debug.debug(f"(l:{child.sourceline})     find '{child.tag}' : name='{name}' path='{path}' tag='{tag_sha1!s}'")
                 continue
             if child.tag == "link":
@@ -454,12 +454,7 @@ class Manifest:
                     debug.error(
                         f"(l:{child.sourceline}) Parsing the manifest: '{child.tag}'  missing attribute: 'destination' ==> specify the git to clone."
                     )
-                self.links.append(
-                    {
-                        "source": source,
-                        "destination": destination,
-                    }
-                )
+                self.links.append({"source": source, "destination": destination})
                 debug.debug(f"Add link: '{destination}' ==> '{source}'")
                 continue
             debug.info(f"(l:{child.sourceline})     '{child.tag}' values={child.attrib}")
@@ -472,131 +467,12 @@ class Manifest:
 
         # inside data    child.text
 
-    def _create_path_with_elem(self, element):
-        path = element["path"]
-        if path == "":
-            path = element["name"]
-            if len(path) >= 4 and path[-4:] == ".git":
-                path = path[:-4]
-        return path
 
-    def _check_double_path(self, list_path=None, space=""):
-        if list_path is None:
-            list_path = []
-        debug.debug(f"{space}check path : '{self.manifest_xml}'")
-        for elem in self.projects:
-            path = self._create_path_with_elem(elem)
-            debug.debug(f"{space}    check path:'{path}'")
-            if path in list_path:
-                debug.error(f"Check Manifest error : double use of the path '{path}'")
-            list_path.append(path)
-        for elem in self.includes:
-            elem["manifest"]._check_double_path(list_path, space + "    ")
-
-    def get_all_configs(self, default=None, upper_remotes=None):
-        if upper_remotes is None:
-            upper_remotes = []
-        out = []
-        # the top manifest is called without default; the included ones get it from their parent
-        is_top_manifest = default is None
-        if default is None:
-            default = copy.deepcopy(self.default) if self.default is not None else copy.deepcopy(self.default_base)
-        # debug.error(f" self.default={self.default}")
-        # add all local project
-        for elem in self.projects:
-            debug.verbose(f"parse element {elem}")
-            if env.need_process_with_filter(elem["name"]) is False:
-                debug.info(f"Filter repository: {elem['name']}")
-                continue
-            conf = repo_config.RepoConfig()
-            conf.name = elem["name"]
-            conf.tag = elem["tag"]
-            conf.path = self._create_path_with_elem(elem)
-
-            # add default remote for the project (search in inherited element)
-            for remote in self.remotes:
-                debug.verbose(f"    Local Remote: {remote}")
-                if remote["name"] == default["remote"]:
-                    conf.remotes.append(remote)
-            if len(conf.remotes) == 0:
-                for remote in upper_remotes:
-                    debug.verbose(f"    upper Remote: {remote}")
-                    if remote["name"] == default["remote"]:
-                        conf.remotes.append(remote)
-            if len(conf.remotes) == 0:
-                debug.error(
-                    f"    No remote detected: {len(conf.remotes)} for {conf.name} with default remote name : {default['remote']} self remote: {self.remotes}"
-                )
-
-            # select default remote:
-            conf.select_remote = None
-            debug.debug(f"    remotes count: {len(conf.remotes)}")
-            for remote in conf.remotes:
-                debug.debug(f"    remote={remote}")
-                debug.debug(f"    Check remote : {remote['name']} == {default['remote']}")
-                debug.verbose(f"          remote={remote}")
-                debug.verbose(f"          default={default}")
-                if remote["name"] == default["remote"]:
-                    conf.select_remote = copy.deepcopy(remote)
-                    debug.debug(f"    copy select={conf.select_remote}")
-
-                    # copy the submodule synchronization
-                    conf.select_remote["sync"] = default["sync"]
-                    break
-            if conf.select_remote is None:
-                debug.error(f"missing remote for project: {conf.name}")
-
-            conf.branch = default["default-branch"]
-            out.append(conf)
-        # create a temporary variable to transmit the remote to includes
-        upper_remotes_forward = copy.deepcopy(upper_remotes)
-        for remote in self.remotes:
-            upper_remotes_forward.append(remote)
-        # add all include project
-        for elem in self.includes:
-            out.extend(elem["manifest"].get_all_configs(default, upper_remotes_forward))
-        # add all import project
-        for elem in self.imports:
-            out.extend(elem["manifest"].get_all_configs(default, upper_remotes_forward))
-
-        # -------------------------------------------------------------
-        # -- add Volatile ...
-        # -------------------------------------------------------------
-        debug.verbose("include volatile config")
-        # TODO: maybe find a better way to do this...
-        conf_global = config.get_unique_config()
-        for elem in conf_global.get_volatile() if is_top_manifest else []:
-            conf = repo_config.RepoConfig()
-            base_volatile, repo_volatile = repo_config.split_repo(elem["git_address"])
-            conf.name = repo_volatile
-            conf.path = elem["path"]
-            conf.branch = "master"
-            conf.volatile = True
-            conf.remotes = [{"name": "origin", "fetch": base_volatile, "mirror": []}]
-            conf.select_remote = {
-                "name": "origin",
-                "fetch": base_volatile,
-                "sync": False,
-                "mirror": [],
-            }
-            out.append(conf)
-        # -------------------------------------------------------------
-        if False:
-            debug.info("list of all repo:")
-            for elem in out:
-                debug.info(f"    '{elem.name}'")
-                debug.info(f"        path: {elem.path}")
-                debug.info(f"        remotes: {elem.remotes}")
-                debug.info(f"        select_remote: {elem.select_remote}")
-                debug.info(f"        branch: {elem.branch}")
-        return out
-
-
-def tag_manifest(manifest_xml_filename, all_tags):
+def tag_manifest(manifest_xml_filename: str, all_tags: list[dict[str, str]]) -> bool | None:
     tree = etree.parse(manifest_xml_filename)
     debug.debug(f"manifest : '{manifest_xml_filename}'")
     root = tree.getroot()
-    includes = []
+    includes: list[SubManifest] = []
     if root.tag != "manifest":
         debug.error(f"(l:{root.sourceline}) in '{manifest_xml_filename}' have not main xml node='manifest'")
         return False
@@ -618,7 +494,7 @@ def tag_manifest(manifest_xml_filename, all_tags):
             new_name_xml = os.path.join(os.path.dirname(manifest_xml_filename), name)
             if os.path.exists(new_name_xml) is False:
                 debug.error(f"(l:{child.sourceline}) The file does not exist : '{new_name_xml}'")
-            includes.append({"name": name, "path": new_name_xml, "manifest": None})
+            includes.append(SubManifest(name=name, path=new_name_xml, manifest=None))
             continue
         if child.tag == "default":
             continue
@@ -653,11 +529,11 @@ def tag_manifest(manifest_xml_filename, all_tags):
     return None
 
 
-def tag_clear(manifest_xml_filename):
+def tag_clear(manifest_xml_filename: str) -> bool | None:
     tree = etree.parse(manifest_xml_filename)
     debug.debug(f"manifest : '{manifest_xml_filename}'")
     root = tree.getroot()
-    includes = []
+    includes: list[SubManifest] = []
     if root.tag != "manifest":
         debug.error(f"(l:{root.sourceline}) in '{manifest_xml_filename}' have not main xml node='manifest'")
         return False
@@ -679,12 +555,12 @@ def tag_clear(manifest_xml_filename):
             new_name_xml = os.path.join(os.path.dirname(manifest_xml_filename), name)
             if os.path.exists(new_name_xml) is False:
                 debug.error("(l:{child.sourceline}) The file does not exist : '{new_name_xml}'")
-            includes.append({"name": name, "path": new_name_xml, "manifest": None})
+            includes.append(SubManifest(name=name, path=new_name_xml, manifest=None))
             continue
         if child.tag == "default":
             continue
         if child.tag == "project":
-            child.attrib.pop("tag", None)
+            child.attrib.pop("tag", "")
             continue
         if child.tag == "option":
             continue
