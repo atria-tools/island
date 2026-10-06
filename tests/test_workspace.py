@@ -151,3 +151,27 @@ def test_sync_without_fetching_the_manifest_keeps_it(workspace: Path, servers: P
     result = run_island("--no-fetch-manifest", "sync", cwd=workspace)
     assert "manifest not updated" in result.stdout
     assert (workspace / "gamma").exists() is False
+
+
+def change_the_manifest(servers: Path, files: dict[str, str], before_solo: str) -> None:
+    """Add files next to the manifest on the server, and a line in it before the project 'solo'."""
+    work = servers / "work-manifest.git"
+    for name, content in files.items():
+        (work / name).write_text(content)
+    manifest = work / "default.xml"
+    manifest.write_text(manifest.read_text().replace('<project name="solo.git"', before_solo + '\n\t<project name="solo.git"'))
+    git("add", ".", cwd=work)
+    git("commit", "--quiet", "-m", "change the manifest", cwd=work)
+    git("push", "--quiet", "origin", "HEAD:main", cwd=work)
+
+
+def test_sync_clones_the_repositories_of_an_imported_vcs_file(workspace: Path, servers: Path) -> None:
+    make_server_repository(servers, "delta.git", {"README.md": "delta\n"})
+    make_server_repository(servers, "epsilon.git", {"README.md": "epsilon\n"})
+    repos = "repositories:\n  delta:\n    type: git\n    url: git@island.test:delta.git\n  epsilon:\n    url: git@island.test:epsilon.git\n    version: dev\n"
+    change_the_manifest(servers, {"extra.repos": repos}, '<import name="extra.repos"/>')
+    result = run_island("sync", cwd=workspace)
+    assert "Traceback" not in result.stderr, result.stderr
+    assert (workspace / "delta" / "README.md").read_text() == "delta\n"
+    assert "Need to select a specific tag version ... dev" in result.stdout
+

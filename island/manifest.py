@@ -115,8 +115,8 @@ class ManifestVSC:
             if len(url_split) > 1:
                 url = url_split[-1]
             version = None
-            if "version" not in value:
-                version = value["version"]
+            if "version" in value:
+                version = str(value["version"])
             self.projects.append(
                 {
                     "name": url,
