@@ -30,6 +30,8 @@ class Config:
         self._branch = "master"
         self._manifest_name = "default.xml"
         self._ssh_key = ""
+        self._user_name = ""
+        self._user_email = ""
         self._volatiles = []
         self._current_link = []
         self.load()
@@ -49,6 +51,10 @@ class Config:
                 self._manifest_name = data["manifest_name"]
             if "ssh_key" in data.keys():
                 self._ssh_key = data["ssh_key"]
+            if "user_name" in data.keys():
+                self._user_name = data["user_name"]
+            if "user_email" in data.keys():
+                self._user_email = data["user_email"]
             if "volatiles" in data.keys():
                 for elem in data["volatiles"]:
                     if "git_address" in elem.keys() and "path" in elem.keys():
@@ -66,6 +72,8 @@ class Config:
         data["branch"] = self._branch
         data["manifest_name"] = self._manifest_name
         data["ssh_key"] = self._ssh_key
+        data["user_name"] = self._user_name
+        data["user_email"] = self._user_email
         data["volatiles"] = self._volatiles
         data["link"] = self._current_link
         with open(env.get_island_path_config(), "w") as outfile:
@@ -96,6 +104,18 @@ class Config:
 
     def get_ssh_key(self):
         return self._ssh_key
+
+    def set_user_name(self, value):
+        self._user_name = value
+
+    def get_user_name(self):
+        return self._user_name
+
+    def set_user_email(self, value):
+        self._user_email = value
+
+    def get_user_email(self):
+        return self._user_email
 
     def add_volatile(self, git_adress, local_path):
         for elem in self._volatiles:

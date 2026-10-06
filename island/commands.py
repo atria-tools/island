@@ -69,6 +69,10 @@ def get_repository_config(configuration):
     out = {}
     if configuration.get_ssh_key() != "":
         out["core.sshCommand"] = get_ssh_command(configuration.get_ssh_key())
+    if configuration.get_user_name() != "":
+        out["user.name"] = configuration.get_user_name()
+    if configuration.get_user_email() != "":
+        out["user.email"] = configuration.get_user_email()
     return out
 
 

@@ -37,6 +37,8 @@ def add_specific_arguments(my_args, section):
     my_args.add("b", "branch", haveParam=True, desc="Select branch to display")
     my_args.add("m", "manifest", haveParam=True, desc="Name of the manifest")
     my_args.add("k", "ssh-key", haveParam=True, desc="Ssh private key used to access on the git servers (set in all the repository)")
+    my_args.add("u", "user-name", haveParam=True, desc="Git user name (set in all the repository)")
+    my_args.add("e", "user-email", haveParam=True, desc="Git user email (set in all the repository)")
 
 
 #
@@ -57,6 +59,8 @@ def execute(_arguments):
     manifest_name = "default.xml"
     address_manifest = ""
     ssh_key = ""
+    user_name = ""
+    user_email = ""
     for elem in _arguments:
         if elem.get_option_name() == "branch":
             debug.info("find branch name: '" + elem.get_arg() + "'")
@@ -67,6 +71,12 @@ def execute(_arguments):
         elif elem.get_option_name() == "ssh-key":
             debug.info("find ssh key: '" + elem.get_arg() + "'")
             ssh_key = commands.get_ssh_key_path(elem.get_arg())
+        elif elem.get_option_name() == "user-name":
+            debug.info("find user name: '" + elem.get_arg() + "'")
+            user_name = elem.get_arg()
+        elif elem.get_option_name() == "user-email":
+            debug.info("find user email: '" + elem.get_arg() + "'")
+            user_email = elem.get_arg()
         elif elem.get_option_name() == "":
             if address_manifest != "":
                 debug.error("Manifest adress already set : '" + address_manifest + "' !!! '" + elem.get_arg() + "'")
@@ -92,6 +102,8 @@ def execute(_arguments):
     conf.set_branch(branch)
     conf.set_manifest_name(manifest_name)
     conf.set_ssh_key(ssh_key)
+    conf.set_user_name(user_name)
+    conf.set_user_email(user_email)
     conf.store()
 
     debug.info("Clone the manifest")

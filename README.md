@@ -80,6 +80,16 @@ Select, display or remove the ssh key of an existing workspace:
   island ssh-key
   island ssh-key --remove
 
+Use a specific git user name and email (stored in the workspace and set in all the repository):
+
+  island init --user-name "My Name" --user-email my.name@example.com git@github.com:atria-soft/manifest.git
+
+Select, display or remove the git user of an existing workspace:
+
+  island user --name "My Name" --email my.name@example.com
+  island user
+  island user --remove
+
 Develop in local (with virtual env):
 ====================================
 
