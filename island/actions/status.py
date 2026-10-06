@@ -223,7 +223,7 @@ def checkout_elem(elem, argument_remote_name, branch_to_checkout, base_display):
         cmd = "git checkout " + branch_to_checkout
         debug.verbose("execute : " + cmd)
         ret = multiprocess.run_command(cmd, cwd=git_repo_path)
-        if ret is not False and ret[0] != 0 and ret[1] != "":
+        if ret.returncode != 0:
             debug.info("'" + str(ret) + "'")
             debug.error("checkout " + base_display + " ==> Can not checkout to the correct branch")
             return False
@@ -251,7 +251,7 @@ def checkout_elem(elem, argument_remote_name, branch_to_checkout, base_display):
         # + " --track " + elem.select_remote["name"] + "/" + branch_to_checkout
         debug.verbose("execute : " + cmd)
         ret = multiprocess.run_command(cmd, cwd=git_repo_path)
-        if ret is not False and ret[1] != "":
+        if ret.returncode != 0:
             debug.info("'" + str(ret) + "'")
             debug.error("checkout " + base_display + " ==> Can not checkout to the correct branch")
             return False
@@ -268,7 +268,7 @@ def checkout_elem(elem, argument_remote_name, branch_to_checkout, base_display):
     # + " --track " + elem.select_remote["name"] + "/" + branch_to_checkout
     debug.verbose("execute : " + cmd)
     ret = multiprocess.run_command(cmd, cwd=git_repo_path)
-    if ret is not False and ret[1] != "":
+    if ret.returncode != 0:
         debug.info("'" + str(ret) + "'")
         debug.error("checkout " + base_display + " ==> Can not checkout to the correct tags")
         return False

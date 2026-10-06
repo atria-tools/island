@@ -241,3 +241,19 @@ def test_the_user_config_excludes_folders_from_the_search_of_actions(workspace: 
     result = run_island("hello", cwd=workspace)
     assert "Traceback" not in result.stderr, result.stderr
     assert "Wrong action type : 'hello'" in result.stdout
+
+
+def test_checkout_tells_a_branch_it_cannot_take(workspace: Path, servers: Path) -> None:
+    work = servers / "work-alpha.git"
+    git("checkout", "--quiet", "-b", "feature", cwd=work)
+    (work / "NEW.md").write_text("from the feature\n")
+    git("add", ".", cwd=work)
+    git("commit", "--quiet", "-m", "feature", cwd=work)
+    git("push", "--quiet", "origin", "feature", cwd=work)
+    git("fetch", "--quiet", "origin", cwd=workspace / "alpha")
+    # an untracked file of the user that the branch would overwrite
+    (workspace / "alpha" / "NEW.md").write_text("of the user\n")
+    result = run_island("checkout", "feature", cwd=workspace)
+    assert "Can not checkout to the correct branch" in result.stdout
+    assert result.returncode != 0
+    assert git("branch", "--show-current", cwd=workspace / "alpha").strip() == "dev"
