@@ -66,6 +66,18 @@ Download and synchronize the sources:
 
   island sync
 
+Get what changed on the servers, without touching the working trees (it tells what each project has to pull):
+
+  island fetch
+
+sync and fetch work on 5 projects at a time and show one line per project as it ends (cloned, updated
+with the number of new commits, up to date, modified...), its warnings and errors under it, then a
+summary. Choose how many projects run at a time with ```-j``` (```-j 1``` one after the other;
+```--wait``` also runs one at a time), or with ```get_default_jobs()``` in the islandConfig.py of the
+workspace:
+
+  island -j 10 sync
+
 Select all branch available in the work-tree: (checkout origin/dev in dev branch and track it, do nothing if the branch does not exist)
 
   island checkout dev
@@ -163,7 +175,7 @@ TODO list
   - support submodule add upstream
   - push modilfication in all late mirorr (force mode optionnal) ==> for automatic server synchronisation in 4 lines
   - a good documation of the format and the usage
-  - parallele download / sync / push ...
+  - parallele push, status ...
 
 License (MPL v2.0)
 ---------------------
