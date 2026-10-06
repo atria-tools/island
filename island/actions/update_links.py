@@ -15,6 +15,11 @@ from island import env, tools
 
 # Update the links:
 def update(configuration, mani, type_call):
+    """Remove the links of the last sync, then create those of the manifest.
+
+    :return: True when a link could not be removed or created
+    """
+    have_error = False
     # TODO: do not remove link when not needed
     if len(configuration.get_links()) != 0 or len(mani.get_links()) != 0:
         debug.info(type_call + ": remove old links ...")
@@ -46,3 +51,4 @@ def update(configuration, mani, type_call):
                 os.symlink(source_path, base_path)
                 configuration.add_link(elem["source"], elem["destination"])
     configuration.store()
+    return have_error

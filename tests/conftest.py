@@ -24,6 +24,7 @@ MANIFEST = """<?xml version="1.0" encoding="UTF-8"?>
 	<project name="alpha.git" path="alpha"/>
 	<project name="beta.git" path="libs/beta"/>
 	<project name="empty.git" path="empty"/>
+	<link source=".island/manifest/default.xml" destination="manifest.xml"/>
 </manifest>
 """
 

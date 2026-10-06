@@ -94,3 +94,20 @@ def test_a_wrong_submodule_option_is_told(workspace: Path) -> None:
     result = run_island("status", cwd=workspace)
     assert "NameError" not in result.stderr, result.stderr
     assert "value:'maybe' available:[true,1,yes,false,0,no]" in result.stdout
+
+
+def test_sync_links_the_files_of_the_manifest(workspace: Path) -> None:
+    link = workspace / "manifest.xml"
+    assert link.is_symlink()
+    assert link.resolve() == (workspace / ".island" / "manifest" / "default.xml").resolve()
+    assert run_island("sync", cwd=workspace).returncode == 0
+    assert link.is_symlink()
+
+
+def test_sync_fails_when_a_link_takes_the_place_of_a_file(workspace: Path) -> None:
+    (workspace / "manifest.xml").unlink()
+    (workspace / "manifest.xml").write_text("a file of the user\n")
+    result = run_island("sync", cwd=workspace)
+    assert "path already exist" in result.stdout
+    assert result.returncode != 0
+    assert (workspace / "manifest.xml").read_text() == "a file of the user\n"
