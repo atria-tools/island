@@ -16,6 +16,7 @@ from dataclasses import dataclass, field
 import enum
 import os
 import re
+import shutil
 import sys
 import threading
 import time
@@ -131,11 +132,9 @@ class _Display:
             self.out.write("\r\033[K")
         self.out.write(text)
         if self.terminal and self.running:
-            self.out.write(
-                f"  {self.action}: {self.done}/{self.count} done, running {', '.join(self.running)}"[
-                    : os.get_terminal_size(self.out.fileno()).columns - 1
-                ]
-            )
+            # some terminals give no size (0 columns): shutil falls back to 80
+            running = f"  {self.action}: {self.done}/{self.count} done, running {', '.join(self.running)}"
+            self.out.write(running[: shutil.get_terminal_size().columns - 1])
         self.out.flush()
 
     def start(self, name: str) -> None:
