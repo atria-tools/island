@@ -219,3 +219,25 @@ def test_sync_tells_a_submodule_it_cannot_clone(workspace: Path, servers: Path) 
     result = run_island("sync", cwd=workspace)
     assert "Traceback" not in result.stderr, result.stderr
     assert "Can not init submodules" in result.stdout
+
+
+HELLO_ACTION = """def help() -> str:
+    return "Say hello"
+
+
+def execute(_arguments: list) -> None:
+    print("hello from the workspace")
+"""
+
+
+def test_an_action_of_the_workspace_runs(workspace: Path) -> None:
+    (workspace / "alpha" / "islandAction_hello.py").write_text(HELLO_ACTION)
+    assert "hello from the workspace" in run_island("hello", cwd=workspace).stdout
+
+
+def test_the_user_config_excludes_folders_from_the_search_of_actions(workspace: Path) -> None:
+    (workspace / "alpha" / "islandAction_hello.py").write_text(HELLO_ACTION)
+    (workspace / "islandConfig.py").write_text('def get_exclude_path() -> list[str]:\n    return [".island", ".git", "alpha"]\n')
+    result = run_island("hello", cwd=workspace)
+    assert "Traceback" not in result.stderr, result.stderr
+    assert "Wrong action type : 'hello'" in result.stdout

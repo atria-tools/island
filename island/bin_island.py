@@ -7,6 +7,7 @@
 
 import os
 import sys
+from types import ModuleType
 
 import death.ArgElement as arg_element
 import death.Arguments as arguments
@@ -42,7 +43,7 @@ def init() -> None:
     list_of_island_files = tools.import_path_local(
         env.get_island_root_path(),
         2,
-        [".island", ".git", "archive"],
+        env.get_exclude_search_path(),
         base_name=env.get_system_base_name() + "*.py",
     )
     action_loader.init(list_of_island_files)
@@ -128,7 +129,24 @@ def parse_generic_arg(my_args, argument: arg_element.ArgElement, active: bool) -
     return False
 
 
-def main():
+def load_user_config() -> ModuleType | None:
+    """Load the islandConfig.py file of the workspace, when it has one."""
+    config_file = env.get_island_path_user_config()
+    if os.path.isfile(config_file) is False:
+        return None
+    sys.path.append(os.path.dirname(config_file))
+    debug.debug(f"Find basic configuration file: '{config_file}'")
+    return __import__(env.get_system_config_name()[:-3])
+
+
+def main() -> None:
+    # the configuration of the workspace tells where the actions are not searched
+    configuration_file = load_user_config()
+    if configuration_file is not None and "get_exclude_path" in dir(configuration_file):
+        data = configuration_file.get_exclude_path()
+        debug.debug(f"get default config 'get_exclude_path' val='{data}'")
+        env.set_exclude_search_path(data)
+
     # initialize the system ...
     init()
 
@@ -177,18 +195,7 @@ def main():
     local_argument = my_args.parse()
 
     # open configuration of island:
-    config_file = env.get_island_path_user_config()
-    if os.path.isfile(config_file) is True:
-        sys.path.append(os.path.dirname(config_file))
-        debug.debug(f"Find basic configuration file: '{config_file}'")
-        # the file exist, we can open it and get the initial configuration:
-        configuration_file = __import__(env.get_system_config_name()[:-3])
-
-        if "get_exclude_path" in dir(configuration_file):
-            data = configuration_file.get_exclude_path()
-            debug.debug(f"get default config 'get_exclude_path' val='{data}'")
-            env.set_exclude_search_path(data)
-
+    if configuration_file is not None:
         if "get_default_color" in dir(configuration_file):
             data = configuration_file.get_default_color()
             debug.debug(f"get default config 'get_default_color' val='{data}'")

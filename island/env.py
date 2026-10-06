@@ -72,6 +72,19 @@ def need_process_with_filter(data: str) -> bool:
     return data[: len(filter_command)] == filter_command
 
 
+exclude_search_path = [".island", ".git", "archive"]
+
+
+def set_exclude_search_path(val: list[str]) -> None:
+    global exclude_search_path
+    exclude_search_path = val
+
+
+def get_exclude_search_path() -> list[str]:
+    """Get the folders of the workspace where island does not look for the files of actions."""
+    return exclude_search_path
+
+
 display_folder_instead_of_git_name = True
 
 
