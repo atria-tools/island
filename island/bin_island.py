@@ -222,7 +222,6 @@ def main():
             debug.debug(f"get default config 'get_default_filter' val='{data}'")
             parse_generic_arg(my_args, arg_element.ArgElement("filter", str(data)), True)
 
-
     # parse default unique argument:
     for argument in local_argument:
         parse_generic_arg(my_args, argument, True)
@@ -240,7 +239,6 @@ def main():
         debug.warning("Missing the action to do ...")
         debug.warning("--------------------------------------")
         usage(my_args)
-
 
     # TODO : move tin in actions ...
     list_actions = actions.get_list_of_action()

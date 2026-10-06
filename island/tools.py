@@ -202,7 +202,7 @@ def list_append_to(out_list, in_list, order=False):
     elif type(in_list) == dict:
         list_append_and_check(out_list, in_list, order)
     else:
-        debug.warning(f"can not add in list other than {list/dict/str} : {type(in_list)}")
+        debug.warning(f"can not add in list other than {list / dict / str} : {type(in_list)}")
 
 
 def list_append_to_2(listout, module, in_list, order=False):

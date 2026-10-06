@@ -6,6 +6,7 @@
 @copyright 2012, Edouard DUPIN, all right reserved
 @license MPL v2.0 (see license file)
 """
+
 import platform
 
 from realog import debug
