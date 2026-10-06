@@ -193,3 +193,29 @@ def test_sync_local_skips_a_project_without_tracking_branch(workspace: Path) -> 
     assert "Traceback" not in result.stderr, result.stderr
     assert "no tracking branch" in result.stdout
     assert "local sync partial warning on 2 repository" in result.stdout
+
+
+def test_sync_clones_a_project_with_its_submodules(workspace: Path, servers: Path) -> None:
+    make_server_repository(servers, "eta.git", {"README.md": "eta\n"})
+    work = servers / "work-eta.git"
+    git("submodule", "--quiet", "add", SERVER + ":alpha.git", "sub/alpha", cwd=work)
+    git("commit", "--quiet", "-m", "add a submodule", cwd=work)
+    git("push", "--quiet", "origin", "HEAD:main", "HEAD:dev", cwd=work)
+    change_the_manifest(servers, {}, '<project name="eta.git" path="eta"/>')
+    result = run_island("sync", cwd=workspace)
+    assert "Traceback" not in result.stderr, result.stderr
+    assert "Can not init submodules" not in result.stdout
+    assert (workspace / "eta" / "sub" / "alpha" / "README.md").read_text() == "alpha\n"
+
+
+def test_sync_tells_a_submodule_it_cannot_clone(workspace: Path, servers: Path) -> None:
+    make_server_repository(servers, "theta.git", {"README.md": "theta\n"})
+    work = servers / "work-theta.git"
+    git("submodule", "--quiet", "add", SERVER + ":alpha.git", "sub/alpha", cwd=work)
+    git("config", "--file", ".gitmodules", "submodule.sub/alpha.url", SERVER + ":missing.git", cwd=work)
+    git("commit", "--quiet", "-am", "add a submodule that does not exist", cwd=work)
+    git("push", "--quiet", "origin", "HEAD:main", "HEAD:dev", cwd=work)
+    change_the_manifest(servers, {}, '<project name="theta.git" path="theta"/>')
+    result = run_island("sync", cwd=workspace)
+    assert "Traceback" not in result.stderr, result.stderr
+    assert "Can not init submodules" in result.stdout

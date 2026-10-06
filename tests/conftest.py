@@ -69,6 +69,8 @@ def servers(tmp_path: Path, isolated_git: Path) -> Path:
     servers = tmp_path / "servers"
     servers.mkdir()
     git("config", "--global", f"url.{servers}/.insteadOf", SERVER + ":", cwd=servers)
+    # the submodules of the local servers are reached through the file protocol
+    git("config", "--global", "protocol.file.allow", "always", cwd=servers)
     make_server_repository(servers, "manifest.git", {"default.xml": MANIFEST.format(fetch=SERVER)})
     make_server_repository(servers, "alpha.git", {"README.md": "alpha\n"})
     make_server_repository(servers, "beta.git", {"README.md": "beta\n"})

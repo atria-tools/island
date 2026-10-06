@@ -111,9 +111,8 @@ def execute(_arguments):
                 else:
                     cmd += "/"
                 cmd += elem.name
-                ret = multiprocess.run_command_direct(cmd, cwd=git_repo_path)
-                if ret is not False and ret != "":
-                    # all is good, ready to get the system work corectly
+                ret = multiprocess.run_command(cmd, cwd=git_repo_path)
+                if ret.returncode != 0:
                     debug.info("'" + str(ret) + "'")
                     debug.warning("Can not add global mirror ... ")
                     continue
@@ -122,23 +121,13 @@ def execute(_arguments):
             # check submodule if requested:
             if elem.select_remote["sync"] is True and os.path.exists(os.path.join(git_repo_path, ".gitmodules")) is True:
                 debug.info("    ==> update submodule")
-                cmd = "git submodule init"
-                ret = multiprocess.run_command_direct(cmd, cwd=git_repo_path)
-                if ret is not False and ret != "":
-                    # all is good, ready to get the system work corectly
-                    debug.info("'" + str(ret) + "'")
-                    debug.error("Can not init submodules ... ")
-                    continue
-                cmd = "git submodule update"
-                ret = multiprocess.run_command_direct(cmd, cwd=git_repo_path)
-                if ret[:16] == "Submodule path '":
-                    # all is good ...
-                    debug.info("    " + ret)
-                elif ret is not False and ret != "":
-                    # all is good, ready to get the system work corectly
-                    debug.info("'" + str(ret) + "'")
-                    debug.error("Can not init submodules ... ")
-                    continue
+                for cmd in ("git submodule init", "git submodule update"):
+                    ret = multiprocess.run_command(cmd, cwd=git_repo_path)
+                    if ret.returncode != 0:
+                        debug.info("'" + str(ret) + "'")
+                        debug.error("Can not init submodules ... ")
+                    if ret.stdout != "":
+                        debug.info("    " + ret.stdout)
             commands.configure_repository(git_repo_path, configuration)
             continue
 
