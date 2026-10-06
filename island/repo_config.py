@@ -5,21 +5,41 @@
 @license MPL v2.0 (see license file)
 """
 
+from typing import NotRequired, TypedDict
+
 from realog import debug
 
 
+class Mirror(TypedDict):
+    """A mirror of a remote: the same repositories on another server."""
+
+    name: str
+    fetch: str
+
+
+class Remote(TypedDict):
+    """A remote of the manifest: where its projects are fetched."""
+
+    name: str
+    fetch: str
+    mirror: list[Mirror]
+    sync: NotRequired[bool]  # synchronize the submodules, set on the remote a project selects
+
+
 class RepoConfig:
-    def __init__(self):
+    """A project of the workspace, as the manifest describes it."""
+
+    def __init__(self) -> None:
         self.name = ""
         self.path = ""
-        self.remotes = []  # list of all remotes, with the upstream elements (needed for third party integrations)
-        self.select_remote = ""
+        self.remotes: list[Remote] = []  # list of all remotes, with the upstream elements (needed for third party integrations)
+        self.select_remote: Remote = {"name": "", "fetch": "", "mirror": []}
         self.branch = ""
-        self.tag = None
+        self.tag: str | None = None
         self.volatile = False
 
 
-def split_repo(git_repo):
+def split_repo(git_repo: str) -> tuple[str, str]:
     debug.verbose("parse git repo in RAW: " + str(git_repo))
     if len(git_repo) > 4 and git_repo[:4] == "http":
         # http://wdfqsdfqs@qsdfqsdf/qsdfqsdf/qsdfqsdf/qsdfqs.git find the 3rd '/' and cut at this point

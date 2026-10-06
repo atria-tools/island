@@ -5,20 +5,30 @@
 @license MPL v2.0 (see license file)
 """
 
+from collections.abc import Container
 import shlex
 import subprocess
+from typing import Literal, NamedTuple
 
 # Local import
 from realog import debug
 
 
+class CommandResult(NamedTuple):
+    """Result of a command: its return code, then its outputs without their last new line."""
+
+    returncode: int
+    stdout: str
+    stderr: str
+
+
 def generic_display_error(
-    return_value,
-    type_name,
-    error_only=False,
-    available_return=(0,),
-    display_if_nothing=True,
-):
+    return_value: CommandResult,
+    type_name: str,
+    error_only: bool = False,
+    available_return: Container[int] = (0,),
+    display_if_nothing: bool = True,
+) -> None:
     debug.verbose(str(return_value))
     if return_value[0] in available_return:
         if error_only is True:
@@ -46,59 +56,34 @@ def generic_display_error(
             debug.warning("ERROR GIT(" + type_name + "): Unknow error return_value=" + str(return_value[0]))
 
 
-#
-# @brief Execute the command and ruturn generate data
-#
-def run_command_direct(cmd_line, cwd=None):
-    # prepare command line:
+def _start(cmd_line: str, cwd: str | None) -> subprocess.Popen[bytes]:
+    """Start a command line (split as a shell does, but run without shell); stop island when it cannot start."""
     args = shlex.split(cmd_line)
     debug.verbose("cmd = " + str(args))
-    """
-	if True:
-		subprocess.check_call(args)
-		return ""
-	"""
     try:
-        # create the subprocess
-        # p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        # p = subprocess.check_call(args)
-        """
-        if cwd != None:
-                debug.info("path = " + cwd)
-        """
-        p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=cwd)
+        return subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=cwd)
     except Exception as ex:
         debug.error(f"Exception : {args} ==> {ex}")
-    # launch the subprocess:
-    output, err = p.communicate()
-    output = output.decode("utf-8")
-    err = err.decode("utf-8")
-    # Check errors:
-    if p.returncode == 0:
-        if output is None:
-            return err[:-1]
-        return output[:-1]
+        raise
+
+
+def run_command_direct(cmd_line: str, cwd: str | None = None) -> str | Literal[False]:
+    """Execute a command.
+
+    :return: its standard output without the last new line, or False when it failed
+    """
+    process = _start(cmd_line, cwd)
+    output, _err = process.communicate()
+    if process.returncode == 0:
+        return output.decode("utf-8")[:-1]
     return False
 
 
-def run_command(cmd_line, cwd=None):
-    # prepare command line:
-    args = shlex.split(cmd_line)
-    debug.verbose("cmd = " + str(args))
-    try:
-        # create the subprocess
-        """
-        if cwd != None:
-                debug.info("path = " + cwd)
-        """
-        p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=cwd)
-    except subprocess.CalledProcessError as ex:
-        debug.error(f"subprocess.CalledProcessError : {args} ==> {ex}")
-    except Exception as ex:
-        debug.error(f"Exception : {args} ==> {ex}")
-    # launch the subprocess:
-    output, err = p.communicate()
-    output = output.decode("utf-8")
-    err = err.decode("utf-8")
-    # Check error :
-    return [p.returncode, output[:-1], err[:-1]]
+def run_command(cmd_line: str, cwd: str | None = None) -> CommandResult:
+    """Execute a command.
+
+    :return: its return code and its outputs
+    """
+    process = _start(cmd_line, cwd)
+    output, err = process.communicate()
+    return CommandResult(process.returncode, output.decode("utf-8")[:-1], err.decode("utf-8")[:-1])

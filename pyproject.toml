@@ -70,3 +70,9 @@ warn_redundant_casts = true
 # the libraries of the same author, without type information
 module = ["realog", "realog.*", "death", "death.*"]
 ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+# the modules fully annotated, the others join them one by one
+module = ["island.env", "island.tools", "island.multiprocess", "island.repo_config"]
+disallow_untyped_defs = true
+disallow_incomplete_defs = true

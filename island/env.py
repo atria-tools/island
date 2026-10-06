@@ -14,63 +14,57 @@ from realog import debug
 system_base_name = "island"
 
 
-def set_system_base_name(val):
+def set_system_base_name(val: str) -> None:
     global system_base_name
     system_base_name = val
     debug.debug("Set basename: '" + str(system_base_name) + "'")
 
 
-def get_system_base_name():
-    global system_base_name
+def get_system_base_name() -> str:
     return system_base_name
 
 
-def get_system_config_name():
-    global system_base_name
+def get_system_config_name() -> str:
     return system_base_name + "Config.py"
 
 
 fetch_manifest = True
 
 
-def set_fetch_manifest(val):
+def set_fetch_manifest(val: bool) -> None:
     global fetch_manifest
     fetch_manifest = val
 
 
-def get_fetch_manifest():
-    global fetch_manifest
+def get_fetch_manifest() -> bool:
     return fetch_manifest
 
 
 wait_between_sever_command = 0
 
 
-def set_wait_between_sever_command(val):
+def set_wait_between_sever_command(val: int) -> None:
     global wait_between_sever_command
     wait_between_sever_command = val
 
 
-def get_wait_between_sever_command():
-    global wait_between_sever_command
+def get_wait_between_sever_command() -> int:
     return wait_between_sever_command
 
 
 filter_command = ""
 
 
-def set_filter_command(val):
+def set_filter_command(val: str) -> None:
     global filter_command
     filter_command = val
 
 
-def get_filter_command():
-    global filter_command
+def get_filter_command() -> str:
     return filter_command
 
 
-def need_process_with_filter(data):
-    global filter_command
+def need_process_with_filter(data: str) -> bool:
     if filter_command == "":
         return True
     if len(data) < len(filter_command):
@@ -81,46 +75,28 @@ def need_process_with_filter(data):
 display_folder_instead_of_git_name = True
 
 
-def set_display_folder_instead_of_git_name(val):
+def set_display_folder_instead_of_git_name(val: bool) -> None:
     global display_folder_instead_of_git_name
     display_folder_instead_of_git_name = val
 
 
-def get_display_folder_instead_of_git_name():
-    global display_folder_instead_of_git_name
+def get_display_folder_instead_of_git_name() -> bool:
     return display_folder_instead_of_git_name
 
 
-island_root_path = os.path.join(os.getcwd())
-if os.path.exists(os.path.join(island_root_path, "." + get_system_base_name())) is True:
-    # all is good ...
-    pass
-elif os.path.exists(os.path.join(island_root_path, "..", "." + get_system_base_name())):
-    island_root_path = os.path.join(os.getcwd(), "..")
-elif os.path.exists(os.path.join(island_root_path, "..", "..", "." + get_system_base_name())):
-    island_root_path = os.path.join(os.getcwd(), "..", "..")
-elif os.path.exists(os.path.join(island_root_path, "..", "..", "..", "." + get_system_base_name())):
-    island_root_path = os.path.join(os.getcwd(), "..", "..", "..")
-elif os.path.exists(os.path.join(island_root_path, "..", "..", "..", "..", "." + get_system_base_name())):
-    island_root_path = os.path.join(os.getcwd(), "..", "..", "..", "..")
-elif os.path.exists(os.path.join(island_root_path, "..", "..", "..", "..", "..", "." + get_system_base_name())):
-    island_root_path = os.path.join(os.getcwd(), "..", "..", "..", "..", "..")
-elif os.path.exists(
-    os.path.join(
-        island_root_path,
-        "..",
-        "..",
-        "..",
-        "..",
-        "..",
-        "..",
-        "." + get_system_base_name(),
-    )
-):
-    island_root_path = os.path.join(os.getcwd(), "..", "..", "..", "..", "..", "..")
-else:
-    # debug.error("the root path of " + get_system_base_name() + " must not be upper that 6 parent path")
-    pass
+def _find_island_root_path() -> str:
+    """Find the folder holding the ".island" folder: the current one or one of its 6 parents.
+
+    :return: the folder found, else the current folder
+    """
+    for count_parent in range(7):
+        path = os.path.join(os.getcwd(), *[".."] * count_parent)
+        if os.path.exists(os.path.join(path, "." + get_system_base_name())):
+            return path
+    return os.getcwd()
+
+
+island_root_path = _find_island_root_path()
 island_path_user_config = os.path.join(island_root_path, get_system_config_name())
 island_path = os.path.join(island_root_path, "." + get_system_base_name())
 island_path_config = os.path.join(island_path, "config.json")
@@ -132,27 +108,22 @@ def get_island_root_path() -> str:
 
     :return: the parent path of the ".island"
     """
-    global island_root_path
     return island_root_path
 
 
 def get_island_path() -> str:
-    global island_path
     return island_path
 
 
 def get_island_path_config() -> str:
-    global island_path_config
     return island_path_config
 
 
 def get_island_path_manifest() -> str:
-    global island_path_manifest
     return island_path_manifest
 
 
 def get_island_path_user_config() -> str:
-    global island_path_user_config
     return island_path_user_config
 
 

@@ -264,9 +264,8 @@ class Manifest:
                             # we have a relative island manifest ==> use local manifest origin to get the full origin
                             cmd = "git remote get-url origin"
                             debug.verbose(f"execute : {cmd}")
-                            base_origin = multiprocess.run_command(cmd, cwd=env.get_island_path_manifest())
-                            debug.verbose(f"base_origin={base_origin[1]}")
-                            base_origin = base_origin[1]
+                            base_origin = multiprocess.run_command(cmd, cwd=env.get_island_path_manifest()).stdout
+                            debug.verbose(f"base_origin={base_origin}")
                             while len(fetch) >= 2 and fetch[:2] == "..":
                                 fetch = fetch[2:]
                                 while len(fetch) >= 1 and (fetch[0] == "/" or fetch[0] == "\\"):

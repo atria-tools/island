@@ -8,6 +8,7 @@
 import fnmatch
 import os
 import time
+from typing import TYPE_CHECKING
 
 # Local import
 from realog import debug
@@ -15,41 +16,45 @@ from realog import debug
 from . import env
 
 
-def get_current_path(file) -> str:
+if TYPE_CHECKING:
+    from .repo_config import RepoConfig
+
+
+def get_current_path(file: str) -> str:
     return os.path.dirname(os.path.realpath(file))
 
 
-def create_directory(path):
+def create_directory(path: str) -> None:
     os.makedirs(path, exist_ok=True)
 
 
-def create_directory_of_file(file):
+def create_directory_of_file(file: str) -> None:
     path = os.path.dirname(file)
     create_directory(path)
 
 
-def get_list_sub_path(path):
+def get_list_sub_path(path: str) -> list[str]:
     # TODO : os.listdir(path)
     for _dirname, dirnames, _filenames in os.walk(path):
         return dirnames
     return []
 
 
-def get_list_sub_files(path):
+def get_list_sub_files(path: str) -> list[str]:
     # TODO : os.listdir(path)
     for _dirname, _dirnames, filenames in os.walk(path):
         return filenames
     return []
 
 
-def file_read_data(path, binary=False):
+def file_read_data(path: str) -> str:
     if not os.path.isfile(path):
         return ""
-    with open(path, "rb" if binary is True else "r") as file:
+    with open(path) as file:
         return file.read()
 
 
-def version_to_string(version):
+def version_to_string(version: list[int | str]) -> str:
     version_id = ""
     for elem in version:
         if len(version_id) != 0:
@@ -61,28 +66,27 @@ def version_to_string(version):
     return version_id
 
 
-def version_string_to_list(version):
+def version_string_to_list(version: str) -> list[int | str]:
     debug.verbose("parse version string '" + version + "'")
     if version == "":
         return [0, 0, 0]
     elems = version.split("-")
     if len(elems[0].split(".")) <= 1:
         debug.error("Can not parde a version with wrong version model '" + version + "'")
-    out = [int(elem) for elem in elems[0].split(".")]
+    out: list[int | str] = [int(elem) for elem in elems[0].split(".")]
     if len(elems) >= 2:
         out.append(elems[1])
     return out
 
 
-#
-# @brief Write data in a specific path.
-# @param[in] path Path of the data might be written.
-# @param[in] data Data To write in the file.
-# @param[in] only_if_new (default: False) Write data only if data is different.
-# @return True Something has been copied
-# @return False Nothing has been copied
-#
-def file_write_data(path, data: str, only_if_new: bool = False):
+def file_write_data(path: str, data: str, only_if_new: bool = False) -> bool:
+    """Write data in a file.
+
+    :param path: Path of the file
+    :param data: Data to write in the file
+    :param only_if_new: Write the data only when they differ from those of the file
+    :return: True when the file was written
+    """
     if only_if_new is True and os.path.exists(path) is True:
         old_data = file_read_data(path)
         if old_data == data:
@@ -94,7 +98,7 @@ def file_write_data(path, data: str, only_if_new: bool = False):
     return True
 
 
-def get_list_base_display(id_element, count, elem):
+def get_list_base_display(id_element: int, count: int, elem: "RepoConfig") -> str:
     if env.get_display_folder_instead_of_git_name() is False:
         return f"{id_element}/{count} : {elem.name}"
     return f"{id_element}/{count} : {elem.path}"
@@ -103,7 +107,7 @@ def get_list_base_display(id_element, count, elem):
 is_first_time_sleep = True
 
 
-def wait_for_server_if_needed():
+def wait_for_server_if_needed() -> None:
     global is_first_time_sleep
     if is_first_time_sleep is False:
         is_first_time_sleep = True
@@ -113,14 +117,14 @@ def wait_for_server_if_needed():
         time.sleep(env.get_wait_between_sever_command())
 
 
-def filter_name_and_file(root, list_files, pattern):
+def filter_name_and_file(root: str, list_files: list[str], pattern: str) -> list[str]:
     # filter elements:
     tmp_list = fnmatch.filter(list_files, pattern)
     return [elem for elem in tmp_list if os.path.isfile(os.path.join(root, elem)) is True]
 
 
-def import_path_local(path, limit_sub_folder=1, exclude_path=(), base_name="*"):
-    out = []
+def import_path_local(path: str, limit_sub_folder: int = 1, exclude_path: tuple[str, ...] | list[str] = (), base_name: str = "*") -> list[str]:
+    out: list[str] = []
     debug.debug(f"island files: {path} [START] {limit_sub_folder}")
     if limit_sub_folder == 0:
         debug.verbose("Sub-parsing limitation append ...")
