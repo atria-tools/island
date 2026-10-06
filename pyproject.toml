@@ -40,3 +40,6 @@ version = { file = "version.txt" }
 [tool.ruff]
 line-length = 150
 target-version = "py311"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
