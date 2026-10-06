@@ -40,6 +40,19 @@ def get_fetch_manifest() -> bool:
     return fetch_manifest
 
 
+jobs = 5
+
+
+def set_jobs(val: int) -> None:
+    global jobs
+    jobs = val
+
+
+def get_jobs() -> int:
+    """Get the number of projects an action runs at a time (sync, fetch...)."""
+    return jobs
+
+
 wait_between_sever_command = 0
 
 

@@ -96,8 +96,7 @@ def parse_generic_arg(my_args: arguments.Arguments, argument: arg_element.ArgEle
         return True
     if argument.get_option_name() == "jobs":
         if active is True:
-            # multiprocess.set_core_number(int(argument.get_arg()))
-            pass
+            env.set_jobs(int(argument.get_arg()))
         return True
     if argument.get_option_name() == "wait":
         if active is True:
@@ -170,6 +169,7 @@ def main() -> None:
         desc="display debug level (verbose) default =2",
     )
     my_args.add("c", "color", desc="Display message in color")
+    my_args.add("j", "jobs", haveParam=True, desc=f"Number of projects synchronized or fetched at a time (default={env.get_jobs()})")
     my_args.add("n", "no-fetch-manifest", haveParam=False, desc="Disable the fetch of the manifest")
     my_args.add(
         "F",
@@ -210,6 +210,11 @@ def main() -> None:
             data = configuration_file.get_default_folder()
             debug.debug(f"get default config 'get_default_folder' val='{data}'")
             parse_generic_arg(my_args, arg_element.ArgElement("folder", str(data)), True)
+
+        if "get_default_jobs" in dir(configuration_file):
+            data = configuration_file.get_default_jobs()
+            debug.debug(f"get default config 'get_default_jobs' val='{data}'")
+            parse_generic_arg(my_args, arg_element.ArgElement("jobs", str(data)), True)
 
         if "get_default_wait" in dir(configuration_file):
             data = configuration_file.get_default_wait()
