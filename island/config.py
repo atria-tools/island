@@ -1,4 +1,3 @@
-#!/usr/bin/python
 """Config main interface.
 
 @author Edouard DUPIN

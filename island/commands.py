@@ -1,4 +1,3 @@
-#!/usr/bin/python
 """Command interface.
 
 @author Edouard DUPIN

@@ -1,4 +1,3 @@
-#!/usr/bin/python
 """Repository management.
 
 @author Edouard DUPIN

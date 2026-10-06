@@ -1,4 +1,3 @@
-#!/usr/bin/python
 """Inland INIT GLOBAL.
 
 @author Edouard DUPIN

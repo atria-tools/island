@@ -1,4 +1,3 @@
-#!/usr/bin/python
 """Toolbox.
 
 @author Edouard DUPIN
@@ -51,15 +50,15 @@ def file_read_data(path, binary=False):
 
 
 def version_to_string(version):
-    version_ID = ""
-    for id in version:
-        if len(version_ID) != 0:
-            if isinstance(id, str):
-                version_ID += "-"
+    version_id = ""
+    for elem in version:
+        if len(version_id) != 0:
+            if isinstance(elem, str):
+                version_id += "-"
             else:
-                version_ID += "."
-        version_ID += str(id)
-    return version_ID
+                version_id += "."
+        version_id += str(elem)
+    return version_id
 
 
 def version_string_to_list(version):
@@ -95,10 +94,10 @@ def file_write_data(path, data: str, only_if_new: bool = False):
     return True
 
 
-def get_list_base_display(id, count, elem):
+def get_list_base_display(id_element, count, elem):
     if env.get_display_folder_instead_of_git_name() is False:
-        return f"{id}/{count} : {elem.name}"
-    return f"{id}/{count} : {elem.path}"
+        return f"{id_element}/{count} : {elem.name}"
+    return f"{id_element}/{count} : {elem.path}"
 
 
 is_first_time_sleep = True
@@ -114,9 +113,9 @@ def wait_for_server_if_needed():
         time.sleep(env.get_wait_between_sever_command())
 
 
-def filter_name_and_file(root, list_files, filter):
+def filter_name_and_file(root, list_files, pattern):
     # filter elements:
-    tmp_list = fnmatch.filter(list_files, filter)
+    tmp_list = fnmatch.filter(list_files, pattern)
     return [elem for elem in tmp_list if os.path.isfile(os.path.join(root, elem)) is True]
 
 

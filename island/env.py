@@ -1,4 +1,3 @@
-#!/usr/bin/python
 """Environment management.
 
 @author Edouard DUPIN

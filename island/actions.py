@@ -1,4 +1,3 @@
-#!/usr/bin/python
 """Action interface.
 
 @author Edouard DUPIN

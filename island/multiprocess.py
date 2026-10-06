@@ -1,4 +1,3 @@
-#!/usr/bin/python
 """System call Interface.
 
 @author Edouard DUPIN

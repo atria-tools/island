@@ -1,4 +1,3 @@
-#!/usr/bin/python
 """Link interface.
 
 @author Edouard DUPIN

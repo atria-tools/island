@@ -1,4 +1,3 @@
-#!/usr/bin/python
 """Manifest interface.
 
 @author Edouard DUPIN

@@ -42,10 +42,15 @@ line-length = 150
 target-version = "py311"
 
 [tool.ruff.lint]
-select = ["E", "W", "F", "I", "UP", "B", "SIM", "C4", "RET", "PIE", "PERF", "RUF"]
+select = ["E", "W", "F", "I", "UP", "B", "SIM", "C4", "RET", "PIE", "PERF", "RUF", "A", "N", "EXE"]
 ignore = [
     "E501", # the formatter sets the length of the lines; it does not cut the long messages
+    "N813", # the modules of death are named in CamelCase, island imports them in lower case
 ]
+
+[tool.ruff.lint.per-file-ignores]
+# 'help' is the function the action loader asks each action for, the actions of a workspace included
+"island/actions/islandAction_*.py" = ["A001"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["island"]
