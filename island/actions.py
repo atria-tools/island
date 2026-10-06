@@ -1,5 +1,4 @@
 #!/usr/bin/python
-# -*- coding: utf-8 -*-
 """Action interface.
 
 @author Edouard DUPIN
@@ -9,7 +8,7 @@
 
 import os
 import sys
-from typing import Any, List, Optional
+from typing import Any
 
 import death.Arguments as arguments
 
@@ -47,7 +46,7 @@ def init(files) -> None:
         )
 
 
-def get_list_of_action() -> List[str]:
+def get_list_of_action() -> list[str]:
     """Get the wall list of action available
 
     :return: the list of action name
@@ -59,7 +58,7 @@ def get_list_of_action() -> List[str]:
     return out
 
 
-def get_function_value(action_name: str, function_name: str, default_value: Optional[Any] = None) -> Any:
+def get_function_value(action_name: str, function_name: str, default_value: Any | None = None) -> Any:
     """Get a description of an action.
 
     :param action_name: Name of the action

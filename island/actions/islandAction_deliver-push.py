@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Action script for deliver-push.
 
 @author Edouard DUPIN

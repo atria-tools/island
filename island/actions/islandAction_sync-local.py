@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Action script for sync-local.
 
 @author Edouard DUPIN

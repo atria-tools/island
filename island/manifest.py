@@ -1,5 +1,4 @@
 #!/usr/bin/python
-# -*- coding: utf-8 -*-
 """Manifest interface.
 
 @author Edouard DUPIN
@@ -9,7 +8,7 @@
 
 import copy
 import os
-from typing import Any, Dict, List
+from typing import Any
 
 from lxml import etree
 
@@ -81,7 +80,7 @@ def configure_all_repository(configuration, previous_config):
 class ManifestVSC:
     def __init__(self, manifest_yaml: str) -> None:
         self.manifest_yaml = manifest_yaml
-        self.projects: List[Dict] = []
+        self.projects: list[dict] = []
         self.default = None
         self.default_base = {
             "remote": "origin",
@@ -90,7 +89,7 @@ class ManifestVSC:
             "branch-develop": "dev",
             "default-branch": "dev",
         }
-        self.remotes: List[Dict] = []
+        self.remotes: list[dict] = []
         self.deliver_master = "master"
         self.deliver_develop = "develop"
         self.deliver_mode = "merge"
@@ -222,7 +221,7 @@ class ManifestVSC:
 class Manifest:
     def __init__(self, manifest_xml: str) -> None:
         self.manifest_xml = manifest_xml
-        self.projects: List[Dict] = []
+        self.projects: list[dict] = []
         self.default = None
         self.default_base = {
             "remote": "origin",
@@ -231,10 +230,10 @@ class Manifest:
             "branch-develop": "dev",
             "default-branch": "dev",
         }
-        self.remotes: List[Dict] = []
-        self.includes: List[Dict] = []
-        self.imports: List[Dict] = []
-        self.links: List[Dict] = []
+        self.remotes: list[dict] = []
+        self.includes: list[dict] = []
+        self.imports: list[dict] = []
+        self.links: list[dict] = []
         self.deliver_master = "master"
         self.deliver_develop = "develop"
         self.deliver_mode = "merge"
@@ -243,7 +242,7 @@ class Manifest:
         # check error in manifest (double path ...)
         self._check_double_path([])
 
-    def get_links(self) -> Dict[str, Any]:
+    def get_links(self) -> dict[str, Any]:
         return self.links
 
     def _load(self) -> None:

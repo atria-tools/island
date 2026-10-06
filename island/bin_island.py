@@ -1,5 +1,4 @@
 #!/usr/bin/python
-# -*- coding: utf-8 -*-
 """Inland main().
 
 @author Edouard DUPIN
@@ -9,7 +8,6 @@
 
 import os
 import sys
-from typing import Union
 
 import death.ArgElement as arg_element
 import death.Arguments as arguments
@@ -75,7 +73,7 @@ def usage(my_args) -> None:
     exit(0)
 
 
-def check_boolean(value: Union[bool, str]) -> bool:
+def check_boolean(value: bool | str) -> bool:
     """Check if the value is a real boolean or a boolean string and return the boolean value.
 
     :param value: Value to check.

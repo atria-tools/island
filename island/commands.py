@@ -1,5 +1,4 @@
 #!/usr/bin/python
-# -*- coding: utf-8 -*-
 """Command interface.
 
 @author Edouard DUPIN
@@ -327,7 +326,7 @@ def add_all(path_repository):
 
 def add_file(path_repository, file_path):
     if not file_path:
-        raise IOError("Missing file_path name")
+        raise OSError("Missing file_path name")
     cmd = "git add " + file_path
     debug.verbose("execute : " + cmd)
     # TODO: check if the command work correctly
@@ -338,7 +337,7 @@ def add_file(path_repository, file_path):
 
 def commit_all(path_repository, comment):
     if not comment:
-        raise IOError("Missing comment description")
+        raise OSError("Missing comment description")
     cmd = 'git commit -a --message "' + comment + '"'
     debug.verbose("execute : " + cmd)
     # TODO: check if the command work correctly
@@ -349,7 +348,7 @@ def commit_all(path_repository, comment):
 
 def tag(path_repository, tag_name):
     if not tag_name:
-        raise IOError("Missing tag name")
+        raise OSError("Missing tag name")
     tag_name = tag_name.replace(" ", "_")
     cmd = "git tag " + tag_name + ' --message "[TAG] create tag ' + tag_name + '"'
     debug.verbose("execute : " + cmd)

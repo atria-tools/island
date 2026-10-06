@@ -1,5 +1,4 @@
 #!/usr/bin/python
-# -*- coding: utf-8 -*-
 """Toolbox.
 
 @author Edouard DUPIN
@@ -75,7 +74,7 @@ def file_read_data(path, binary=False):
     if binary is True:
         file = open(path, "rb")
     else:
-        file = open(path, "r")
+        file = open(path)
     data_file = file.read()
     file.close()
     return data_file

@@ -1,5 +1,4 @@
 #!/usr/bin/python
-# -*- coding: utf-8 -*-
 """Config main interface.
 
 @author Edouard DUPIN
@@ -10,7 +9,6 @@
 import copy
 import json
 import os
-from typing import Optional
 
 # Local import
 from realog import debug
@@ -172,7 +170,7 @@ class Config:
         return conf
 
 
-_unique_config: Optional[Config] = None
+_unique_config: Config | None = None
 
 
 def get_unique_config() -> Config:

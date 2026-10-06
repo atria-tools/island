@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Status interface display.
 
 @author Edouard DUPIN

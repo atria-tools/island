@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Action script for manifest-deliver.
 
 @author Edouard DUPIN

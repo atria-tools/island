@@ -1,5 +1,4 @@
 #!/usr/bin/python
-# -*- coding: utf-8 -*-
 """System call Interface.
 
 @author Edouard DUPIN
@@ -9,7 +8,6 @@
 
 import shlex
 import subprocess
-import sys
 
 # Local import
 from realog import debug
@@ -82,9 +80,8 @@ def run_command_direct(cmd_line, cwd=None):
         debug.error(f"Exception : {args} ==> {ex}")
     # launch the subprocess:
     output, err = p.communicate()
-    if sys.version_info >= (3, 0):
-        output = output.decode("utf-8")
-        err = err.decode("utf-8")
+    output = output.decode("utf-8")
+    err = err.decode("utf-8")
     # Check errors:
     if p.returncode == 0:
         if output is None:
@@ -111,8 +108,7 @@ def run_command(cmd_line, cwd=None):
         debug.error(f"Exception : {args} ==> {ex}")
     # launch the subprocess:
     output, err = p.communicate()
-    if sys.version_info >= (3, 0):
-        output = output.decode("utf-8")
-        err = err.decode("utf-8")
+    output = output.decode("utf-8")
+    err = err.decode("utf-8")
     # Check error :
     return [p.returncode, output[:-1], err[:-1]]

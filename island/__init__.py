@@ -1,5 +1,4 @@
 #!/usr/bin/python
-# -*- coding: utf-8 -*-
 """Inland INIT GLOBAL.
 
 @author Edouard DUPIN

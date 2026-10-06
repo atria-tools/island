@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Action script for volatile-list.
 
 @author Edouard DUPIN
