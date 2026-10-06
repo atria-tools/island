@@ -108,7 +108,7 @@ def execute(action_name: str, argument_start_id: int) -> int:
     for elem in list_actions:
         if elem["name"] != action_name:
             continue
-        debug.info("action: " + str(elem))
+        debug.debug("action: " + str(elem))
         # finish the parsing
         sys.path.append(os.path.dirname(elem["path"]))
         the_action = __import__(__base_action_name + action_name)
@@ -130,7 +130,7 @@ def execute(action_name: str, argument_start_id: int) -> int:
         if "execute" not in dir(the_action):
             debug.error("execute is not implmented for this action ... '" + str(action_name) + "'")
             return -11
-        debug.info("execute: " + action_name)
+        debug.debug("execute: " + action_name)
         for elem in my_under_args:
             debug.debug("    " + str(elem.get_option_name()) + "='" + str(elem.get_arg()) + "'")
         ret: int | None = the_action.execute(my_under_args)

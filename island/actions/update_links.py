@@ -23,10 +23,10 @@ def update(configuration: Config, mani: Manifest, type_call: str) -> bool:
     have_error = False
     # TODO: do not remove link when not needed
     if len(configuration.get_links()) != 0 or len(mani.get_links()) != 0:
-        debug.info(type_call + ": remove old links ...")
+        debug.debug(type_call + ": remove old links ...")
         for elem in configuration.get_links():
             base_path = os.path.join(env.get_island_root_path(), elem["destination"])
-            debug.info(type_call + ":     link: " + str(base_path))
+            debug.debug(type_call + ":     link: " + str(base_path))
             if os.path.islink(base_path) is True:
                 os.unlink(base_path)
             else:
@@ -36,11 +36,11 @@ def update(configuration: Config, mani: Manifest, type_call: str) -> bool:
                 )
                 have_error = True
         configuration.clear_links()
-        debug.info(type_call + ": add new links ...")
+        debug.debug(type_call + ": add new links ...")
         for elem in mani.get_links():
             base_path = os.path.join(env.get_island_root_path(), elem["destination"])
             source_path = os.path.join(env.get_island_root_path(), elem["source"])
-            debug.info(type_call + ":     link: " + str(base_path))
+            debug.debug(type_call + ":     link: " + str(base_path))
             if os.path.exists(base_path) is True:
                 debug.error(
                     type_call + ": create link is not possible ==> path already exist",
@@ -51,5 +51,6 @@ def update(configuration: Config, mani: Manifest, type_call: str) -> bool:
                 tools.create_directory_of_file(base_path)
                 os.symlink(source_path, base_path)
                 configuration.add_link(elem["source"], elem["destination"])
+        debug.info(f"{type_call}: {len(configuration.get_links())}/{len(mani.get_links())} links of the manifest set")
     configuration.store()
     return have_error
