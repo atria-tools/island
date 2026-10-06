@@ -292,7 +292,7 @@ def call_island_release_script(path_repository: str) -> bool:
     if not file_path.exists():
         return False
     debug.verbose("execute : " + cmd)
-    return_value = multiprocess.run_command_direct(cmd, cwd=path_repository)
+    return_value = multiprocess.run_command(cmd, cwd=path_repository)
     multiprocess.generic_display_error(return_value, "call_island_release_script", error_only=True)
     return True
 
