@@ -70,6 +70,16 @@ Show the status of the workspace
 
   island status
 
+Use a specific ssh key (stored in the workspace and set in all the repository, a direct ```git``` command use it too):
+
+  island init --ssh-key ~/.ssh/id_ed25519_other git@github.com:atria-soft/manifest.git
+
+Select, display or remove the ssh key of an existing workspace:
+
+  island ssh-key ~/.ssh/id_ed25519_other
+  island ssh-key
+  island ssh-key --remove
+
 Develop in local (with virtual env):
 ====================================
 

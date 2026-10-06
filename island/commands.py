@@ -10,6 +10,7 @@
 import errno
 import fnmatch
 import os
+import shlex
 import shutil
 import stat
 from pathlib import Path
@@ -21,6 +22,73 @@ from . import (
     env,
     multiprocess,
 )
+
+
+def get_ssh_key_path(ssh_key):
+    # the key is used in all the repository ==> need an absolute path
+    out = os.path.abspath(os.path.expanduser(ssh_key))
+    if os.path.isfile(out) is False:
+        debug.error("The ssh key does not exist: '" + out + "'")
+    return out
+
+
+def get_ssh_command(ssh_key):
+    # 'IdentitiesOnly' prevent ssh to try the other keys of the agent before the selected one
+    return "ssh -i " + shlex.quote(ssh_key) + " -o IdentitiesOnly=yes"
+
+
+def select_ssh_key(ssh_key):
+    # all the next git commands use this key (needed for the clone that have no local configuration)
+    if ssh_key == None or ssh_key == "":
+        return
+    if os.path.isfile(ssh_key) is False:
+        debug.warning("The ssh key does not exist: '" + ssh_key + "'")
+    if "GIT_SSH_COMMAND" in os.environ:
+        debug.warning("GIT_SSH_COMMAND is already set in the environment ==> the ssh key '" + ssh_key + "' is not used")
+        return
+    os.environ["GIT_SSH_COMMAND"] = get_ssh_command(ssh_key)
+
+
+def get_list_submodule(path_repository):
+    # get all the downloaded submodules (recursive)
+    if os.path.exists(os.path.join(path_repository, ".gitmodules")) is False:
+        return []
+    cmd = "git submodule foreach --recursive --quiet pwd"
+    debug.verbose("execute : " + cmd)
+    return_value = multiprocess.run_command(cmd, cwd=path_repository)
+    multiprocess.generic_display_error(return_value, "get_list_submodule", error_only=True)
+    out = []
+    for elem in return_value[1].split("\n"):
+        if elem != "":
+            out.append(elem)
+    return out
+
+
+def configure_ssh_key(path_repository, ssh_key):
+    # store the key in the repository ==> the git commands of the user use the same key as island
+    if ssh_key == None or ssh_key == "":
+        return
+    cmd = "git config --local core.sshCommand " + shlex.quote(get_ssh_command(ssh_key))
+    for path in [path_repository] + get_list_submodule(path_repository):
+        debug.verbose("execute : " + cmd)
+        return_value = multiprocess.run_command(cmd, cwd=path)
+        multiprocess.generic_display_error(return_value, "configure_ssh_key", error_only=True)
+
+
+def unconfigure_ssh_key(path_repository, ssh_key):
+    if ssh_key == None or ssh_key == "":
+        return
+    for path in [path_repository] + get_list_submodule(path_repository):
+        cmd = "git config --local --get core.sshCommand"
+        debug.verbose("execute : " + cmd)
+        return_value = multiprocess.run_command(cmd, cwd=path)
+        if return_value[0] != 0 or return_value[1] != get_ssh_command(ssh_key):
+            # not set by island ==> keep the configuration of the user
+            continue
+        cmd = "git config --local --unset core.sshCommand"
+        debug.verbose("execute : " + cmd)
+        return_value = multiprocess.run_command(cmd, cwd=path)
+        multiprocess.generic_display_error(return_value, "unconfigure_ssh_key", error_only=True)
 
 
 def check_repository_is_modify(path_repository):

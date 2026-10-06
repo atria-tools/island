@@ -29,6 +29,7 @@ class Config:
         self._repo = ""
         self._branch = "master"
         self._manifest_name = "default.xml"
+        self._ssh_key = ""
         self._volatiles = []
         self._current_link = []
         self.load()
@@ -46,6 +47,8 @@ class Config:
                 self._branch = data["branch"]
             if "manifest_name" in data.keys():
                 self._manifest_name = data["manifest_name"]
+            if "ssh_key" in data.keys():
+                self._ssh_key = data["ssh_key"]
             if "volatiles" in data.keys():
                 for elem in data["volatiles"]:
                     if "git_address" in elem.keys() and "path" in elem.keys():
@@ -62,6 +65,7 @@ class Config:
         data["repo"] = self._repo
         data["branch"] = self._branch
         data["manifest_name"] = self._manifest_name
+        data["ssh_key"] = self._ssh_key
         data["volatiles"] = self._volatiles
         data["link"] = self._current_link
         with open(env.get_island_path_config(), "w") as outfile:
@@ -86,6 +90,12 @@ class Config:
 
     def get_manifest_name(self):
         return self._manifest_name
+
+    def set_ssh_key(self, value):
+        self._ssh_key = value
+
+    def get_ssh_key(self):
+        return self._ssh_key
 
     def add_volatile(self, git_adress, local_path):
         for elem in self._volatiles:

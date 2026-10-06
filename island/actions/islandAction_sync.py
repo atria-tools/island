@@ -77,6 +77,7 @@ def execute(_arguments):
     # TODO: Load Old manifect to check diff ...
 
     debug.info("update manifest : '" + str(env.get_island_path_manifest()) + "'")
+    commands.configure_ssh_key(env.get_island_path_manifest(), configuration.get_ssh_key())
     is_modify_manifest = commands.check_repository_is_modify(env.get_island_path_manifest())
     if is_modify_manifest is True:
         commands.fetch(env.get_island_path_manifest(), "origin")
@@ -161,6 +162,7 @@ def execute(_arguments):
                     debug.info("'" + str(ret) + "'")
                     debug.error("Can not init submodules ... ")
                     continue
+            commands.configure_ssh_key(git_repo_path, configuration.get_ssh_key())
             continue
 
         if just_download is True:
@@ -170,6 +172,8 @@ def execute(_arguments):
         if os.path.exists(os.path.join(git_repo_path, ".git")) is False:
             # path already exist but it is not used to as a git repo ==> this is an error
             debug.error("path '" + git_repo_path + "' is already existing but not used for a git repository. Clean it and restart")
+
+        commands.configure_ssh_key(git_repo_path, configuration.get_ssh_key())
 
         # simply update the repository ...
         debug.verbose("Fetching project: ")

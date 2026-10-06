@@ -20,6 +20,8 @@ from realog import debug
 # Local import
 from . import (
     actions,
+    commands,
+    config,
     env,
     host,
     tools,
@@ -256,6 +258,8 @@ def main():
         debug.error(f"Can not execute a island cmd if we have not initialize a config: '.{env.get_system_base_name()}' in upper 6 parent path")
         exit(-1)
 
+    # select the ssh key of the workspace for all the git commands:
+    commands.select_ssh_key(config.get_unique_config().get_ssh_key())
 
     ret = actions.execute(action_to_do, my_args.get_last_parsed() + 1)
 

@@ -36,6 +36,7 @@ def help():
 def add_specific_arguments(my_args, section):
     my_args.add("b", "branch", haveParam=True, desc="Select branch to display")
     my_args.add("m", "manifest", haveParam=True, desc="Name of the manifest")
+    my_args.add("k", "ssh-key", haveParam=True, desc="Ssh private key used to access on the git servers (set in all the repository)")
 
 
 #
@@ -55,6 +56,7 @@ def execute(_arguments):
     branch = "master"
     manifest_name = "default.xml"
     address_manifest = ""
+    ssh_key = ""
     for elem in _arguments:
         if elem.get_option_name() == "branch":
             debug.info("find branch name: '" + elem.get_arg() + "'")
@@ -62,6 +64,9 @@ def execute(_arguments):
         elif elem.get_option_name() == "manifest":
             debug.info("find mmanifest name: '" + elem.get_arg() + "'")
             manifest_name = elem.get_arg()
+        elif elem.get_option_name() == "ssh-key":
+            debug.info("find ssh key: '" + elem.get_arg() + "'")
+            ssh_key = commands.get_ssh_key_path(elem.get_arg())
         elif elem.get_option_name() == "":
             if address_manifest != "":
                 debug.error("Manifest adress already set : '" + address_manifest + "' !!! '" + elem.get_arg() + "'")
@@ -86,10 +91,14 @@ def execute(_arguments):
     conf.set_manifest(address_manifest)
     conf.set_branch(branch)
     conf.set_manifest_name(manifest_name)
+    conf.set_ssh_key(ssh_key)
     conf.store()
 
     debug.info("Clone the manifest")
+    commands.select_ssh_key(ssh_key)
     ret_values = commands.clone(env.get_island_path_manifest(), address_manifest, branch_name=branch)
+    if ret_values is not False and ret_values[0] == 0:
+        commands.configure_ssh_key(env.get_island_path_manifest(), ssh_key)
 
     if ret_values is False:
         debug.info("'" + str(ret_values) + "'")
