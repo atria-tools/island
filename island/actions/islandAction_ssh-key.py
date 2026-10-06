@@ -83,30 +83,13 @@ def execute(_arguments):
             debug.info("ssh key: '" + previous_ssh_key + "'")
         return None
 
+    previous_config = commands.get_repository_config(conf)
     conf.set_ssh_key(ssh_key)
     conf.store()
 
-    # list all the repository already downloaded:
-    list_path = [env.get_island_path_manifest()]
-    file_source_manifest = os.path.join(env.get_island_path_manifest(), conf.get_manifest_name())
-    if os.path.exists(file_source_manifest) is False:
-        debug.error(
-            "Missing manifest file : '" + str(file_source_manifest) + "'",
-            ret_value=env.ret_manifest_is_not_existing,
-        )
-    mani = manifest.Manifest(file_source_manifest)
-    for elem in mani.get_all_configs():
-        git_repo_path = os.path.join(env.get_island_root_path(), elem.path)
-        if os.path.exists(os.path.join(git_repo_path, ".git")) is True:
-            list_path.append(git_repo_path)
-
-    for path in list_path:
-        if remove is True:
-            commands.unconfigure_ssh_key(path, previous_ssh_key)
-        else:
-            commands.configure_ssh_key(path, ssh_key)
+    count = manifest.configure_all_repository(conf, previous_config)
     if remove is True:
-        debug.info("Remove the ssh key in " + str(len(list_path)) + " repository")
+        debug.info("Remove the ssh key in " + str(count) + " repository")
     else:
-        debug.info("Set the ssh key '" + ssh_key + "' in " + str(len(list_path)) + " repository")
+        debug.info("Set the ssh key '" + ssh_key + "' in " + str(count) + " repository")
     return None

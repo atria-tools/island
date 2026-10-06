@@ -64,31 +64,45 @@ def get_list_submodule(path_repository):
     return out
 
 
-def configure_ssh_key(path_repository, ssh_key):
-    # store the key in the repository ==> the git commands of the user use the same key as island
-    if ssh_key == None or ssh_key == "":
-        return
-    cmd = "git config --local core.sshCommand " + shlex.quote(get_ssh_command(ssh_key))
-    for path in [path_repository] + get_list_submodule(path_repository):
-        debug.verbose("execute : " + cmd)
-        return_value = multiprocess.run_command(cmd, cwd=path)
-        multiprocess.generic_display_error(return_value, "configure_ssh_key", error_only=True)
+def get_repository_config(configuration):
+    # git configuration that the workspace set in each repository
+    out = {}
+    if configuration.get_ssh_key() != "":
+        out["core.sshCommand"] = get_ssh_command(configuration.get_ssh_key())
+    return out
 
 
-def unconfigure_ssh_key(path_repository, ssh_key):
-    if ssh_key == None or ssh_key == "":
+def set_local_config(path_repository, values):
+    # store the values in the repository ==> the git commands of the user use the same configuration as island
+    if len(values) == 0:
         return
     for path in [path_repository] + get_list_submodule(path_repository):
-        cmd = "git config --local --get core.sshCommand"
-        debug.verbose("execute : " + cmd)
-        return_value = multiprocess.run_command(cmd, cwd=path)
-        if return_value[0] != 0 or return_value[1] != get_ssh_command(ssh_key):
-            # not set by island ==> keep the configuration of the user
-            continue
-        cmd = "git config --local --unset core.sshCommand"
-        debug.verbose("execute : " + cmd)
-        return_value = multiprocess.run_command(cmd, cwd=path)
-        multiprocess.generic_display_error(return_value, "unconfigure_ssh_key", error_only=True)
+        for key, value in values.items():
+            cmd = "git config --local " + key + " " + shlex.quote(value)
+            debug.verbose("execute : " + cmd)
+            return_value = multiprocess.run_command(cmd, cwd=path)
+            multiprocess.generic_display_error(return_value, "set_local_config", error_only=True)
+
+
+def unset_local_config(path_repository, values):
+    if len(values) == 0:
+        return
+    for path in [path_repository] + get_list_submodule(path_repository):
+        for key, value in values.items():
+            cmd = "git config --local --get " + key
+            debug.verbose("execute : " + cmd)
+            return_value = multiprocess.run_command(cmd, cwd=path)
+            if return_value[0] != 0 or return_value[1] != value:
+                # not set by island ==> keep the configuration of the user
+                continue
+            cmd = "git config --local --unset " + key
+            debug.verbose("execute : " + cmd)
+            return_value = multiprocess.run_command(cmd, cwd=path)
+            multiprocess.generic_display_error(return_value, "unset_local_config", error_only=True)
+
+
+def configure_repository(path_repository, configuration):
+    set_local_config(path_repository, get_repository_config(configuration))
 
 
 def check_repository_is_modify(path_repository):

@@ -22,6 +22,7 @@ from lxml import etree
 from realog import debug
 
 from . import (
+    commands,
     config,
     env,
     multiprocess,
@@ -47,6 +48,35 @@ def check_island_is_init():
     if not is_island_init():
         debug.error(f"System not init: missing config: '{env.get_island_path()}'. Call <island init> first")
         exit(-1)
+
+
+def configure_all_repository(configuration, previous_config):
+    """Apply the configuration of the workspace on all the downloaded repository (manifest included).
+
+    :param configuration: Configuration of the workspace.
+    :param previous_config: Git configuration previously set by island (removed if no more needed).
+    :return: Number of repository configured.
+    """
+    list_path = [env.get_island_path_manifest()]
+    file_source_manifest = os.path.join(env.get_island_path_manifest(), configuration.get_manifest_name())
+    if os.path.exists(file_source_manifest) is False:
+        debug.error(
+            f"Missing manifest file : '{file_source_manifest}'",
+            ret_value=env.ret_manifest_is_not_existing,
+        )
+    for elem in Manifest(file_source_manifest).get_all_configs():
+        git_repo_path = os.path.join(env.get_island_root_path(), elem.path)
+        if os.path.exists(os.path.join(git_repo_path, ".git")) is True:
+            list_path.append(git_repo_path)
+    new_config = commands.get_repository_config(configuration)
+    to_remove = {}
+    for key, value in previous_config.items():
+        if key not in new_config:
+            to_remove[key] = value
+    for path in list_path:
+        commands.unset_local_config(path, to_remove)
+        commands.set_local_config(path, new_config)
+    return len(list_path)
 
 
 class ManifestVSC:

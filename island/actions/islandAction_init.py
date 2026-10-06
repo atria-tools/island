@@ -98,7 +98,7 @@ def execute(_arguments):
     commands.select_ssh_key(ssh_key)
     ret_values = commands.clone(env.get_island_path_manifest(), address_manifest, branch_name=branch)
     if ret_values is not False and ret_values[0] == 0:
-        commands.configure_ssh_key(env.get_island_path_manifest(), ssh_key)
+        commands.configure_repository(env.get_island_path_manifest(), conf)
 
     if ret_values is False:
         debug.info("'" + str(ret_values) + "'")
