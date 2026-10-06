@@ -78,6 +78,28 @@ workspace:
 
   island -j 10 sync
 
+Deliver the projects: release their develop branch (dev) on their release branch (main, created at the
+first delivery) with a new version, then push the deliveries. Every project is checked first, one line
+each (what it delivers, from which version to which one, or why it is skipped), then one plan is shown
+and accepted once, or edited project by project:
+
+  island deliver
+  island deliver-push
+
+The version comes from the version.txt of the project (created at 0.0.0 when missing; a release script
+.island/release.bash of the project may copy it elsewhere, in a pom.xml for instance). Its step is
+proposed from the commits: an [API] or BREAKING one gives major, a [FEAT] one minor, any other patch.
+After the release X.Y.Z, version.txt is X.Y.(Z+1)-dev on the develop branch. Nothing changes while a
+project has local changes, a branch behind the server, a release branch with commits the develop one
+has not, or a tag that exists. Without questions, in a given step, and pushed at once:
+
+  island deliver --yes --bump=minor --push
+  island --filter=etk deliver
+
+Then deliver the manifest, each project pinned on its last release:
+
+  island manifest-deliver --push
+
 Select all branch available in the work-tree: (checkout origin/dev in dev branch and track it, do nothing if the branch does not exist)
 
   island checkout dev
