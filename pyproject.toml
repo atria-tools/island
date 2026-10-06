@@ -7,7 +7,7 @@ name = "island"
 dynamic = ["version"]
 description = "island generic source manager (like repo in simple mode)"
 readme = "README.md"
-requires-python = ">=3.7"
+requires-python = ">=3.11"
 license = "MPL-2.0"
 license-files = ["LICENSE.txt"]
 authors = [{ name = "Edouard DUPIN", email = "yui.heero@gmail.com" }]
@@ -19,6 +19,9 @@ classifiers = [
     "Topic :: Software Development :: Build Tools",
 ]
 dependencies = ["lxml", "realog", "death", "PyYAML"]
+
+[project.optional-dependencies]
+dev = ["ruff", "mypy", "pytest", "lxml-stubs", "types-PyYAML"]
 
 [project.scripts]
 island = "island.bin_island:main"
@@ -34,5 +37,6 @@ include = ["island*"]
 [tool.setuptools.dynamic]
 version = { file = "version.txt" }
 
-[tool.black]
+[tool.ruff]
 line-length = 150
+target-version = "py311"
