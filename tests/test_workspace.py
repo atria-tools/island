@@ -257,3 +257,10 @@ def test_checkout_tells_a_branch_it_cannot_take(workspace: Path, servers: Path) 
     assert "Can not checkout to the correct branch" in result.stdout
     assert result.returncode != 0
     assert git("branch", "--show-current", cwd=workspace / "alpha").strip() == "dev"
+
+
+def test_init_fails_on_a_manifest_it_cannot_clone(tmp_path: Path, servers: Path) -> None:
+    workspace = tmp_path / "other"
+    workspace.mkdir()
+    result = run_island("init", SERVER + ":missing.git", cwd=workspace)
+    assert result.returncode != 0

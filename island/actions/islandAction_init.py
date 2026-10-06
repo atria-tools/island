@@ -89,13 +89,11 @@ def execute(_arguments: list[ArgElement]) -> int | None:
     debug.info("Clone the manifest")
     commands.select_ssh_key(ssh_key)
     ret_values = commands.clone(env.get_island_path_manifest(), address_manifest, branch_name=branch)
-    if ret_values is not False and ret_values[0] == 0:
-        commands.configure_repository(env.get_island_path_manifest(), conf)
-
-    if ret_values is False:
+    if ret_values is False or ret_values.returncode != 0:
         debug.info("'" + str(ret_values) + "'")
-        debug.error("Init does not work")
-        return False
+        debug.error("Init does not work", crash=False)
+        return env.ret_action_fail
+    commands.configure_repository(env.get_island_path_manifest(), conf)
 
     debug.info("Init done correctly ...")
 
