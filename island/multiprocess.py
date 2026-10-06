@@ -17,7 +17,7 @@ def generic_display_error(
     return_value,
     type_name,
     error_only=False,
-    available_return=[0],
+    available_return=(0,),
     display_if_nothing=True,
 ):
     debug.verbose(str(return_value))

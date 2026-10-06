@@ -139,7 +139,9 @@ class ManifestVSC:
         # debug.info(f"    generate path {path}")
         return path
 
-    def _check_double_path(self, list_path=[], space=""):
+    def _check_double_path(self, list_path=None, space=""):
+        if list_path is None:
+            list_path = []
         # debug.debug(f"{space}check path : '{self.manifest_yaml}'")
         for elem in self.projects:
             path = self._create_path_with_elem(elem)
@@ -148,7 +150,9 @@ class ManifestVSC:
                 debug.error(f"Check Manifest error : double use of the path '{path}'")
             list_path.append(path)
 
-    def get_all_configs(self, default=None, upper_remotes=[]):
+    def get_all_configs(self, default=None, upper_remotes=None):
+        if upper_remotes is None:
+            upper_remotes = []
         out = []
         if default is None:
             if self.default is not None:
@@ -490,7 +494,9 @@ class Manifest:
                 path = path[:-4]
         return path
 
-    def _check_double_path(self, list_path=[], space=""):
+    def _check_double_path(self, list_path=None, space=""):
+        if list_path is None:
+            list_path = []
         debug.debug(f"{space}check path : '{self.manifest_xml}'")
         for elem in self.projects:
             path = self._create_path_with_elem(elem)
@@ -501,7 +507,9 @@ class Manifest:
         for elem in self.includes:
             elem["manifest"]._check_double_path(list_path, space + "    ")
 
-    def get_all_configs(self, default=None, upper_remotes=[]):
+    def get_all_configs(self, default=None, upper_remotes=None):
+        if upper_remotes is None:
+            upper_remotes = []
         out = []
         if default is None:
             if self.default is not None:

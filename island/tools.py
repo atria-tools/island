@@ -36,14 +36,14 @@ def create_directory_of_file(file):
 
 def get_list_sub_path(path):
     # TODO : os.listdir(path)
-    for dirname, dirnames, filenames in os.walk(path):
+    for _dirname, dirnames, _filenames in os.walk(path):
         return dirnames
     return []
 
 
 def get_list_sub_files(path):
     # TODO : os.listdir(path)
-    for dirname, dirnames, filenames in os.walk(path):
+    for _dirname, _dirnames, filenames in os.walk(path):
         return filenames
     return []
 
@@ -345,7 +345,7 @@ def exclude_list(list_elements, filter):
     return out
 
 
-def import_path_local(path, limit_sub_folder=1, exclude_path=[], base_name="*"):
+def import_path_local(path, limit_sub_folder=1, exclude_path=(), base_name="*"):
     out = []
     debug.debug(f"island files: {path} [START] {limit_sub_folder}")
     if limit_sub_folder == 0:
