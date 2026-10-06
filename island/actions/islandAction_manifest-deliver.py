@@ -9,163 +9,62 @@ import os
 
 from death.ArgElement import ArgElement
 from death.Arguments import Arguments
-from realog import debug
 
 from island import (
-    commands,
-    config,
+    deliver,
     env,
     manifest,
-    tools,
 )
-from island.actions import status
+from island.actions.islandAction_deliver import load_manifest, parse_options
 
 
 def help() -> str:
-    return "Deliver the manifest (merge develop vertion and create a branch with the specific current tags)"
+    return "Deliver the manifest: release it with each project pinned on its last release"
+
+
+def help_example() -> str:
+    return "island deliver --push\nisland manifest-deliver --push"
 
 
 def add_specific_arguments(my_args: Arguments, section: str) -> None:
-    pass
-
-
-# must be on the branch we choice to merge ...
+    my_args.add("y", "yes", desc="Deliver without asking")
+    my_args.add("b", "bump", haveParam=True, desc="Step of the version: patch, minor or major (default: proposed from the commits)")
+    my_args.add("p", "push", desc="Push the delivery at the end (as manifest-deliver-push)")
 
 
 def execute(_arguments: list[ArgElement]) -> int | None:
-    argument_remote_name = ""
-    for elem in _arguments:
-        debug.error("pull Wrong argument: '" + elem.get_option_name() + "' '" + elem.get_arg() + "'")
+    options = parse_options(_arguments, ("yes", "bump", "push"))
+    configuration, mani = load_manifest()
+    source = mani.deliver_develop
+    destination = mani.deliver_master
 
-    # check system is OK
-    manifest.check_island_is_init()
-
-    configuration = config.get_unique_config()
-
-    file_source_manifest = os.path.join(env.get_island_path_manifest(), configuration.get_manifest_name())
-    if os.path.exists(file_source_manifest) is False:
-        debug.error("Missing manifest file : '" + str(file_source_manifest) + "'")
-
-    elem = configuration.get_manifest_config()
-
-    mani = manifest.Manifest(file_source_manifest)
-
-    destination_branch = mani.deliver_master
-    source_branch = mani.deliver_develop
-
-    # Check the manifest is up to date ...
-    base_display = tools.get_list_base_display(0, 0, elem)
-    debug.verbose("deliver-ckeck: " + base_display)
-    if (
-        status.deliver_check(
-            elem,
-            argument_remote_name,
-            0,
-            base_display,
-            source_branch,
-            destination_branch,
-        )
-        is False
-    ):
-        debug.error("Can not deliver a MANIFEST that is not ready to merge", crash=False)
+    pins, has_error = deliver.pin_projects(mani.get_all_configs(), destination)
+    if has_error:
+        print("Correct the errors above, or leave these projects out with --filter.")
         return env.ret_action_fail
-
-    all_tags = check_all_tags(mani)
-    if all_tags is None:
-        debug.error("Need the Tags are set in sub-repository", crash=False)
+    manifest_elem = configuration.get_manifest_config()
+    changes = deliver.pin_changes(manifest_elem, destination, configuration.get_manifest_name(), pins)
+    plans, has_error = deliver.check_projects([manifest_elem], source, destination, "manifest-check", changes)
+    if has_error:
         return env.ret_action_fail
-
-    # deliver the manifest (if Needed ...)
-    base_display = tools.get_list_base_display(0, 0, elem)
-
-    debug.info("manifest-deliver: ========================================================================")
-    debug.info("manifest-deliver: == " + base_display)
-    debug.info("manifest-deliver: ========================================================================")
-
-    git_repo_path = os.path.join(env.get_island_root_path(), elem.path)
-    # Check the validity of the version,
-    version_description, add_in_version_management = status.get_current_version_repo(git_repo_path)
-    if version_description is None:
-        return env.ret_action_fail
-    debug.info("manifest-deliver:     ==> version: " + str(version_description))
-
-    # create new repo tag
-    new_version_description = status.create_new_version_repo(
-        git_repo_path,
-        version_description,
-        add_in_version_management,
-        source_branch,
-        destination_branch,
-    )
-    debug.info("new version: " + str(new_version_description))
-    if new_version_description is None:
+    if len(plans) == 0:
+        print("Nothing to deliver: the manifest and its pins did not change.")
         return None
-    # merge branch
-    commands.checkout(git_repo_path, destination_branch)
-    merge_force = mani.deliver_mode == "merge"
-    commands.merge_branch_on_master(git_repo_path, source_branch, merge_force, branch_destination=destination_branch)
+    plans = deliver.confirm_plans(plans, deliver.parse_bump(options.get("bump")), "yes" in options)
+    if len(plans) == 0:
+        return None
 
-    manifest.tag_manifest(file_source_manifest, all_tags)
+    def pin(path: str) -> None:
+        manifest.tag_manifest(os.path.join(path, configuration.get_manifest_name()), pins)
 
-    version_path_file = os.path.join(git_repo_path, "version.txt")
-    # update version file:
-    tools.file_write_data(version_path_file, tools.version_to_string(new_version_description))
-    commands.add_file(git_repo_path, version_path_file)
-    commands.commit_all(
-        git_repo_path,
-        "[RELEASE] Release v" + tools.version_to_string(new_version_description),
-    )
-    commands.tag(git_repo_path, "v" + tools.version_to_string(new_version_description))
-    commands.checkout(git_repo_path, source_branch)
-    commands.reset_hard(git_repo_path, destination_branch)
-    dev_version: list[int | str] = [*new_version_description, "dev"]
-    manifest.tag_clear(file_source_manifest)
-    tools.file_write_data(version_path_file, tools.version_to_string(dev_version))
-    commands.add_file(git_repo_path, version_path_file)
-    commands.commit_all(git_repo_path, status.default_update_message)
-    commands.checkout(git_repo_path, destination_branch)
+    def unpin(path: str) -> None:
+        manifest.tag_clear(os.path.join(path, configuration.get_manifest_name()))
 
-    debug.info("manifest-deliver: ==> DONE")
+    if deliver.deliver_plans(plans, mani.deliver_mode, "manifest-deliver", {id(manifest_elem): (pin, unpin)}):
+        return env.ret_action_fail
+    if "push" not in options:
+        print("Push it with: island manifest-deliver-push")
+        return None
+    if deliver.push_projects([manifest_elem], [destination, source], action="manifest-deliver-push"):
+        return env.ret_action_fail
     return None
-
-
-def check_all_tags(mani: manifest.Manifest) -> list[dict[str, str]] | None:
-    all_project = mani.get_all_configs()
-    debug.info("Check all: " + str(len(all_project)) + " projects have a current tag ...")
-    check_have_error = False
-    list_tags = []
-    for id_element, elem in enumerate(all_project, start=1):
-        base_display = tools.get_list_base_display(id_element, len(all_project), elem)
-        if elem.volatile is True:
-            debug.info(base_display + "\r\t\t\t\t\t\t\t\t\t" + "     (Not Managed)")
-            continue
-        tags_comment = ""
-        git_repo_path = os.path.join(env.get_island_root_path(), elem.path)
-        if os.path.exists(git_repo_path) is False:
-            debug.error(
-                base_display + "\r\t\t\t\t\t\t\t\t\t" + "     (not download)",
-                crash=False,
-            )
-            check_have_error = True
-            continue
-        ret_current_tags = commands.get_tags_current(git_repo_path)
-        debug.verbose("tags found: " + str(ret_current_tags))
-        if len(ret_current_tags) == 0:
-            list_tags.append({"name": elem.name, "tag": ""})
-        else:
-            list_tags.append({"name": elem.name, "tag": ret_current_tags[0]})
-        for elem_tag in ret_current_tags:
-            if len(tags_comment) != 0:
-                tags_comment += ","
-            tags_comment += elem_tag
-        if len(ret_current_tags) == 0:
-            debug.error(
-                base_display + "\r\t\t\t\t\t\t\t\t\t" + "     (NO TAG DETECTED)",
-                crash=False,
-            )
-            check_have_error = True
-            continue
-        debug.info(base_display + "\r\t\t\t\t\t\t\t\t\t" + "     " + tags_comment)
-    if check_have_error is True:
-        return None
-    return list_tags

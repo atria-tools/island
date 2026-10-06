@@ -5,23 +5,18 @@
 @license MPL v2.0 (see license file)
 """
 
-import os
-
 from death.ArgElement import ArgElement
 from death.Arguments import Arguments
-from realog import debug
 
 from island import (
-    config,
+    deliver,
     env,
-    manifest,
-    tools,
 )
-from island.actions import status
+from island.actions.islandAction_deliver import load_manifest, parse_options
 
 
 def help() -> str:
-    return "Push the manifest delivery"
+    return "Push the delivery of the manifest (release branch, develop branch and tag) on the server"
 
 
 def add_specific_arguments(my_args: Arguments, section: str) -> None:
@@ -29,27 +24,9 @@ def add_specific_arguments(my_args: Arguments, section: str) -> None:
 
 
 def execute(_arguments: list[ArgElement]) -> int | None:
-    for elem in _arguments:
-        debug.error("pull Wrong argument: '" + elem.get_option_name() + "' '" + elem.get_arg() + "'")
-
-    # check system is OK
-    manifest.check_island_is_init()
-
-    configuration = config.get_unique_config()
-
-    file_source_manifest = os.path.join(env.get_island_path_manifest(), configuration.get_manifest_name())
-    if os.path.exists(file_source_manifest) is False:
-        debug.error("Missing manifest file : '" + str(file_source_manifest) + "'")
-
-    elem = configuration.get_manifest_config()
-
-    # Check the manifest is up to date ...
-    base_display = tools.get_list_base_display(0, 0, elem)
-
-    mani = manifest.Manifest(file_source_manifest)
-
-    destination_branch = mani.deliver_master
-    source_branch = mani.deliver_develop
-
-    status.deliver_push(elem, "origin", destination_branch, source_branch, base_display)
+    parse_options(_arguments, ())
+    configuration, mani = load_manifest()
+    branches = [mani.deliver_master, mani.deliver_develop]
+    if deliver.push_projects([configuration.get_manifest_config()], branches, action="manifest-deliver-push"):
+        return env.ret_action_fail
     return None

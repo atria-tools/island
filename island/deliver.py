@@ -26,6 +26,7 @@ import re
 import shlex
 from typing import Literal
 
+from lxml import etree
 from realog import debug
 
 from . import commands, env, multiprocess, parallel, tools
@@ -168,8 +169,11 @@ class DeliverPlan:
         return text
 
 
-def check_project(elem: RepoConfig, source: str, destination: str) -> tuple[ProjectResult, DeliverPlan | None]:
-    """Tell what a project has to deliver from its source branch to its destination one (after a fetch)."""
+def check_project(elem: RepoConfig, source: str, destination: str, extra_subjects: Sequence[str] = ()) -> tuple[ProjectResult, DeliverPlan | None]:
+    """Tell what a project has to deliver from its source branch to its destination one (after a fetch).
+
+    :param extra_subjects: What the project delivers besides its commits (the manifest: the projects it pins anew)
+    """
     path = os.path.join(env.get_island_root_path(), elem.path)
     if elem.volatile is True:
         return ProjectResult(Status.SKIPPED, "volatile", "not managed by the manifest"), None
@@ -214,7 +218,7 @@ def check_project(elem: RepoConfig, source: str, destination: str) -> tuple[Proj
                 f"{destination} has {apart} commit{'s' if apart > 1 else ''} that {source} has not: merge it in {source} first",
             ), None
 
-    subjects = [subject for subject in _subjects(path, destination_ref, source_ref) if subject not in DEV_VERSION_MESSAGES]
+    subjects = [subject for subject in _subjects(path, destination_ref, source_ref) if subject not in DEV_VERSION_MESSAGES] + list(extra_subjects)
     version_text = _git(path, "show", f"{source_ref}:{VERSION_FILE}")
     version = Version.parse(version_text.stdout if version_text.returncode == 0 else "")
     if len(subjects) == 0:
@@ -248,7 +252,9 @@ def check_tag(plan: DeliverPlan) -> ProjectResult | None:
     return None
 
 
-def check_projects(projects: Sequence[RepoConfig], source: str, destination: str, action: str = "deliver-check") -> tuple[list[DeliverPlan], bool]:
+def check_projects(
+    projects: Sequence[RepoConfig], source: str, destination: str, action: str = "deliver-check", extra_subjects: Sequence[str] = ()
+) -> tuple[list[DeliverPlan], bool]:
     """Check the projects several at a time.
 
     :return: the plans of the projects to deliver, and True when a project is in error
@@ -256,13 +262,65 @@ def check_projects(projects: Sequence[RepoConfig], source: str, destination: str
     plans: dict[int, DeliverPlan] = {}
 
     def job(elem: RepoConfig) -> ProjectResult:
-        result, plan = check_project(elem, source, destination)
+        result, plan = check_project(elem, source, destination, extra_subjects)
         if plan is not None:
             plans[id(elem)] = plan
         return result
 
     results = parallel.run_on_projects(action, projects, job)
     return [plans[id(elem)] for elem in projects if id(elem) in plans], parallel.has_error(results)
+
+
+# ----------------------------------------------------------------------------------------------------
+# manifest: the release of each project it pins
+# ----------------------------------------------------------------------------------------------------
+
+
+def release_tag(path: str, remote: str, destination: str) -> str | None:
+    """The last release (tag v*) of the destination branch, local first, else on the server."""
+    for ref in (destination, f"{remote}/{destination}"):
+        if _ref_exists(path, ref):
+            ret = _git(path, "describe", "--tags", "--abbrev=0", "--match", "v*", ref)
+            return ret.stdout if ret.returncode == 0 else None
+    return None
+
+
+def pin_projects(projects: Sequence[RepoConfig], destination: str) -> tuple[list[dict[str, str]], bool]:
+    """Find the release each project is pinned on, several at a time.
+
+    :return: the pins ({"name", "tag"}), and True when a project is in error
+    """
+    pins: dict[int, dict[str, str]] = {}
+
+    def job(elem: RepoConfig) -> ProjectResult:
+        path = os.path.join(env.get_island_root_path(), elem.path)
+        if elem.volatile is True:
+            return ProjectResult(Status.SKIPPED, "volatile", "not managed by the manifest")
+        if os.path.exists(os.path.join(path, ".git")) is False:
+            return ProjectResult(Status.WARNING, "not pinned", "not downloaded (island sync)")
+        tag = release_tag(path, elem.select_remote["name"], destination)
+        if tag is None:
+            return ProjectResult(Status.WARNING, "not pinned", f"no release on {destination}: follows its branch")
+        pins[id(elem)] = {"name": elem.name, "tag": tag}
+        if tag not in commands.get_tags_remote(path, elem.select_remote["name"]):
+            return ProjectResult(Status.WARNING, "pinned", f"{tag}, not on the server yet: island deliver-push")
+        return ProjectResult(Status.OK, "pinned", tag)
+
+    results = parallel.run_on_projects("manifest-pins", projects, job)
+    return [pins[id(elem)] for elem in projects if id(elem) in pins], parallel.has_error(results)
+
+
+def pin_changes(manifest_elem: RepoConfig, destination: str, manifest_name: str, pins: Sequence[dict[str, str]]) -> list[str]:
+    """What the pins change against the last release of the manifest, one line per project."""
+    path = os.path.join(env.get_island_root_path(), manifest_elem.path)
+    previous: dict[str, str] = {}
+    for ref in (destination, f"{manifest_elem.select_remote['name']}/{destination}"):
+        ret = _git(path, "show", f"{ref}:{manifest_name}")
+        if ret.returncode == 0:
+            root = etree.fromstring(ret.stdout.encode())
+            previous = {str(node.get("name")): str(node.get("tag")) for node in root.iter("project") if node.get("tag") is not None}
+            break
+    return [f"pin {pin['name']} {previous.get(pin['name'], 'unpinned')} -> {pin['tag']}" for pin in pins if previous.get(pin["name"]) != pin["tag"]]
 
 
 # ----------------------------------------------------------------------------------------------------

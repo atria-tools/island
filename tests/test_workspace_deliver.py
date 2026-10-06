@@ -162,3 +162,35 @@ def test_deliver_runs_the_release_script_of_a_project(workspace: Path) -> None:
     assert run_island("deliver", "--yes", cwd=workspace).returncode == 0
     assert show(alpha, "main", "VERSION.md") == "version 0.0.1\n"
     assert show(alpha, "dev", "VERSION.md") == "version 0.0.2-dev\n"
+
+
+def test_manifest_deliver_pins_the_last_release_of_each_project(workspace: Path, servers: Path) -> None:
+    commit(workspace / "alpha", "[FEAT] a feature")
+    run_island("deliver", "--yes", "--push", cwd=workspace)
+    result = run_island("manifest-deliver", "--yes", "--push", cwd=workspace)
+    assert result.returncode == 0, result.stdout + result.stderr
+    pins = result_lines(result.stdout.split("manifest-pins:")[0])
+    assert pins["alpha"] == "pinned     v0.1.0"
+    assert pins["libs/beta"] == "not pinned no release on main: follows its branch"
+    assert "    .island/manifest  new version.txt -> 0.0.1 (patch), 1 commit" in result.stdout
+    manifest = workspace / ".island" / "manifest"
+    released = show(manifest, "main", "default.xml")
+    assert 'name="alpha.git" path="alpha" tag="v0.1.0"' in released
+    assert 'tag="' not in show(manifest, "dev", "default.xml")
+    assert git("tag", cwd=servers / "manifest.git").strip() == "v0.0.1"
+    # nothing changed since: nothing to deliver
+    result = run_island("manifest-deliver", "--yes", cwd=workspace)
+    assert "Nothing to deliver: the manifest and its pins did not change." in result.stdout
+    # a new release of a project is a new pin
+    commit(workspace / "alpha", "[FIX] a fix")
+    run_island("deliver", "--yes", "--push", cwd=workspace)
+    result = run_island("manifest-deliver", "--yes", cwd=workspace)
+    assert "    .island/manifest  0.0.2-dev -> 0.0.2 (patch), 1 commit" in result.stdout
+    assert 'name="alpha.git" path="alpha" tag="v0.1.1"' in show(manifest, "main", "default.xml")
+
+
+def test_manifest_deliver_tells_a_release_not_pushed(workspace: Path) -> None:
+    commit(workspace / "alpha", "[FIX] a fix")
+    run_island("deliver", "--yes", cwd=workspace)
+    result = run_island("manifest-deliver", "--yes", cwd=workspace)
+    assert result_lines(result.stdout)["alpha"] == "pinned     v0.0.1, not on the server yet: island deliver-push"
