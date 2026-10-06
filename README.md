@@ -96,6 +96,21 @@ has not, or a tag that exists. Without questions, in a given step, and pushed at
   island deliver --yes --bump=minor --push
   island --filter=etk deliver
 
+A Maven project keeps its version in its pom.xml: X.Y.Z on the release branch, X.Y.(Z+1)-SNAPSHOT on the
+develop one. Between the projects of the workspace, a release depends on releases only (those delivered
+with it, else the last ones), and a develop branch on the -SNAPSHOT of its dependencies: the projects not
+delivered follow them with a commit of their own. A dependency with commits to deliver, or never
+released, joins the delivery of the project that needs it, so this delivers etk too when it changed:
+
+  island --filter=gale deliver
+
+A project never released is delivered in the version of its pom, when it is needed or asked for:
+
+  island deliver --unreleased
+
+A project marked private in the manifest (```<project ... private="true"/>```) is not published, and
+no public project may depend on it.
+
 Then deliver the manifest, each project pinned on its last release:
 
   island manifest-deliver --push
