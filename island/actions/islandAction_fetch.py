@@ -67,9 +67,7 @@ def execute(_arguments):
 
     all_project = mani.get_all_configs()
     debug.info("fetch : " + str(len(all_project)) + " projects")
-    id_element = 0
-    for elem in all_project:
-        id_element += 1
+    for id_element, elem in enumerate(all_project, start=1):
         # configure remote name:
         if argument_remote_name == "":
             argument_remote_name = elem.select_remote["name"]

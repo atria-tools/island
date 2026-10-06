@@ -76,9 +76,7 @@ def need_process_with_filter(data):
         return True
     if len(data) < len(filter_command):
         return False
-    if data[: len(filter_command)] == filter_command:
-        return True
-    return False
+    return data[: len(filter_command)] == filter_command
 
 
 display_folder_instead_of_git_name = True

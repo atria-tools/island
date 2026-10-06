@@ -78,15 +78,13 @@ def execute(_arguments):
 
     all_project = mani.get_all_configs()
     debug.info("status of: " + str(len(all_project)) + " projects")
-    id_element = 0
 
     elem = configuration.get_manifest_config()
-    base_display = tools.get_list_base_display(id_element, len(all_project), elem)
-    status.display_status(elem, argument_remote_name, argument_display_tag, id_element, base_display)
+    base_display = tools.get_list_base_display(0, len(all_project), elem)
+    status.display_status(elem, argument_remote_name, argument_display_tag, 0, base_display)
 
     is_behind = False
-    for elem in all_project:
-        id_element += 1
+    for id_element, elem in enumerate(all_project, start=1):
         base_display = tools.get_list_base_display(id_element, len(all_project), elem)
         ret = status.display_status(elem, argument_remote_name, argument_display_tag, id_element, base_display)
         if ret is not None:
@@ -94,3 +92,4 @@ def execute(_arguments):
 
     if is_behind is True:
         return env.ret_action_need_update
+    return None

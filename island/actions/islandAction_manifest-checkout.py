@@ -68,3 +68,4 @@ def execute(_arguments):
     base_display = tools.get_list_base_display(0, 0, elem)
     if status.checkout_elem(elem, argument_remote_name, branch_to_checkout, base_display) is False:
         return env.ret_action_fail
+    return None

@@ -55,9 +55,7 @@ def remove_path_and_sub_path(path):
 
 
 def remove_file(path):
-    if os.path.isfile(path):
-        os.remove(path)
-    elif os.path.islink(path):
+    if os.path.isfile(path) or os.path.islink(path):
         os.remove(path)
 
 
@@ -71,10 +69,7 @@ def file_size(path):
 def file_read_data(path, binary=False):
     if not os.path.isfile(path):
         return ""
-    if binary is True:
-        file = open(path, "rb")
-    else:
-        file = open(path)
+    file = open(path, "rb") if binary is True else open(path)
     data_file = file.read()
     file.close()
     return data_file
@@ -116,11 +111,10 @@ def version_string_to_list(version):
 # @return False Nothing has been copied
 #
 def file_write_data(path, data: str, only_if_new: bool = False):
-    if only_if_new is True:
-        if os.path.exists(path) is True:
-            old_data = file_read_data(path)
-            if old_data == data:
-                return False
+    if only_if_new is True and os.path.exists(path) is True:
+        old_data = file_read_data(path)
+        if old_data == data:
+            return False
     # real write of data:
     create_directory_of_file(path)
     with open(path, "w") as file:
@@ -131,12 +125,11 @@ def file_write_data(path, data: str, only_if_new: bool = False):
 def list_to_str(list):
     if isinstance(list, str):
         return list + " "
-    else:
-        result = ""
-        # mulyiple imput in the list ...
-        for elem in list:
-            result += list_to_str(elem)
-        return result
+    result = ""
+    # mulyiple imput in the list ...
+    for elem in list:
+        result += list_to_str(elem)
+    return result
 
 
 def add_prefix(prefix, list):
@@ -144,14 +137,12 @@ def add_prefix(prefix, list):
         return ""
     if isinstance(list, str):
         return prefix + list
-    else:
-        if len(list) == 0:
-            return ""
-        else:
-            result = []
-            for elem in list:
-                result.append(prefix + elem)
-            return result
+    if len(list) == 0:
+        return ""
+    result = []
+    for elem in list:
+        result.append(prefix + elem)
+    return result
 
 
 def store_command(cmd_line, file):
@@ -171,9 +162,9 @@ def store_command(cmd_line, file):
 def get_type_string(in_type):
     if isinstance(in_type, str):
         return "string"
-    elif isinstance(in_type, list):
+    if isinstance(in_type, list):
         return "list"
-    elif isinstance(in_type, dict):
+    if isinstance(in_type, dict):
         return "dict"
     return "unknown"
 

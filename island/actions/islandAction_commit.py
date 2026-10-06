@@ -73,9 +73,7 @@ def execute(_arguments):
 
     all_project = mani.get_all_configs()
     debug.info("commit : " + str(len(all_project)) + " projects")
-    id_element = 0
-    for elem in all_project:
-        id_element += 1
+    for id_element, elem in enumerate(all_project, start=1):
         base_display = tools.get_list_base_display(id_element, len(all_project), elem)
         debug.info("commit: " + base_display)
         git_repo_path = os.path.join(env.get_island_root_path(), elem.path)

@@ -67,10 +67,7 @@ def configure_all_repository(configuration, previous_config):
         if os.path.exists(os.path.join(git_repo_path, ".git")) is True:
             list_path.append(git_repo_path)
     new_config = commands.get_repository_config(configuration)
-    to_remove = {}
-    for key, value in previous_config.items():
-        if key not in new_config:
-            to_remove[key] = value
+    to_remove = {key: value for key, value in previous_config.items() if key not in new_config}
     for path in list_path:
         commands.unset_local_config(path, to_remove)
         commands.set_local_config(path, new_config)
@@ -155,10 +152,7 @@ class ManifestVSC:
             upper_remotes = []
         out = []
         if default is None:
-            if self.default is not None:
-                default = copy.deepcopy(self.default)
-            else:
-                default = copy.deepcopy(self.default_base)
+            default = copy.deepcopy(self.default) if self.default is not None else copy.deepcopy(self.default_base)
         # debug.error(f" self.default={self.default}")
         # add all local project
         for elem in self.projects:
@@ -280,16 +274,10 @@ class Manifest:
                                     fetch = fetch[1:]
                                 offset_1 = base_origin.rfind("/")
                                 offset_2 = base_origin.rfind(":")
-                                if offset_1 > offset_2:
-                                    base_origin = base_origin[:offset_1]
-                                else:
-                                    base_origin = base_origin[:offset_2]
+                                base_origin = base_origin[:offset_1] if offset_1 > offset_2 else base_origin[:offset_2]
                             debug.verbose(f"new base_origin={base_origin}")
                             debug.verbose(f"tmp fetch={fetch}")
-                            if fetch != "":
-                                fetch = f"{base_origin}/{fetch}"
-                            else:
-                                fetch = base_origin
+                            fetch = f"{base_origin}/{fetch}" if fetch != "" else base_origin
                             debug.verbose(f"new fetch={fetch}")
                         while len(fetch) > 1 and (fetch[-1] == "\\" or fetch[-1] == "/"):
                             fetch = fetch[:-1]
@@ -445,7 +433,7 @@ class Manifest:
                         "tag": tag_sha1,
                     }
                 )
-                debug.debug(f"(l:{child.sourceline})     find '{child.tag}' : name='{name}' path='{path}' tag='{str(tag_sha1)}'")
+                debug.debug(f"(l:{child.sourceline})     find '{child.tag}' : name='{name}' path='{path}' tag='{tag_sha1!s}'")
                 continue
             if child.tag == "link":
                 # not managed ==> future use
@@ -512,10 +500,7 @@ class Manifest:
             upper_remotes = []
         out = []
         if default is None:
-            if self.default is not None:
-                default = copy.deepcopy(self.default)
-            else:
-                default = copy.deepcopy(self.default_base)
+            default = copy.deepcopy(self.default) if self.default is not None else copy.deepcopy(self.default_base)
         # debug.error(f" self.default={self.default}")
         # add all local project
         for elem in self.projects:
@@ -569,14 +554,10 @@ class Manifest:
             upper_remotes_forward.append(remote)
         # add all include project
         for elem in self.includes:
-            list_project = elem["manifest"].get_all_configs(default, upper_remotes_forward)
-            for elem_proj in list_project:
-                out.append(elem_proj)
+            out.extend(elem["manifest"].get_all_configs(default, upper_remotes_forward))
         # add all import project
         for elem in self.imports:
-            list_project = elem["manifest"].get_all_configs(default, upper_remotes_forward)
-            for elem_proj in list_project:
-                out.append(elem_proj)
+            out.extend(elem["manifest"].get_all_configs(default, upper_remotes_forward))
 
         # -------------------------------------------------------------
         # -- add Volatile ...
@@ -669,6 +650,7 @@ def tag_manifest(manifest_xml_filename, all_tags):
     # now we parse all sub repo:
     for elem in includes:
         tag_manifest(elem["path"], all_tags)
+    return None
 
 
 def tag_clear(manifest_xml_filename):
@@ -714,3 +696,4 @@ def tag_clear(manifest_xml_filename):
     # now we parse all sub repo:
     for elem in includes:
         tag_clear(elem["path"])
+    return None

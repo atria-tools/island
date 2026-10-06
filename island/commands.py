@@ -51,11 +51,7 @@ def get_list_submodule(path_repository):
     debug.verbose("execute : " + cmd)
     return_value = multiprocess.run_command(cmd, cwd=path_repository)
     multiprocess.generic_display_error(return_value, "get_list_submodule", error_only=True)
-    out = []
-    for elem in return_value[1].split("\n"):
-        if elem != "":
-            out.append(elem)
-    return out
+    return [elem for elem in return_value[1].split("\n") if elem != ""]
 
 
 def get_repository_config(configuration):
@@ -74,7 +70,7 @@ def set_local_config(path_repository, values):
     # store the values in the repository ==> the git commands of the user use the same configuration as island
     if len(values) == 0:
         return
-    for path in [path_repository] + get_list_submodule(path_repository):
+    for path in [path_repository, *get_list_submodule(path_repository)]:
         for key, value in values.items():
             cmd = "git config --local " + key + " " + shlex.quote(value)
             debug.verbose("execute : " + cmd)
@@ -85,7 +81,7 @@ def set_local_config(path_repository, values):
 def unset_local_config(path_repository, values):
     if len(values) == 0:
         return
-    for path in [path_repository] + get_list_submodule(path_repository):
+    for path in [path_repository, *get_list_submodule(path_repository)]:
         for key, value in values.items():
             cmd = "git config --local --get " + key
             debug.verbose("execute : " + cmd)
@@ -116,9 +112,7 @@ def check_repository_is_modify(path_repository):
         display_if_nothing=False,
     )
     ret_diff = return_value
-    if ret_diff[0] == 0:
-        return False
-    return True
+    return ret_diff[0] != 0
 
 
 def get_list_branch_meta(path_repository):
@@ -153,29 +147,21 @@ def get_list_branch_meta(path_repository):
 
 def get_list_branch_all(path_repository):
     tmp = get_list_branch_meta(path_repository)
-    out = []
-    for elem in tmp:
-        out.append(elem["name"])
+    out = [elem["name"] for elem in tmp]
     debug.verbose("List all branch: " + str(out))
     return out
 
 
 def get_list_branch_local(path_repository):
     tmp = get_list_branch_meta(path_repository)
-    out = []
-    for elem in tmp:
-        if elem["remote"] is False:
-            out.append(elem["name"])
+    out = [elem["name"] for elem in tmp if elem["remote"] is False]
     debug.verbose("List local branch: " + str(out))
     return out
 
 
 def get_list_branch_remote(path_repository):
     tmp = get_list_branch_meta(path_repository)
-    out = []
-    for elem in tmp:
-        if elem["remote"] is True:
-            out.append(elem["name"])
+    out = [elem["name"] for elem in tmp if elem["remote"] is True]
     debug.verbose("List remote branch: " + str(out))
     return out
 
@@ -235,11 +221,7 @@ def get_tags_current(path_repository):
     debug.verbose("execute : " + cmd)
     return_value = multiprocess.run_command(cmd, cwd=path_repository)
     multiprocess.generic_display_error(return_value, "get_tags_current", error_only=True)
-    list_tags = []
-    for elem in return_value[1].split("\n"):
-        if elem != "":
-            list_tags.append(elem)
-    return list_tags
+    return [elem for elem in return_value[1].split("\n") if elem != ""]
 
 
 def get_tags(path_repository):

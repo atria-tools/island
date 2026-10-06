@@ -87,8 +87,7 @@ def run_command_direct(cmd_line, cwd=None):
         if output is None:
             return err[:-1]
         return output[:-1]
-    else:
-        return False
+    return False
 
 
 def run_command(cmd_line, cwd=None):

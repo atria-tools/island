@@ -78,12 +78,11 @@ def execute(_arguments):
 
     all_project = mani.get_all_configs()
     debug.info("checkout of: " + str(len(all_project)) + " projects")
-    id_element = 0
     have_error = False
-    for elem in all_project:
-        id_element += 1
+    for id_element, elem in enumerate(all_project, start=1):
         base_display = tools.get_list_base_display(id_element, len(all_project), elem)
         if status.checkout_elem(elem, argument_remote_name, branch_to_checkout, base_display) is False:
             have_error = True
     if have_error is True:
         return env.ret_action_fail
+    return None

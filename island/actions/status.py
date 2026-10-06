@@ -33,7 +33,7 @@ def display_status(elem, argument_remote_name, argument_display_tag, id_element,
     git_repo_path = os.path.join(env.get_island_root_path(), elem.path)
     if os.path.exists(git_repo_path) is False:
         debug.info(base_display + volatile + "\r\t\t\t\t\t\t\t\t\t" + "     (not download)")
-        return
+        return None
 
     is_modify = commands.check_repository_is_modify(git_repo_path)
     list_branch = commands.get_list_branch_all(git_repo_path)
@@ -42,13 +42,13 @@ def display_status(elem, argument_remote_name, argument_display_tag, id_element,
     if select_branch is None:
         # a repository without any commit (empty on the server) has no branch at all
         debug.info(base_display + volatile + "\r\t\t\t\t\t\t\t     (NO COMMIT)")
-        return
+        return None
     if select_branch[: len(base_name_of_a_tagged_branch)] != base_name_of_a_tagged_branch:
         # get tracking branch
         tracking_remote_branch = commands.get_tracking_branch(git_repo_path, argument_remote_name, select_branch)
         if tracking_remote_branch is None:
             debug.info(base_display + volatile + "\r\t\t\t\t\t\t\t     (NO BRANCH)")
-            return
+            return None
     else:
         tracking_remote_branch = select_branch[len(base_name_of_a_tagged_branch) :]
     modify_status = "     "
@@ -337,7 +337,7 @@ def create_new_version_repo(
     if behind_count == 0 and add_in_version_management is False:
         debug.info("deliver:     ==> Nothing to do (1).")
         return None
-    if behind_count == 1 and (behind_message == default_behind_message or behind_message == default_update_message):
+    if behind_count == 1 and (behind_message in (default_behind_message, default_update_message)):
         debug.info("deliver:     ==> Nothing to do (2).")
         return None
     for elem_sha1 in ret_source_branch_sha1:

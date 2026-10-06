@@ -77,7 +77,7 @@ def execute(_arguments):
     if remove is False and user_name == "" and user_email == "":
         debug.info("user name:  '" + conf.get_user_name() + "'")
         debug.info("user email: '" + conf.get_user_email() + "'")
-        return None
+        return
 
     previous_config = commands.get_repository_config(conf)
     if remove is True or user_name != "":
@@ -91,4 +91,4 @@ def execute(_arguments):
         debug.info("Remove the git user in " + str(count) + " repository")
     else:
         debug.info("Set the git user '" + conf.get_user_name() + "' <" + conf.get_user_email() + "> in " + str(count) + " repository")
-    return None
+    return

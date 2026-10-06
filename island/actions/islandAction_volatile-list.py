@@ -45,4 +45,4 @@ def execute(_arguments):
     for elem in volatiles:
         debug.info("\t" + elem["path"] + "\r\t\t\t\t" + elem["git_address"])
 
-    return None
+    return

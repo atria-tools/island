@@ -41,25 +41,25 @@ class Config:
         self._current_link = []
         with open(env.get_island_path_config()) as json_file:
             data = json.load(json_file)
-            if "repo" in data.keys():
+            if "repo" in data:
                 self._repo = data["repo"]
-            if "branch" in data.keys():
+            if "branch" in data:
                 self._branch = data["branch"]
-            if "manifest_name" in data.keys():
+            if "manifest_name" in data:
                 self._manifest_name = data["manifest_name"]
-            if "ssh_key" in data.keys():
+            if "ssh_key" in data:
                 self._ssh_key = data["ssh_key"]
-            if "user_name" in data.keys():
+            if "user_name" in data:
                 self._user_name = data["user_name"]
-            if "user_email" in data.keys():
+            if "user_email" in data:
                 self._user_email = data["user_email"]
-            if "volatiles" in data.keys():
+            if "volatiles" in data:
                 for elem in data["volatiles"]:
-                    if "git_address" in elem.keys() and "path" in elem.keys():
+                    if "git_address" in elem and "path" in elem:
                         self.add_volatile(elem["git_address"], elem["path"])
-            if "link" in data.keys():
+            if "link" in data:
                 for elem in data["link"]:
-                    if "source" in elem.keys() and "destination" in elem.keys():
+                    if "source" in elem and "destination" in elem:
                         self.add_link(elem["source"], elem["destination"])
             return True
         return False

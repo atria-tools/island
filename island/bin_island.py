@@ -79,9 +79,7 @@ def check_boolean(value: bool | str) -> bool:
     :param value: Value to check.
     :return: Equivalent boolean value.
     """
-    if value == "" or value == "1" or value == "true" or value == "True" or value is True:
-        return True
-    return False
+    return bool(value == "" or value == "1" or value == "true" or value == "True" or value is True)
 
 
 def parse_generic_arg(my_args, argument: arg_element.ArgElement, active: bool) -> bool:
@@ -96,35 +94,35 @@ def parse_generic_arg(my_args, argument: arg_element.ArgElement, active: bool) -
         if active is False:
             usage(my_args)
         return True
-    elif argument.get_option_name() == "jobs":
+    if argument.get_option_name() == "jobs":
         if active is True:
             # multiprocess.set_core_number(int(argument.get_arg()))
             pass
         return True
-    elif argument.get_option_name() == "wait":
+    if argument.get_option_name() == "wait":
         if active is True:
             env.set_wait_between_sever_command(int(argument.get_arg()))
         return True
-    elif argument.get_option_name() == "verbose":
+    if argument.get_option_name() == "verbose":
         if active is True:
             debug.set_level(int(argument.get_arg()))
         return True
-    elif argument.get_option_name() == "folder":
+    if argument.get_option_name() == "folder":
         if active is True:
             env.set_display_folder_instead_of_git_name(True)
         return True
-    elif argument.get_option_name() == "color":
+    if argument.get_option_name() == "color":
         if active is True:
             if check_boolean(argument.get_arg()) is True:
                 debug.enable_color()
             else:
                 debug.disable_color()
         return True
-    elif argument.get_option_name() == "filter":
+    if argument.get_option_name() == "filter":
         if active is True:
             env.set_filter_command(str(argument.get_arg()))
         return True
-    elif argument.get_option_name() == "no-fetch-manifest":
+    if argument.get_option_name() == "no-fetch-manifest":
         if active is False:
             env.set_fetch_manifest(False)
         return True

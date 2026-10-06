@@ -65,3 +65,4 @@ def execute(_arguments):
     ret = status.display_status(elem, argument_remote_name, argument_display_tag, 0, base_display)
     if ret is not None:
         return env.ret_action_need_update
+    return None

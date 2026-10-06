@@ -52,10 +52,7 @@ def get_list_of_action() -> list[str]:
     :return: the list of action name
     """
     global list_actions
-    out = []
-    for elem in list_actions:
-        out.append(elem["name"])
-    return out
+    return [elem["name"] for elem in list_actions]
 
 
 def get_function_value(action_name: str, function_name: str, default_value: Any | None = None) -> Any:

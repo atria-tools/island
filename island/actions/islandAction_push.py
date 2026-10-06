@@ -65,9 +65,7 @@ def execute(_arguments):
 
     all_project = mani.get_all_configs()
     debug.info("fetch : " + str(len(all_project)) + " projects")
-    id_element = 0
-    for elem in all_project:
-        id_element += 1
+    for id_element, elem in enumerate(all_project, start=1):
         base_display = tools.get_list_base_display(id_element, len(all_project), elem)
         debug.info("push: " + base_display)
         tools.wait_for_server_if_needed()

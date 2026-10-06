@@ -115,13 +115,10 @@ def execute(_arguments):
     )
     debug.info("new version: " + str(new_version_description))
     if new_version_description is None:
-        return
+        return None
     # merge branch
     commands.checkout(git_repo_path, destination_branch)
-    if mani.deliver_mode == "merge":
-        merge_force = True
-    else:
-        merge_force = False
+    merge_force = mani.deliver_mode == "merge"
     commands.merge_branch_on_master(git_repo_path, source_branch, merge_force, branch_destination=destination_branch)
 
     manifest.tag_manifest(file_source_manifest, all_tags)
@@ -145,16 +142,15 @@ def execute(_arguments):
     commands.checkout(git_repo_path, destination_branch)
 
     debug.info("manifest-deliver: ==> DONE")
+    return None
 
 
 def check_all_tags(mani):
     all_project = mani.get_all_configs()
     debug.info("Check all: " + str(len(all_project)) + " projects have a current tag ...")
-    id_element = 0
     check_have_error = False
     list_tags = []
-    for elem in all_project:
-        id_element += 1
+    for id_element, elem in enumerate(all_project, start=1):
         base_display = tools.get_list_base_display(id_element, len(all_project), elem)
         if elem.volatile is True:
             debug.info(base_display + "\r\t\t\t\t\t\t\t\t\t" + "     (Not Managed)")
@@ -185,8 +181,7 @@ def check_all_tags(mani):
             )
             check_have_error = True
             continue
-        else:
-            debug.info(base_display + "\r\t\t\t\t\t\t\t\t\t" + "     " + tags_comment)
+        debug.info(base_display + "\r\t\t\t\t\t\t\t\t\t" + "     " + tags_comment)
     if check_have_error is True:
         return None
     return list_tags

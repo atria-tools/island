@@ -79,10 +79,8 @@ def execute(_arguments):
 
     all_project = mani.get_all_configs()
     debug.info("Check if all project are on master: " + str(len(all_project)) + " projects")
-    id_element = 0
     deliver_available = True
-    for elem in all_project:
-        id_element += 1
+    for id_element, elem in enumerate(all_project, start=1):
         base_display = tools.get_list_base_display(id_element, len(all_project), elem)
         debug.verbose("deliver-ckeck: " + base_display)
         if (
@@ -101,9 +99,7 @@ def execute(_arguments):
         debug.error("deliver-ckeck: Correct the warning to validate the Merge")
         return
     debug.info("deliver-ckeck: ==> All is OK")
-    id_element = 0
-    for elem in all_project:
-        id_element += 1
+    for id_element, elem in enumerate(all_project, start=1):
         base_display = tools.get_list_base_display(id_element, len(all_project), elem)
         debug.info("deliver: ========================================================================")
         debug.info("deliver: == " + base_display)
@@ -134,10 +130,7 @@ def execute(_arguments):
         if new_version_description is None:
             continue
         # merge branch
-        if mani.deliver_mode == "merge":
-            merge_force = True
-        else:
-            merge_force = False
+        merge_force = mani.deliver_mode == "merge"
         commands.merge_branch_on_master(
             git_repo_path,
             source_branch,

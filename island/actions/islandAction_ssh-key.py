@@ -76,7 +76,7 @@ def execute(_arguments):
             debug.info("No ssh key selected (use the default one of the user)")
         else:
             debug.info("ssh key: '" + previous_ssh_key + "'")
-        return None
+        return
 
     previous_config = commands.get_repository_config(conf)
     conf.set_ssh_key(ssh_key)
@@ -87,4 +87,4 @@ def execute(_arguments):
         debug.info("Remove the ssh key in " + str(count) + " repository")
     else:
         debug.info("Set the ssh key '" + ssh_key + "' in " + str(count) + " repository")
-    return None
+    return
