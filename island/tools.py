@@ -46,10 +46,8 @@ def get_list_sub_files(path):
 def file_read_data(path, binary=False):
     if not os.path.isfile(path):
         return ""
-    file = open(path, "rb") if binary is True else open(path)
-    data_file = file.read()
-    file.close()
-    return data_file
+    with open(path, "rb" if binary is True else "r") as file:
+        return file.read()
 
 
 def version_to_string(version):
@@ -66,14 +64,12 @@ def version_to_string(version):
 
 def version_string_to_list(version):
     debug.verbose("parse version string '" + version + "'")
-    out = []
     if version == "":
         return [0, 0, 0]
     elems = version.split("-")
     if len(elems[0].split(".")) <= 1:
         debug.error("Can not parde a version with wrong version model '" + version + "'")
-    for elem in elems[0].split("."):
-        out.append(int(elem))
+    out = [int(elem) for elem in elems[0].split(".")]
     if len(elems) >= 2:
         out.append(elems[1])
     return out
@@ -121,11 +117,7 @@ def wait_for_server_if_needed():
 def filter_name_and_file(root, list_files, filter):
     # filter elements:
     tmp_list = fnmatch.filter(list_files, filter)
-    out = []
-    for elem in tmp_list:
-        if os.path.isfile(os.path.join(root, elem)) is True:
-            out.append(elem)
-    return out
+    return [elem for elem in tmp_list if os.path.isfile(os.path.join(root, elem)) is True]
 
 
 def import_path_local(path, limit_sub_folder=1, exclude_path=(), base_name="*"):
@@ -154,8 +146,5 @@ def import_path_local(path, limit_sub_folder=1, exclude_path=(), base_name="*"):
     if len(list_folders) != 0:
         debug.debug(f"     Find a folder : {list_folders}")
         for folder in list_folders:
-            tmp_out = import_path_local(folder, limit_sub_folder - 1, exclude_path, base_name)
-            # add all the elements:
-            for elem in tmp_out:
-                out.append(elem)
+            out.extend(import_path_local(folder, limit_sub_folder - 1, exclude_path, base_name))
     return out
