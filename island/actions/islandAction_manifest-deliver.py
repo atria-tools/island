@@ -19,19 +19,10 @@ from island import (
 from island.actions import status
 
 
-#
-# @brief Get the global description of the current action
-# @return (string) the description string (fist line if reserved for the overview, all is for the specific display)
-#
 def help():
     return "Deliver the manifest (merge develop vertion and create a branch with the specific current tags)"
 
 
-#
-# @brief Add argument to the specific action
-# @param[in,out] my_args (death.Arguments) Argument manager
-# @param[in] section Name of the currect action
-#
 def add_specific_arguments(my_args, section):
     pass
 
@@ -39,15 +30,6 @@ def add_specific_arguments(my_args, section):
 # must be on the branch we choice to merge ...
 
 
-#
-# @brief Execute the action required.
-#
-# @return error value [0 .. 50] the <0 value is reserved system ==> else, what you want.
-#         None : No error (return program out 0)
-#         -10 : ACTION is not existing
-#         -11 : ACTION execution system error
-#         -12 : ACTION Wrong parameters
-#
 def execute(_arguments):
     argument_remote_name = ""
     for elem in _arguments:

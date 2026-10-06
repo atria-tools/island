@@ -13,25 +13,10 @@ from island import (
 )
 
 
-#
-# @brief Get the global description of the current action
-# @return (string) the description string (fist line if reserved for the overview, all is for the specific display)
-#
 def help() -> str:
     return "List all the volatile repository"
 
 
-#
-# @brief Execute the action required.
-#
-# @return error value [0 .. 50] the <0 value is reserved system ==> else, what you want.
-#         None : No error (return program out 0)
-#         -5   : env.ret_manifest_is_not_existing      : Manifest does not exit
-#         -10  : env.ret_action_is_not_existing        : ACTION is not existing
-#         -11  : env.ret_action_executing_system_error : ACTION execution system error
-#         -12  : env.ret_action_wrong_parameters       : ACTION Wrong parameters
-#         -13  : env.ret_action_partial_done           : ACTION partially done
-#
 def execute(_arguments):
     for elem in _arguments:
         debug.error("Wrong argument: '" + elem.get_option_name() + "' '" + elem.get_arg() + "'")

@@ -16,19 +16,10 @@ from island import (
 )
 
 
-#
-# @brief Get the global description of the current action
-# @return (string) the description string (fist line if reserved for the overview, all is for the specific display)
-#
 def help():
     return "Init a island repository (need 'fetch' after)"
 
 
-#
-# @brief Add argument to the specific action
-# @param[in,out] my_args (death.Arguments) Argument manager
-# @param[in] section Name of the currect action
-#
 def add_specific_arguments(my_args, section):
     my_args.add("b", "branch", haveParam=True, desc="Branch of the manifest (default: the default branch of the server)")
     my_args.add("m", "manifest", haveParam=True, desc="Name of the manifest")
@@ -37,15 +28,6 @@ def add_specific_arguments(my_args, section):
     my_args.add("e", "user-email", haveParam=True, desc="Git user email (set in all the repository)")
 
 
-#
-# @brief Execute the action required.
-#
-# @return error value [0 .. 50] the <0 value is reserved system ==> else, what you want.
-#         None : No error (return program out 0)
-#         -10 : ACTION is not existing
-#         -11 : ACTION execution system error
-#         -12 : ACTION Wrong parameters
-#
 def execute(_arguments):
     if len(_arguments) == 0:
         debug.error("Missing argument to execute the current action ...")

@@ -20,27 +20,14 @@ from island import (
 from island.actions import update_links
 
 
-#
-# @brief Get the global description of the current action
-# @return (string) the description string (fist line if reserved for the overview, all is for the specific display)
-#
 def help():
     return "Syncronize all the repository referenced"
 
 
-#
-# @brief at the end of the help wa have the example section
-# @return (string) the Example description string
-#
 def help_example():
     return "island init https://git.heeroyui.org/atria-tools/island.git"
 
 
-#
-# @brief Add argument to the specific action
-# @param[in,out] my_args (death.Arguments) Argument manager
-# @param[in] section Name of the currect action
-#
 def add_specific_arguments(my_args, section):
     my_args.add(
         "d",
@@ -50,15 +37,6 @@ def add_specific_arguments(my_args, section):
     )
 
 
-#
-# @brief Execute the action required.
-#
-# @return error value [0 .. 50] the <0 value is reserved system ==> else, what you want.
-#         None : No error (return program out 0)
-#         -10 : ACTION is not existing
-#         -11 : ACTION execution system error
-#         -12 : ACTION Wrong parameters
-#
 def execute(_arguments):
     just_download = False
     for elem in _arguments:

@@ -15,44 +15,20 @@ from island import (
 )
 
 
-#
-# @brief Get the global description of the current action
-# @return (string) the description string (fist line if reserved for the overview, all is for the specific display)
-#
 def help():
     return "Select the git user name and email (set in all the repository), without argument display the current ones"
 
 
-#
-# @brief Add argument to the specific action
-# @param[in,out] my_args (death.Arguments) Argument manager
-# @param[in] section Name of the currect action
-#
 def add_specific_arguments(my_args, section):
     my_args.add("n", "name", haveParam=True, desc="Git user name")
     my_args.add("e", "email", haveParam=True, desc="Git user email")
     my_args.add("r", "remove", haveParam=False, desc="Remove the git user name and email (use the default ones of the user)")
 
 
-#
-# @brief at the end of the help wa have the example section
-# @return (string) the Example description string
-#
 def help_example():
     return 'island user --name "My Name" --email my.name@example.com'
 
 
-#
-# @brief Execute the action required.
-#
-# @return error value [0 .. 50] the <0 value is reserved system ==> else, what you want.
-#         None : No error (return program out 0)
-#         -5   : env.ret_manifest_is_not_existing      : Manifest does not exit
-#         -10  : env.ret_action_is_not_existing        : ACTION is not existing
-#         -11  : env.ret_action_executing_system_error : ACTION execution system error
-#         -12  : env.ret_action_wrong_parameters       : ACTION Wrong parameters
-#         -13  : env.ret_action_partial_done           : ACTION partially done
-#
 def execute(_arguments):
     user_name = ""
     user_email = ""
