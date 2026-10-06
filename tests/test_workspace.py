@@ -3,7 +3,7 @@
 from pathlib import Path
 import re
 
-from conftest import SERVER, git, run_island
+from conftest import SERVER, git, make_server_repository, run_island
 
 
 def status_lines(output: str) -> dict[str, str]:
@@ -126,3 +126,28 @@ def test_sync_fails_when_a_link_takes_the_place_of_a_file(workspace: Path) -> No
     assert "path already exist" in result.stdout
     assert result.returncode != 0
     assert (workspace / "manifest.xml").read_text() == "a file of the user\n"
+
+
+def add_project_to_the_manifest(servers: Path) -> None:
+    """Add the project 'gamma' to the manifest on the server."""
+    make_server_repository(servers, "gamma.git", {"README.md": "gamma\n"})
+    work = servers / "work-manifest.git"
+    manifest = work / "default.xml"
+    manifest.write_text(
+        manifest.read_text().replace('<project name="solo.git"', '<project name="gamma.git" path="gamma"/>\n\t<project name="solo.git"')
+    )
+    git("commit", "--quiet", "-am", "add gamma", cwd=work)
+    git("push", "--quiet", "origin", "HEAD:main", cwd=work)
+
+
+def test_sync_takes_the_new_projects_of_the_manifest(workspace: Path, servers: Path) -> None:
+    add_project_to_the_manifest(servers)
+    run_island("sync", cwd=workspace)
+    assert (workspace / "gamma" / "README.md").read_text() == "gamma\n"
+
+
+def test_sync_without_fetching_the_manifest_keeps_it(workspace: Path, servers: Path) -> None:
+    add_project_to_the_manifest(servers)
+    result = run_island("--no-fetch-manifest", "sync", cwd=workspace)
+    assert "manifest not updated" in result.stdout
+    assert (workspace / "gamma").exists() is False

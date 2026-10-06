@@ -75,12 +75,14 @@ def execute(_arguments):
 
     # TODO: Load Old manifect to check diff ...
 
-    debug.info("update manifest : '" + str(env.get_island_path_manifest()) + "'")
     commands.configure_repository(env.get_island_path_manifest(), configuration)
-    is_modify_manifest = commands.check_repository_is_modify(env.get_island_path_manifest())
-    if is_modify_manifest is True:
+    if env.get_fetch_manifest() is False:
+        debug.info("manifest not updated (--no-fetch-manifest)")
+    elif commands.check_repository_is_modify(env.get_island_path_manifest()) is True:
+        debug.info("update manifest : '" + str(env.get_island_path_manifest()) + "'")
         commands.fetch(env.get_island_path_manifest(), "origin")
     else:
+        debug.info("update manifest : '" + str(env.get_island_path_manifest()) + "'")
         commands.pull(env.get_island_path_manifest(), "origin")
 
     file_source_manifest = os.path.join(env.get_island_path_manifest(), configuration.get_manifest_name())
