@@ -497,6 +497,8 @@ class Manifest:
         if upper_remotes is None:
             upper_remotes = []
         out = []
+        # the top manifest is called without default; the included ones get it from their parent
+        is_top_manifest = default is None
         if default is None:
             default = copy.deepcopy(self.default) if self.default is not None else copy.deepcopy(self.default_base)
         # debug.error(f" self.default={self.default}")
@@ -563,7 +565,7 @@ class Manifest:
         debug.verbose("include volatile config")
         # TODO: maybe find a better way to do this...
         conf_global = config.get_unique_config()
-        for elem in conf_global.get_volatile():
+        for elem in conf_global.get_volatile() if is_top_manifest else []:
             conf = repo_config.RepoConfig()
             base_volatile, repo_volatile = repo_config.split_repo(elem["git_address"])
             conf.name = repo_volatile

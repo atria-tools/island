@@ -175,3 +175,13 @@ def test_sync_clones_the_repositories_of_an_imported_vcs_file(workspace: Path, s
     assert (workspace / "delta" / "README.md").read_text() == "delta\n"
     assert "Need to select a specific tag version ... dev" in result.stdout
 
+
+def test_a_volatile_repository_is_listed_once_with_an_included_manifest(workspace: Path, servers: Path) -> None:
+    make_server_repository(servers, "zeta.git", {"README.md": "zeta\n"})
+    include = '<?xml version="1.0" encoding="UTF-8"?>\n<manifest>\n\t<project name="zeta.git" path="zeta"/>\n</manifest>\n'
+    change_the_manifest(servers, {"more.xml": include}, '<include name="more.xml"/>')
+    run_island("sync", cwd=workspace)
+    assert (workspace / "zeta" / "README.md").read_text() == "zeta\n"
+    run_island("volatile-add", SERVER + ":alpha.git", "volatile-alpha", cwd=workspace)
+    lines = run_island("status", cwd=workspace).stdout.split("\n")
+    assert len([line for line in lines if " : volatile-alpha" in line]) == 1
