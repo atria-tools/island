@@ -105,8 +105,16 @@ Create your development environment:
 python -m venv .venv
 # Activate the python virtual environment
 source .venv/bin/activate
-# Install the package in editable mode (dynamic use of files)
-pip install --editable .
+# Install the package in editable mode (dynamic use of files), with the development tools
+pip install --editable '.[dev]'
+```
+
+Check the code before a commit (the CI runs the same on Python 3.11 to 3.14):
+```bash
+ruff check .            # lint (add --fix to correct what can be)
+ruff format .           # format
+mypy                    # types, in strict mode
+pytest                  # tests, island run on local git repositories
 ```
 
 or with pipx:
