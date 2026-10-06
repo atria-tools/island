@@ -207,16 +207,6 @@ def get_revision_list_to_branch(path_repository: str, branch: str) -> list[str]:
     return return_value[1].split("\n")
 
 
-def get_specific_commit_message(path_repository: str, sha_1: str | None) -> str:
-    if sha_1 is None or sha_1 == "":
-        return ""
-    cmd = "git log --format=%B -n 1 " + sha_1
-    debug.verbose("execute : " + cmd)
-    return_value = multiprocess.run_command(cmd, cwd=path_repository)
-    multiprocess.generic_display_error(return_value, "get_specific_commit_message", error_only=True)
-    return return_value[1].split("\n")[0]
-
-
 def get_sha1_for_branch(path_repository: str, branch_name: str | None) -> str | None:
     if branch_name is None or branch_name == "":
         return None
@@ -284,22 +274,6 @@ def get_tracking_branch(path_repository: str, remote_name: str | None, select_br
     return remote_name + "/" + select_branch
 
 
-def merge_branch_on_master(
-    path_repository: str, branch_name: str, merge_force: bool = True, branch_destination: str = "master"
-) -> multiprocess.CommandResult:
-    if branch_name is None or branch_name == "":
-        raise ValueError("Missing branch name")
-    cmd = "git merge "
-    if merge_force is True:
-        cmd += "--no-ff "
-    cmd += branch_name + " --message \"Merge branch '" + branch_name + "' into '" + branch_destination + "'\""
-    debug.verbose("execute : " + cmd)
-    # TODO: check if the command work correctly
-    return_value = multiprocess.run_command(cmd, cwd=path_repository)
-    multiprocess.generic_display_error(return_value, "merge_branch_on_master", error_only=True)
-    return return_value
-
-
 def call_island_release_script(path_repository: str) -> bool:
     cmd = ".island/release.bash"
     file_path = Path(path_repository) / ".island/release.bash"
@@ -309,48 +283,6 @@ def call_island_release_script(path_repository: str) -> bool:
     return_value = multiprocess.run_command(cmd, cwd=path_repository)
     multiprocess.generic_display_error(return_value, "call_island_release_script", error_only=True)
     return True
-
-
-def add_all(path_repository: str) -> multiprocess.CommandResult:
-    cmd = "git add -u"
-    debug.verbose("execute : " + cmd)
-    return_value = multiprocess.run_command(cmd, cwd=path_repository)
-    multiprocess.generic_display_error(return_value, "add_all", error_only=True)
-    return return_value
-
-
-def add_file(path_repository: str, file_path: str) -> multiprocess.CommandResult:
-    if not file_path:
-        raise OSError("Missing file_path name")
-    cmd = "git add " + file_path
-    debug.verbose("execute : " + cmd)
-    # TODO: check if the command work correctly
-    return_value = multiprocess.run_command(cmd, cwd=path_repository)
-    multiprocess.generic_display_error(return_value, "add_file", error_only=True)
-    return return_value
-
-
-def commit_all(path_repository: str, comment: str) -> multiprocess.CommandResult:
-    if not comment:
-        raise OSError("Missing comment description")
-    cmd = 'git commit -a --message "' + comment + '"'
-    debug.verbose("execute : " + cmd)
-    # TODO: check if the command work correctly
-    return_value = multiprocess.run_command(cmd, cwd=path_repository)
-    multiprocess.generic_display_error(return_value, "commit_all", error_only=True)
-    return return_value
-
-
-def tag(path_repository: str, tag_name: str) -> multiprocess.CommandResult:
-    if not tag_name:
-        raise OSError("Missing tag name")
-    tag_name = tag_name.replace(" ", "_")
-    cmd = "git tag " + tag_name + ' --message "[TAG] create tag ' + tag_name + '"'
-    debug.verbose("execute : " + cmd)
-    # TODO: check if the command work correctly
-    return_value = multiprocess.run_command(cmd, cwd=path_repository)
-    multiprocess.generic_display_error(return_value, "tag", error_only=True)
-    return return_value
 
 
 def checkout(path_repository: str, branch_name: str) -> multiprocess.CommandResult:
