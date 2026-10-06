@@ -170,6 +170,7 @@ def run_on_projects(
     job: Callable[[RepoConfig], ProjectResult],
     jobs: int | None = None,
     out: TextIO | None = None,
+    summary: bool = True,
 ) -> list[ProjectResult]:
     """Run a job on each project, several at a time, and show how each one ends.
 
@@ -178,6 +179,7 @@ def run_on_projects(
     :param job: What to do on a project; it may log through realog
     :param jobs: Number of projects run at a time (None: the option --jobs)
     :param out: Where the lines go (None: the standard output)
+    :param summary: Show the summary line at the end
     :return: the result of each project, in the order of the projects
     """
     _install_capture()
@@ -193,7 +195,8 @@ def run_on_projects(
 
     with ThreadPoolExecutor(max_workers=jobs or get_jobs()) as executor:
         results = list(executor.map(run, projects))
-    display.summary(results, time.monotonic() - start)
+    if summary is True:
+        display.summary(results, time.monotonic() - start)
     return results
 
 

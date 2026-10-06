@@ -304,3 +304,27 @@ def test_fetch_goes_on_after_a_project_it_cannot_fetch(workspace: Path) -> None:
     assert lines["alpha"].startswith("error")
     assert lines["solo"] == "up to date main"
     assert result.returncode != 0
+
+
+def test_sync_tells_what_it_did_on_each_project(tmp_path: Path, servers: Path) -> None:
+    workspace = tmp_path / "other"
+    workspace.mkdir()
+    run_island("init", SERVER + ":manifest.git", cwd=workspace)
+    lines = result_lines(run_island("sync", cwd=workspace).stdout)
+    assert lines["alpha"] == "cloned     dev"
+    assert lines["solo"] == "cloned     main"
+    # a second sync: a new commit on alpha, a local change on beta
+    work = servers / "work-alpha.git"
+    (work / "NEW.md").write_text("new\n")
+    git("add", ".", cwd=work)
+    git("commit", "--quiet", "-m", "new", cwd=work)
+    git("push", "--quiet", "origin", "HEAD:dev", cwd=work)
+    (workspace / "libs" / "beta" / "README.md").write_text("changed\n")
+    result = run_island("sync", cwd=workspace)
+    lines = result_lines(result.stdout)
+    assert lines["alpha"] == "updated    dev: 1 new commit"
+    assert lines["libs/beta"] == "modified   dev has local changes: fetched only, 0 new on origin/dev"
+    assert lines["solo"] == "up to date main"
+    assert lines["empty"] == "empty      no commit"
+    assert "sync: 4 projects in " in result.stdout
+    assert result.returncode == 0
