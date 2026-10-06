@@ -79,6 +79,7 @@ class ProjectEntry(TypedDict):
     name: str
     path: str  # "": the name of the repository
     tag: str | None
+    private: NotRequired[bool]  # not published (a public repository of artifacts, Maven Central...)
 
 
 class SubManifest(TypedDict):
@@ -183,6 +184,7 @@ class _ManifestBase:
             conf = repo_config.RepoConfig()
             conf.name = elem["name"]
             conf.tag = elem["tag"]
+            conf.private = elem.get("private", False)
             conf.path = self._create_path_with_elem(elem)
 
             # add default remote for the project (search in inherited element)
@@ -416,6 +418,7 @@ class Manifest(_ManifestBase):
                 name = ""
                 path = ""
                 tag_sha1: str | None = None
+                private = False
                 for attr in child.attrib:
                     if attr == "name":
                         name = str(child.attrib[attr])
@@ -423,15 +426,17 @@ class Manifest(_ManifestBase):
                         path = str(child.attrib[attr])
                     elif attr == "tag":
                         tag_sha1 = str(child.attrib[attr])
+                    elif attr == "private":
+                        private = str(child.attrib[attr]).lower() in ("true", "1", "yes")
                     else:
                         debug.error(
-                            f"(l:{child.sourceline}) Parsing the manifest: unknown '{child.tag}'  attribute : '{attr!s}', available:[name,tag,sync-s]"
+                            f"(l:{child.sourceline}) Parsing the manifest: unknown '{child.tag}'  attribute : '{attr!s}', available:[name,path,tag,private]"
                         )
                 if name == "":
                     debug.error(
                         f"(l:{child.sourceline}) Parsing the manifest: '{child.tag}'  missing attribute: 'name' ==> specify the git to clone ..."
                     )
-                self.projects.append(ProjectEntry(name=name, path=path, tag=tag_sha1))
+                self.projects.append(ProjectEntry(name=name, path=path, tag=tag_sha1, private=private))
                 debug.debug(f"(l:{child.sourceline})     find '{child.tag}' : name='{name}' path='{path}' tag='{tag_sha1!s}'")
                 continue
             if child.tag == "link":
@@ -504,11 +509,11 @@ def tag_manifest(manifest_xml_filename: str, all_tags: list[dict[str, str]]) -> 
             for attr in child.attrib:
                 if attr == "name":
                     name = str(child.attrib[attr])
-                elif attr in ("path", "tag"):
+                elif attr in ("path", "tag", "private"):
                     continue
                 else:
                     debug.error(
-                        f"(l:{child.sourceline}) Parsing the manifest: unknown '{child.tag}'  attribute : '{attr!s}', available:[name,tag,sync-s]"
+                        f"(l:{child.sourceline}) Parsing the manifest: unknown '{child.tag}'  attribute : '{attr!s}', available:[name,path,tag,private]"
                     )
             if name == "":
                 debug.error(f"(l:{child.sourceline}) Parsing the manifest: '{child.tag}'  missing attribute: 'name' ==> specify the git to clone.")

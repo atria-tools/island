@@ -37,6 +37,7 @@ class RepoConfig:
         self.branch = ""
         self.tag: str | None = None
         self.volatile = False
+        self.private = False  # not published
 
 
 def split_repo(git_repo: str) -> tuple[str, str]:
