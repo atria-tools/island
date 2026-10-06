@@ -515,13 +515,13 @@ def tag_manifest(manifest_xml_filename: str, all_tags: list[dict[str, str]]) -> 
                 if elem_tag["name"] == name:
                     child.set("tag", elem_tag["tag"])
             continue
-        if child.tag == "option":
-            # not managed ==> future use
-            continue
-        if child.tag == "link":
+        if child.tag in ("option", "link", "import"):
+            # the imported .repos files have no tag
             continue
         debug.info(f"(l:{child.sourceline})     '{child.tag}' values={child.attrib}")
-        debug.error(f"(l:{child.sourceline}) Parsing error unknown NODE : '{child.tag}' available:[remote,include,default,project,option,link]")
+        debug.error(
+            f"(l:{child.sourceline}) Parsing error unknown NODE : '{child.tag}' available:[remote,include,import,default,project,option,link]"
+        )
     tree.write(manifest_xml_filename, pretty_print=True, xml_declaration=True, encoding="utf-8")
     # now we parse all sub repo:
     for elem in includes:
@@ -550,11 +550,11 @@ def tag_clear(manifest_xml_filename: str) -> bool | None:
                     name = str(child.attrib[attr])
                 else:
                     debug.error(f"(l:{child.sourceline}) Parsing the manifest : unknown '{child.tag}'  attribute : '{attr!s}', available:[name]")
-            debug.debug("(l:{child.sourceline})     find '{child.tag}' : name='{name}'")
+            debug.debug(f"(l:{child.sourceline})     find '{child.tag}' : name='{name}'")
             # check if the file exist ...
             new_name_xml = os.path.join(os.path.dirname(manifest_xml_filename), name)
             if os.path.exists(new_name_xml) is False:
-                debug.error("(l:{child.sourceline}) The file does not exist : '{new_name_xml}'")
+                debug.error(f"(l:{child.sourceline}) The file does not exist : '{new_name_xml}'")
             includes.append(SubManifest(name=name, path=new_name_xml, manifest=None))
             continue
         if child.tag == "default":
@@ -562,12 +562,12 @@ def tag_clear(manifest_xml_filename: str) -> bool | None:
         if child.tag == "project":
             child.attrib.pop("tag", "")
             continue
-        if child.tag == "option":
-            continue
-        if child.tag == "link":
+        if child.tag in ("option", "link", "import"):
             continue
         debug.info(f"(l:{child.sourceline})     '{child.tag}' values={child.attrib}")
-        debug.error(f"(l:{child.sourceline}) Parsing error unknown NODE : '{child.tag}' available:[remote,include,default,project,option,link]")
+        debug.error(
+            f"(l:{child.sourceline}) Parsing error unknown NODE : '{child.tag}' available:[remote,include,import,default,project,option,link]"
+        )
     tree.write(manifest_xml_filename, pretty_print=True, xml_declaration=True, encoding="utf-8")
     # now we parse all sub repo:
     for elem in includes:
