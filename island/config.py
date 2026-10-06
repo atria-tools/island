@@ -79,43 +79,43 @@ class Config:
             return True
         return False
 
-    def set_manifest(self, value):
+    def set_manifest(self, value: str) -> None:
         self._repo = value
 
-    def get_manifest(self):
+    def get_manifest(self) -> str:
         return self._repo
 
-    def set_branch(self, value):
+    def set_branch(self, value: str) -> None:
         self._branch = value
 
-    def get_branch(self):
+    def get_branch(self) -> str:
         return self._branch
 
-    def set_manifest_name(self, value):
+    def set_manifest_name(self, value: str) -> None:
         self._manifest_name = value
 
-    def get_manifest_name(self):
+    def get_manifest_name(self) -> str:
         return self._manifest_name
 
-    def set_ssh_key(self, value):
+    def set_ssh_key(self, value: str) -> None:
         self._ssh_key = value
 
-    def get_ssh_key(self):
+    def get_ssh_key(self) -> str:
         return self._ssh_key
 
-    def set_user_name(self, value):
+    def set_user_name(self, value: str) -> None:
         self._user_name = value
 
-    def get_user_name(self):
+    def get_user_name(self) -> str:
         return self._user_name
 
-    def set_user_email(self, value):
+    def set_user_email(self, value: str) -> None:
         self._user_email = value
 
-    def get_user_email(self):
+    def get_user_email(self) -> str:
         return self._user_email
 
-    def add_volatile(self, git_adress, local_path):
+    def add_volatile(self, git_adress: str, local_path: str) -> bool:
         for elem in self._volatiles:
             if elem["path"] == local_path:
                 debug.error(
@@ -126,13 +126,13 @@ class Config:
         self._volatiles.append({"git_address": git_adress, "path": local_path})
         return True
 
-    def get_volatile(self):
+    def get_volatile(self) -> list[dict[str, str]]:
         return copy.deepcopy(self._volatiles)
 
-    def get_links(self):
+    def get_links(self) -> list[dict[str, str]]:
         return self._current_link
 
-    def add_link(self, source, destination) -> bool:
+    def add_link(self, source: str, destination: str) -> bool:
         for elem in self._current_link:
             if elem["destination"] == destination:
                 debug.error(
@@ -143,10 +143,10 @@ class Config:
         self._current_link.append({"source": source, "destination": destination})
         return True
 
-    def clear_links(self):
+    def clear_links(self) -> None:
         self._current_link = []
 
-    def get_manifest_config(self):
+    def get_manifest_config(self) -> repo_config.RepoConfig:
         conf = repo_config.RepoConfig()
         base_volatile, repo_volatile = repo_config.split_repo(self.get_manifest())
         conf.name = repo_volatile

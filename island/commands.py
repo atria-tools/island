@@ -8,6 +8,7 @@
 import os
 from pathlib import Path
 import shlex
+from typing import TYPE_CHECKING, Literal, TypedDict
 
 # Local import
 from realog import debug
@@ -17,7 +18,19 @@ from . import (
 )
 
 
-def get_ssh_key_path(ssh_key):
+if TYPE_CHECKING:
+    from .config import Config
+
+
+class BranchMeta(TypedDict):
+    """A branch as 'git branch -a' lists it."""
+
+    remote: bool
+    name: str
+    select: bool
+
+
+def get_ssh_key_path(ssh_key: str) -> str:
     # the key is used in all the repository ==> need an absolute path
     out = os.path.abspath(os.path.expanduser(ssh_key))
     if os.path.isfile(out) is False:
@@ -25,12 +38,12 @@ def get_ssh_key_path(ssh_key):
     return out
 
 
-def get_ssh_command(ssh_key):
+def get_ssh_command(ssh_key: str) -> str:
     # 'IdentitiesOnly' prevent ssh to try the other keys of the agent before the selected one
     return "ssh -i " + shlex.quote(ssh_key) + " -o IdentitiesOnly=yes"
 
 
-def select_ssh_key(ssh_key):
+def select_ssh_key(ssh_key: str | None) -> None:
     # all the next git commands use this key (needed for the clone that have no local configuration)
     if ssh_key is None or ssh_key == "":
         return
@@ -42,7 +55,7 @@ def select_ssh_key(ssh_key):
     os.environ["GIT_SSH_COMMAND"] = get_ssh_command(ssh_key)
 
 
-def get_list_submodule(path_repository):
+def get_list_submodule(path_repository: str) -> list[str]:
     # get all the downloaded submodules (recursive)
     if os.path.exists(os.path.join(path_repository, ".gitmodules")) is False:
         return []
@@ -53,7 +66,7 @@ def get_list_submodule(path_repository):
     return [elem for elem in return_value[1].split("\n") if elem != ""]
 
 
-def get_repository_config(configuration):
+def get_repository_config(configuration: "Config") -> dict[str, str]:
     # git configuration that the workspace set in each repository
     out = {}
     if configuration.get_ssh_key() != "":
@@ -65,7 +78,7 @@ def get_repository_config(configuration):
     return out
 
 
-def set_local_config(path_repository, values):
+def set_local_config(path_repository: str, values: dict[str, str]) -> None:
     # store the values in the repository ==> the git commands of the user use the same configuration as island
     if len(values) == 0:
         return
@@ -77,7 +90,7 @@ def set_local_config(path_repository, values):
             multiprocess.generic_display_error(return_value, "set_local_config", error_only=True)
 
 
-def unset_local_config(path_repository, values):
+def unset_local_config(path_repository: str, values: dict[str, str]) -> None:
     if len(values) == 0:
         return
     for path in [path_repository, *get_list_submodule(path_repository)]:
@@ -94,11 +107,11 @@ def unset_local_config(path_repository, values):
             multiprocess.generic_display_error(return_value, "unset_local_config", error_only=True)
 
 
-def configure_repository(path_repository, configuration):
+def configure_repository(path_repository: str, configuration: "Config") -> None:
     set_local_config(path_repository, get_repository_config(configuration))
 
 
-def check_repository_is_modify(path_repository):
+def check_repository_is_modify(path_repository: str) -> bool:
     # check if the repository is modify
     cmd = "git diff --quiet"
     debug.verbose(f"execute : {cmd}")
@@ -114,7 +127,7 @@ def check_repository_is_modify(path_repository):
     return ret_diff[0] != 0
 
 
-def get_list_branch_meta(path_repository):
+def get_list_branch_meta(path_repository: str) -> list[BranchMeta]:
     # get local branch
     cmd = "git branch -a"
     debug.verbose("execute : " + cmd)
@@ -122,7 +135,7 @@ def get_list_branch_meta(path_repository):
     multiprocess.generic_display_error(return_value, "get_list_branch_meta", error_only=True)
     ret_branch = return_value
     list_branch = ret_branch[1].split("\n")
-    out = []
+    out: list[BranchMeta] = []
     for elem_branch in list_branch:
         is_remote = False
         branch_name = ""
@@ -139,33 +152,33 @@ def get_list_branch_meta(path_repository):
             branch_name = elem_branch[2:]
         else:
             branch_name = elem_branch[2:]
-        out.append({"remote": is_remote, "name": branch_name, "select": is_selected})
+        out.append(BranchMeta(remote=is_remote, name=branch_name, select=is_selected))
     debug.extreme_verbose("List all branch Meta: " + str(out))
     return out
 
 
-def get_list_branch_all(path_repository):
+def get_list_branch_all(path_repository: str) -> list[str]:
     tmp = get_list_branch_meta(path_repository)
     out = [elem["name"] for elem in tmp]
     debug.verbose("List all branch: " + str(out))
     return out
 
 
-def get_list_branch_local(path_repository):
+def get_list_branch_local(path_repository: str) -> list[str]:
     tmp = get_list_branch_meta(path_repository)
     out = [elem["name"] for elem in tmp if elem["remote"] is False]
     debug.verbose("List local branch: " + str(out))
     return out
 
 
-def get_list_branch_remote(path_repository):
+def get_list_branch_remote(path_repository: str) -> list[str]:
     tmp = get_list_branch_meta(path_repository)
     out = [elem["name"] for elem in tmp if elem["remote"] is True]
     debug.verbose("List remote branch: " + str(out))
     return out
 
 
-def get_current_branch(path_repository):
+def get_current_branch(path_repository: str) -> str | None:
     tmp = get_list_branch_meta(path_repository)
     for elem in tmp:
         if elem["select"] is True:
@@ -175,7 +188,7 @@ def get_current_branch(path_repository):
     return None
 
 
-def get_current_tracking_branch(path_repository):
+def get_current_tracking_branch(path_repository: str) -> str | None:
     # get  tracking branch
     cmd = "git rev-parse --abbrev-ref --symbolic-full-name @{u}"
     debug.verbose("execute : " + cmd)
@@ -187,7 +200,7 @@ def get_current_tracking_branch(path_repository):
     return return_value[1]
 
 
-def get_revision_list_to_branch(path_repository, branch):
+def get_revision_list_to_branch(path_repository: str, branch: str) -> list[str]:
     cmd = "git rev-list " + branch
     debug.verbose("execute : " + cmd)
     return_value = multiprocess.run_command(cmd, cwd=path_repository)
@@ -195,7 +208,7 @@ def get_revision_list_to_branch(path_repository, branch):
     return return_value[1].split("\n")
 
 
-def get_specific_commit_message(path_repository, sha_1):
+def get_specific_commit_message(path_repository: str, sha_1: str | None) -> str:
     if sha_1 is None or sha_1 == "":
         return ""
     cmd = "git log --format=%B -n 1 " + sha_1
@@ -205,7 +218,7 @@ def get_specific_commit_message(path_repository, sha_1):
     return return_value[1].split("\n")[0]
 
 
-def get_sha1_for_branch(path_repository, branch_name):
+def get_sha1_for_branch(path_repository: str, branch_name: str | None) -> str | None:
     if branch_name is None or branch_name == "":
         return None
     cmd = "git rev-parse " + branch_name
@@ -215,7 +228,7 @@ def get_sha1_for_branch(path_repository, branch_name):
     return return_value[1].split("\n")[0]
 
 
-def get_tags_current(path_repository):
+def get_tags_current(path_repository: str) -> list[str]:
     cmd = "git tag --points-at"
     debug.verbose("execute : " + cmd)
     return_value = multiprocess.run_command(cmd, cwd=path_repository)
@@ -223,7 +236,7 @@ def get_tags_current(path_repository):
     return [elem for elem in return_value[1].split("\n") if elem != ""]
 
 
-def get_tags(path_repository):
+def get_tags(path_repository: str) -> list[str]:
     cmd = "git tag"
     debug.verbose("execute : " + cmd)
     return_value = multiprocess.run_command(cmd, cwd=path_repository)
@@ -231,7 +244,7 @@ def get_tags(path_repository):
     return return_value[1].split("\n")
 
 
-def get_tags_remote(path_repository, remote_name):
+def get_tags_remote(path_repository: str, remote_name: str | None) -> list[str]:
     cmd = "git ls-remote --tags"
     if remote_name is not None and remote_name != "":
         cmd += " " + remote_name
@@ -260,7 +273,7 @@ def get_tags_remote(path_repository, remote_name):
     return out
 
 
-def get_tracking_branch(path_repository, remote_name, select_branch):
+def get_tracking_branch(path_repository: str, remote_name: str | None, select_branch: str) -> str | None:
     # get tracking branch
     if remote_name == "" or remote_name is None:
         return get_current_tracking_branch(path_repository)
@@ -272,7 +285,9 @@ def get_tracking_branch(path_repository, remote_name, select_branch):
     return remote_name + "/" + select_branch
 
 
-def merge_branch_on_master(path_repository, branch_name, merge_force=True, branch_destination="master"):
+def merge_branch_on_master(
+    path_repository: str, branch_name: str, merge_force: bool = True, branch_destination: str = "master"
+) -> multiprocess.CommandResult:
     if branch_name is None or branch_name == "":
         raise ValueError("Missing branch name")
     cmd = "git merge "
@@ -297,7 +312,7 @@ def call_island_release_script(path_repository: str) -> bool:
     return True
 
 
-def add_all(path_repository):
+def add_all(path_repository: str) -> multiprocess.CommandResult:
     cmd = "git add -u"
     debug.verbose("execute : " + cmd)
     return_value = multiprocess.run_command(cmd, cwd=path_repository)
@@ -305,7 +320,7 @@ def add_all(path_repository):
     return return_value
 
 
-def add_file(path_repository, file_path):
+def add_file(path_repository: str, file_path: str) -> multiprocess.CommandResult:
     if not file_path:
         raise OSError("Missing file_path name")
     cmd = "git add " + file_path
@@ -316,7 +331,7 @@ def add_file(path_repository, file_path):
     return return_value
 
 
-def commit_all(path_repository, comment):
+def commit_all(path_repository: str, comment: str) -> multiprocess.CommandResult:
     if not comment:
         raise OSError("Missing comment description")
     cmd = 'git commit -a --message "' + comment + '"'
@@ -327,7 +342,7 @@ def commit_all(path_repository, comment):
     return return_value
 
 
-def tag(path_repository, tag_name):
+def tag(path_repository: str, tag_name: str) -> multiprocess.CommandResult:
     if not tag_name:
         raise OSError("Missing tag name")
     tag_name = tag_name.replace(" ", "_")
@@ -339,7 +354,7 @@ def tag(path_repository, tag_name):
     return return_value
 
 
-def checkout(path_repository, branch_name):
+def checkout(path_repository: str, branch_name: str) -> multiprocess.CommandResult:
     if branch_name is None or branch_name == "":
         raise ValueError("Missing branch name")
     cmd = "git checkout " + branch_name
@@ -350,7 +365,7 @@ def checkout(path_repository, branch_name):
     return return_value
 
 
-def reset_hard(path_repository, destination):
+def reset_hard(path_repository: str, destination: str) -> multiprocess.CommandResult:
     if destination is None or destination == "":
         raise ValueError("Missing destination 'sha1' or 'branch name'")
     cmd = "git reset --hard " + destination
@@ -361,7 +376,7 @@ def reset_hard(path_repository, destination):
     return return_value
 
 
-def rebase(path_repository, destination):
+def rebase(path_repository: str, destination: str) -> multiprocess.CommandResult:
     if destination is None or destination == "":
         raise ValueError("Missing destination 'sha1' or 'branch name'")
     cmd = "git rebase " + destination
@@ -372,7 +387,7 @@ def rebase(path_repository, destination):
     return return_value
 
 
-def remote_has_branch(address, branch_name):
+def remote_has_branch(address: str, branch_name: str) -> bool:
     """Tell whether the repository at an address has a branch.
 
     :param address: Address of the repository on the server
@@ -384,7 +399,9 @@ def remote_has_branch(address, branch_name):
     return multiprocess.run_command(cmd)[0] == 0
 
 
-def clone(path_repository, address, branch_name=None, origin=None):
+def clone(
+    path_repository: str, address: str, branch_name: str | None = None, origin: str | None = None
+) -> multiprocess.CommandResult | Literal[False]:
     """Clone a repository, on a branch when the server has it, else on its default branch.
 
     :param path_repository: Folder of the clone
@@ -413,7 +430,7 @@ def clone(path_repository, address, branch_name=None, origin=None):
     return return_value
 
 
-def fetch(path_repository, remote_name, prune=True):
+def fetch(path_repository: str, remote_name: str, prune: bool = True) -> multiprocess.CommandResult:
     cmd = "git fetch " + remote_name
     if prune is True:
         cmd += " --prune"
@@ -423,7 +440,7 @@ def fetch(path_repository, remote_name, prune=True):
     return return_value
 
 
-def pull(path_repository, remote_name, prune=True):
+def pull(path_repository: str, remote_name: str, prune: bool = True) -> multiprocess.CommandResult:
     if remote_name is None or remote_name == "":
         raise ValueError("Missing remote_name")
     cmd = "git pull " + remote_name
@@ -435,7 +452,7 @@ def pull(path_repository, remote_name, prune=True):
     return return_value
 
 
-def push(path_repository, remote_name, elements):
+def push(path_repository: str, remote_name: str, elements: list[str]) -> multiprocess.CommandResult:
     if remote_name is None or remote_name == "":
         raise ValueError("Missing remote_name")
     if len(elements) == 0:
@@ -449,17 +466,20 @@ def push(path_repository, remote_name, elements):
     return return_value
 
 
-def submodule_sync(path_repository, remote_name):
+def submodule_sync(path_repository: str, remote_name: str) -> None:
     cmd = "git submodule sync"
     debug.verbose("execute : " + cmd)
     return_value = multiprocess.run_command(cmd, cwd=path_repository)
     multiprocess.generic_display_error(return_value, "submodule_sync")
 
 
-def get_forward(path_repository, branch_name):
+def get_forward(path_repository: str, branch_name: str) -> int:
     if branch_name is None or branch_name == "":
         raise ValueError("Missing branch_name")
     select_branch = get_current_branch(path_repository)
+    if select_branch is None:
+        # no commit at all
+        return 0
     # get tracking branch
     ret_current_branch_sha1 = get_revision_list_to_branch(path_repository, select_branch)
     ret_track_branch_sha1 = get_revision_list_to_branch(path_repository, branch_name)
@@ -471,14 +491,17 @@ def get_forward(path_repository, branch_name):
     return forward_count
 
 
-def is_forward(path_repository, branch_name):
+def is_forward(path_repository: str, branch_name: str) -> bool:
     return get_forward(path_repository, branch_name) != 0
 
 
-def get_behind(path_repository, branch_name):
+def get_behind(path_repository: str, branch_name: str) -> int:
     if branch_name is None or branch_name == "":
         raise ValueError("Missing branch_name")
     select_branch = get_current_branch(path_repository)
+    if select_branch is None:
+        # no commit at all
+        return 0
     # get tracking branch
     ret_current_branch_sha1 = get_revision_list_to_branch(path_repository, select_branch)
     ret_track_branch_sha1 = get_revision_list_to_branch(path_repository, branch_name)
@@ -490,5 +513,5 @@ def get_behind(path_repository, branch_name):
     return behind_count
 
 
-def is_behind(path_repository, branch_name):
+def is_behind(path_repository: str, branch_name: str) -> bool:
     return get_behind(path_repository, branch_name) != 0
