@@ -9,17 +9,16 @@
 
 import copy
 import os
-from typing import List, Dict, Any
-
-# import pyyaml module
-import yaml
-from yaml.loader import SafeLoader
-
+from typing import Any, Dict, List
 
 from lxml import etree
 
 # Local import
 from realog import debug
+
+# import pyyaml module
+import yaml
+from yaml.loader import SafeLoader
 
 from . import (
     commands,

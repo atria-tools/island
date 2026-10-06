@@ -8,8 +8,8 @@
 """
 
 import os
-import shlex
 from pathlib import Path
+import shlex
 
 # Local import
 from realog import debug

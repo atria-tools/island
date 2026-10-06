@@ -9,7 +9,8 @@
 
 import os
 import sys
-from typing import List, Any, Optional
+from typing import Any, List, Optional
+
 import death.Arguments as arguments
 
 # Local import
