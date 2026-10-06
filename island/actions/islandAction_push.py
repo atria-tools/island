@@ -7,6 +7,8 @@
 
 import os
 
+from death.ArgElement import ArgElement
+from death.Arguments import Arguments
 from realog import debug
 
 from island import (
@@ -18,15 +20,15 @@ from island import (
 )
 
 
-def help():
+def help() -> str:
     return "Push all repository to the upper server"
 
 
-def add_specific_arguments(_my_args, _section):
+def add_specific_arguments(_my_args: Arguments, _section: str) -> None:
     _my_args.add("r", "remote", haveParam=True, desc="Name of the remote server")
 
 
-def execute(_arguments):
+def execute(_arguments: list[ArgElement]) -> int | None:
     argument_remote_name = ""
     for elem in _arguments:
         if elem.get_option_name() == "remote":
@@ -93,3 +95,4 @@ def execute(_arguments):
         cmd += " " + select_branch + ":" + select_branch
         debug.info("execute : " + cmd)
         multiprocess.run_command_direct(cmd, cwd=git_repo_path)
+    return None

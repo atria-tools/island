@@ -10,6 +10,7 @@ import sys
 from typing import Any
 
 import death.Arguments as arguments
+from death.Arguments import Arguments
 
 # Local import
 from realog import debug
@@ -22,7 +23,7 @@ list_actions: list[dict[str, str]] = []
 __base_action_name = env.get_system_base_name() + "Action_"
 
 
-def init(files) -> None:
+def init(files: list[str]) -> None:
     global list_actions
     debug.verbose(f"List of action for island: {len(files)}")
     for elem_path in files:
@@ -81,11 +82,11 @@ def get_action_help(action_name: str) -> str:
     :param action_name: Name of the action
     :return: The first line of description
     """
-    value = get_function_value(action_name, "help", "---")
+    value = str(get_function_value(action_name, "help", "---"))
     return value.split("\n")[0]
 
 
-def usage(arguments, action_name) -> None:
+def usage(arguments: Arguments, action_name: str) -> None:
     # generic argument displayed for specific action:
     # print("Specific argument for the command: '" + action_name + "'" )
     value = get_function_value(action_name, "help")
@@ -100,7 +101,7 @@ def usage(arguments, action_name) -> None:
     exit(0)
 
 
-def execute(action_name, argument_start_id):
+def execute(action_name: str, argument_start_id: int) -> int:
     global list_actions
     # TODO: Move here the check if action is available
 
@@ -132,7 +133,7 @@ def execute(action_name, argument_start_id):
         debug.info("execute: " + action_name)
         for elem in my_under_args:
             debug.debug("    " + str(elem.get_option_name()) + "='" + str(elem.get_arg()) + "'")
-        ret = the_action.execute(my_under_args)
+        ret: int | None = the_action.execute(my_under_args)
         if ret is None:
             return 0
         if ret < 0:

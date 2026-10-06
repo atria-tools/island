@@ -5,6 +5,8 @@
 @license MPL v2.0 (see license file)
 """
 
+from death.ArgElement import ArgElement
+from death.Arguments import Arguments
 from realog import debug
 
 from island import (
@@ -14,15 +16,15 @@ from island import (
 )
 
 
-def help():
+def help() -> str:
     return "Syncronize all the repository referenced"
 
 
-def add_specific_arguments(my_args, section):
+def add_specific_arguments(my_args: Arguments, section: str) -> None:
     pass
 
 
-def execute(_arguments):
+def execute(_arguments: list[ArgElement]) -> int | None:
     for elem in _arguments:
         debug.error("pull Wrong argument: '" + elem.get_option_name() + "' '" + elem.get_arg() + "'")
 
@@ -35,3 +37,4 @@ def execute(_arguments):
         commands.fetch(env.get_island_path_manifest(), "origin")
     else:
         commands.pull(env.get_island_path_manifest(), "origin")
+    return None

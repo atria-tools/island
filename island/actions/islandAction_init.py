@@ -5,6 +5,8 @@
 @license MPL v2.0 (see license file)
 """
 
+from death.ArgElement import ArgElement
+from death.Arguments import Arguments
 from realog import debug
 
 from island import (
@@ -16,11 +18,11 @@ from island import (
 )
 
 
-def help():
+def help() -> str:
     return "Init a island repository (need 'fetch' after)"
 
 
-def add_specific_arguments(my_args, section):
+def add_specific_arguments(my_args: Arguments, section: str) -> None:
     my_args.add("b", "branch", haveParam=True, desc="Branch of the manifest (default: the default branch of the server)")
     my_args.add("m", "manifest", haveParam=True, desc="Name of the manifest")
     my_args.add("k", "ssh-key", haveParam=True, desc="Ssh private key used to access on the git servers (set in all the repository)")
@@ -28,7 +30,7 @@ def add_specific_arguments(my_args, section):
     my_args.add("e", "user-email", haveParam=True, desc="Git user email (set in all the repository)")
 
 
-def execute(_arguments):
+def execute(_arguments: list[ArgElement]) -> int | None:
     if len(_arguments) == 0:
         debug.error("Missing argument to execute the current action ...")
 

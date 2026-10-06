@@ -5,6 +5,8 @@
 @license MPL v2.0 (see license file)
 """
 
+from death.ArgElement import ArgElement
+from death.Arguments import Arguments
 from realog import debug
 
 from island import (
@@ -14,20 +16,20 @@ from island import (
 )
 
 
-def help():
+def help() -> str:
     return "Add a 'volatile' repository with a local path (this element is update as an element in the manifest but is not managed by the manifest)"
 
 
-def add_specific_arguments(my_args, section):
+def add_specific_arguments(my_args: Arguments, section: str) -> None:
     my_args.add_arg("git repository", optionnal=False, desc="Git repositoty to download")
     my_args.add_arg("path", optionnal=False, desc="Path to install the new git repository")
 
 
-def help_example():
+def help_example() -> str:
     return "island volatile-add https://git.heeroyui.org/atria-tools/island.git git"
 
 
-def execute(_arguments):
+def execute(_arguments: list[ArgElement]) -> int | None:
     if len(_arguments) == 0:
         debug.error("Missing argument to execute the current action [git repository] [path]")
 

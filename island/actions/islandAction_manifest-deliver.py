@@ -7,6 +7,8 @@
 
 import os
 
+from death.ArgElement import ArgElement
+from death.Arguments import Arguments
 from realog import debug
 
 from island import (
@@ -19,18 +21,18 @@ from island import (
 from island.actions import status
 
 
-def help():
+def help() -> str:
     return "Deliver the manifest (merge develop vertion and create a branch with the specific current tags)"
 
 
-def add_specific_arguments(my_args, section):
+def add_specific_arguments(my_args: Arguments, section: str) -> None:
     pass
 
 
 # must be on the branch we choice to merge ...
 
 
-def execute(_arguments):
+def execute(_arguments: list[ArgElement]) -> int | None:
     argument_remote_name = ""
     for elem in _arguments:
         debug.error("pull Wrong argument: '" + elem.get_option_name() + "' '" + elem.get_arg() + "'")
@@ -116,9 +118,9 @@ def execute(_arguments):
     commands.tag(git_repo_path, "v" + tools.version_to_string(new_version_description))
     commands.checkout(git_repo_path, source_branch)
     commands.reset_hard(git_repo_path, destination_branch)
-    new_version_description.append("dev")
+    dev_version: list[int | str] = [*new_version_description, "dev"]
     manifest.tag_clear(file_source_manifest)
-    tools.file_write_data(version_path_file, tools.version_to_string(new_version_description))
+    tools.file_write_data(version_path_file, tools.version_to_string(dev_version))
     commands.add_file(git_repo_path, version_path_file)
     commands.commit_all(git_repo_path, status.default_update_message)
     commands.checkout(git_repo_path, destination_branch)
@@ -127,7 +129,7 @@ def execute(_arguments):
     return None
 
 
-def check_all_tags(mani):
+def check_all_tags(mani: manifest.Manifest) -> list[dict[str, str]] | None:
     all_project = mani.get_all_configs()
     debug.info("Check all: " + str(len(all_project)) + " projects have a current tag ...")
     check_have_error = False

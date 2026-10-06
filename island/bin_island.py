@@ -50,7 +50,7 @@ def init() -> None:
     is_init = True
 
 
-def usage(my_args) -> None:
+def usage(my_args: arguments.Arguments) -> None:
     """Display the help of Island."""
     color = debug.get_color_set()
     # Generic argument displayed :
@@ -82,7 +82,7 @@ def check_boolean(value: bool | str) -> bool:
     return bool(value == "" or value == "1" or value == "true" or value == "True" or value is True)
 
 
-def parse_generic_arg(my_args, argument: arg_element.ArgElement, active: bool) -> bool:
+def parse_generic_arg(my_args: arguments.Arguments, argument: arg_element.ArgElement, active: bool) -> bool:
     """Keep global args that have no dependence with the mode.
 
     :param argument: _description_

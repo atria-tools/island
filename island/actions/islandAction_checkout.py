@@ -7,6 +7,8 @@
 
 import os
 
+from death.ArgElement import ArgElement
+from death.Arguments import Arguments
 from realog import debug
 
 from island import (
@@ -22,7 +24,7 @@ def help() -> str:
     return "Checkout a specific branch in all repository"
 
 
-def add_specific_arguments(my_args, section):
+def add_specific_arguments(my_args: Arguments, section: str) -> None:
     my_args.add("r", "remote", haveParam=True, desc="Name of the remote server")
     my_args.add_arg(
         "branch",
@@ -31,7 +33,7 @@ def add_specific_arguments(my_args, section):
     )
 
 
-def execute(_arguments):
+def execute(_arguments: list[ArgElement]) -> int | None:
     argument_remote_name = ""
     branch_to_checkout = ""
     for elem in _arguments:

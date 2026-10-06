@@ -7,6 +7,8 @@
 
 import os
 
+from death.ArgElement import ArgElement
+from death.Arguments import Arguments
 from realog import debug
 
 from island import (
@@ -19,11 +21,11 @@ from island import (
 from island.actions import update_links
 
 
-def help():
+def help() -> str:
     return "Update all the branche to the trackin branch in local (no remote access)"
 
 
-def add_specific_arguments(my_args, section):
+def add_specific_arguments(my_args: Arguments, section: str) -> None:
     my_args.add(
         "r",
         "reset",
@@ -32,7 +34,7 @@ def add_specific_arguments(my_args, section):
     )
 
 
-def execute(_arguments):
+def execute(_arguments: list[ArgElement]) -> int | None:
     reset_instead_of_rebase = False
     for elem in _arguments:
         if elem.get_option_name() == "rebase":

@@ -7,6 +7,8 @@
 
 import os
 
+from death.ArgElement import ArgElement
+from death.Arguments import Arguments
 from realog import debug
 
 from island import (
@@ -19,16 +21,16 @@ from island import (
 from island.actions import status
 
 
-def help():
+def help() -> str:
     return "Deliver the current repository (develop & master MUST be up to date and you MUST be on master)"
 
 
-def add_specific_arguments(_my_args, _section):
+def add_specific_arguments(_my_args: Arguments, _section: str) -> None:
     _my_args.add("f", "from", haveParam=True, desc="source branche to deliver")
     _my_args.add("t", "to", haveParam=True, desc="desticantion branche of the deliver")
 
 
-def execute(_arguments):
+def execute(_arguments: list[ArgElement]) -> int | None:
     argument_from = None
     argument_to = None
     for elem in _arguments:
@@ -79,7 +81,7 @@ def execute(_arguments):
             deliver_available = False
     if deliver_available is False:
         debug.error("deliver-ckeck: Correct the warning to validate the Merge")
-        return
+        return None
     debug.info("deliver-ckeck: ==> All is OK")
     for id_element, elem in enumerate(all_project, start=1):
         base_display = tools.get_list_base_display(id_element, len(all_project), elem)
@@ -135,12 +137,12 @@ def execute(_arguments):
         commands.checkout(git_repo_path, source_branch)
         commands.reset_hard(git_repo_path, destination_branch)
         # add a 1 at the version (development mode is to prevent the system to min consider snapshot as official versions)
-        new_version_description[2] += 1
-        new_version_description.append("dev")
-        tools.file_write_data(version_path_file, tools.version_to_string(new_version_description) + "\n")
+        next_version: list[int | str] = [new_version_description[0], new_version_description[1], new_version_description[2] + 1, "dev"]
+        tools.file_write_data(version_path_file, tools.version_to_string(next_version) + "\n")
         if commands.call_island_release_script(git_repo_path):
             commands.add_all(git_repo_path)
         else:
             commands.add_file(git_repo_path, version_path_file)
         commands.commit_all(git_repo_path, status.default_update_message)
         commands.checkout(git_repo_path, destination_branch)
+    return None

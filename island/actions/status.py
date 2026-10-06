@@ -15,6 +15,7 @@ from island import (
     multiprocess,
     tools,
 )
+from island.repo_config import RepoConfig
 
 
 default_behind_message = "[DEV] update dev tag version"
@@ -24,7 +25,7 @@ default_update_message = "[VERSION] update dev tag version"
 base_name_of_a_tagged_branch = "branch_on_tag_"
 
 
-def display_status(elem, argument_remote_name, argument_display_tag, id_element, base_display):
+def display_status(elem: RepoConfig, argument_remote_name: str, argument_display_tag: bool, id_element: int, base_display: str) -> int | None:
     volatile = ""
     if elem.volatile is True:
         volatile = " (volatile)"
@@ -116,13 +117,13 @@ def display_status(elem, argument_remote_name, argument_display_tag, id_element,
 
 
 def deliver_check(
-    elem,
-    argument_remote_name,
-    id_element,
-    base_display,
-    source_branch,
-    destination_branch,
-):
+    elem: RepoConfig,
+    argument_remote_name: str,
+    id_element: int,
+    base_display: str,
+    source_branch: str,
+    destination_branch: str,
+) -> bool:
     deliver_available = True
     debug.debug("deliver-ckeck: " + base_display)
     debug.debug("    ==> check repo exist")
@@ -141,6 +142,9 @@ def deliver_check(
     debug.debug("    ==> check current branch is '" + source_branch + "'")
     # check if we are on source_branch
     select_branch = commands.get_current_branch(git_repo_path)
+    if select_branch is None:
+        debug.warning("deliver-ckeck: " + base_display + " ==> MUST have a commit")
+        return False
     if select_branch != source_branch:
         debug.warning("deliver-ckeck: " + base_display + " ==> MUST be on source branch: '" + source_branch + "' and is: '" + select_branch + "'")
         return False
@@ -159,12 +163,13 @@ def deliver_check(
     # check if we are on "master"
     select_branch = commands.get_current_branch(git_repo_path)
     if select_branch != destination_branch:
-        debug.warning("deliver-ckeck: " + base_display + " ==> Can not checkout branch: '" + destination_branch + "' and is: '" + select_branch + "'")
+        debug.warning(
+            "deliver-ckeck: " + base_display + " ==> Can not checkout branch: '" + destination_branch + "' and is: '" + str(select_branch) + "'"
+        )
         deliver_available = False
     debug.debug("    ==> check have tracking branch")
     # check if we have a remote traking branch
-    tracking_remote_branch = commands.get_tracking_branch(git_repo_path, argument_remote_name, select_branch)
-    if tracking_remote_branch is None:
+    if select_branch is None or commands.get_tracking_branch(git_repo_path, argument_remote_name, select_branch) is None:
         debug.warning("deliver-ckeck: " + base_display + " ==> MUST have a remote tracking branch")
         deliver_available = False
 
@@ -186,7 +191,7 @@ def deliver_check(
     return deliver_available
 
 
-def checkout_elem(elem, argument_remote_name, branch_to_checkout, base_display):
+def checkout_elem(elem: RepoConfig, argument_remote_name: str, branch_to_checkout: str, base_display: str) -> bool:
     debug.verbose("checkout : " + base_display)
     git_repo_path = os.path.join(env.get_island_root_path(), elem.path)
     if os.path.exists(git_repo_path) is False:
@@ -276,10 +281,10 @@ def checkout_elem(elem, argument_remote_name, branch_to_checkout, base_display):
     return True
 
 
-def get_current_version_repo(git_repo_path):
+def get_current_version_repo(git_repo_path: str) -> tuple[list[int | str] | None, bool]:
     version_path_file = os.path.join(git_repo_path, "version.txt")
     add_in_version_management = False
-    version_description = None
+    version_description: list[int | str] | None = None
     if os.path.exists(version_path_file) is False:
         debug.info("deliver:     ==> No 'version.txt' file ==> not manage release version....")
         # Action to do:
@@ -298,22 +303,22 @@ def get_current_version_repo(git_repo_path):
             add_in_version_management = True
         elif input1 == "2":
             debug.info("Continue Not managing for this repository")
-            return (None, None)
+            return (None, False)
         else:
             debug.warning("An error occured for this repository")
-            return (None, None)
+            return (None, False)
     else:
         version_description = tools.version_string_to_list(tools.file_read_data(version_path_file))
     return (version_description, add_in_version_management)
 
 
 def create_new_version_repo(
-    git_repo_path,
-    version_description,
-    add_in_version_management,
-    source_branch,
-    destination_branch,
-):
+    git_repo_path: str,
+    version_description: list[int | str],
+    add_in_version_management: bool,
+    source_branch: str,
+    destination_branch: str,
+) -> list[int] | None:
     # get tracking branch
     ret_destination_branch_sha1 = commands.get_revision_list_to_branch(git_repo_path, destination_branch)
     ret_source_branch_sha1 = commands.get_revision_list_to_branch(git_repo_path, source_branch)
@@ -358,42 +363,30 @@ def create_new_version_repo(
         else:
             debug.info("!!! Must select in range " + str(["1", "2", "3", "4"]))
     # limit and force at 3 the nuber of variables
-    version_description_tmp = version_description
-    version_description = []
-    if len(version_description_tmp) >= 1:
-        version_description.append(version_description_tmp[0])
-    else:
-        version_description.append(0)
-    if len(version_description_tmp) >= 2:
-        version_description.append(version_description_tmp[1])
-    else:
-        version_description.append(0)
-    if len(version_description_tmp) >= 3:
-        version_description.append(version_description_tmp[2])
-    else:
-        version_description.append(0)
-    debug.info("update version: curent: " + str(version_description))
+    numbers = [elem for elem in version_description if isinstance(elem, int)][:3]
+    new_version = numbers + [0] * (3 - len(numbers))
+    debug.info("update version: curent: " + str(new_version))
     # increment the version
     if input1 == "1":
-        version_description[0] += 1
-        version_description[1] = 0
-        version_description[2] = 0
+        new_version[0] += 1
+        new_version[1] = 0
+        new_version[2] = 0
     elif input1 == "2":
-        version_description[1] += 1
-        version_description[2] = 0
+        new_version[1] += 1
+        new_version[2] = 0
     elif input1 == "3":
-        version_description[2] += 1
+        new_version[2] += 1
     elif input1 == "4":
         debug.info("No release for this repository")
         return None
     else:
         debug.warning("An error occured for this repository")
         return None
-    debug.info("update version: curent: " + str(version_description))
-    return version_description
+    debug.info("update version: curent: " + str(new_version))
+    return new_version
 
 
-def deliver_push(elem, argument_remote_name, destination_branch, source_branch, base_display):
+def deliver_push(elem: RepoConfig, argument_remote_name: str, destination_branch: str, source_branch: str, base_display: str) -> None:
     # Check the repo exist
     git_repo_path = os.path.join(env.get_island_root_path(), elem.path)
     if os.path.exists(git_repo_path) is False:

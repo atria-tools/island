@@ -7,6 +7,8 @@
 
 import os
 
+from death.ArgElement import ArgElement
+from death.Arguments import Arguments
 from realog import debug
 
 from island import (
@@ -18,15 +20,15 @@ from island import (
 )
 
 
-def help():
+def help() -> str:
     return "Fecth all the repository (get all modification on the server)"
 
 
-def add_specific_arguments(my_args, section):
+def add_specific_arguments(my_args: Arguments, section: str) -> None:
     my_args.add("r", "remote", haveParam=True, desc="Name of the remote server")
 
 
-def execute(_arguments):
+def execute(_arguments: list[ArgElement]) -> int | None:
     argument_remote_name = ""
     for elem in _arguments:
         if elem.get_option_name() == "remote":
@@ -71,3 +73,4 @@ def execute(_arguments):
         debug.verbose("Fetching project: ")
 
         commands.fetch(git_repo_path, argument_remote_name)
+    return None

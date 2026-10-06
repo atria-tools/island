@@ -5,6 +5,8 @@
 @license MPL v2.0 (see license file)
 """
 
+from death.ArgElement import ArgElement
+from death.Arguments import Arguments
 from realog import debug
 
 from island import (
@@ -15,20 +17,20 @@ from island import (
 )
 
 
-def help():
+def help() -> str:
     return "Select the ssh key used to access on the git servers (set in all the repository), without argument display the current one"
 
 
-def add_specific_arguments(my_args, section):
+def add_specific_arguments(my_args: Arguments, section: str) -> None:
     my_args.add("r", "remove", haveParam=False, desc="Remove the ssh key (use the default one of the user)")
     my_args.add_arg("key", optionnal=True, desc="Path of the ssh private key")
 
 
-def help_example():
+def help_example() -> str:
     return "island ssh-key ~/.ssh/id_ed25519_other"
 
 
-def execute(_arguments):
+def execute(_arguments: list[ArgElement]) -> int | None:
     ssh_key = ""
     remove = False
     for elem in _arguments:
@@ -52,7 +54,7 @@ def execute(_arguments):
             debug.info("No ssh key selected (use the default one of the user)")
         else:
             debug.info("ssh key: '" + previous_ssh_key + "'")
-        return
+        return None
 
     previous_config = commands.get_repository_config(conf)
     conf.set_ssh_key(ssh_key)
@@ -63,4 +65,4 @@ def execute(_arguments):
         debug.info("Remove the ssh key in " + str(count) + " repository")
     else:
         debug.info("Set the ssh key '" + ssh_key + "' in " + str(count) + " repository")
-    return
+    return None

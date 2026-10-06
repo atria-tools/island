@@ -5,6 +5,7 @@
 @license MPL v2.0 (see license file)
 """
 
+from collections.abc import Sequence
 import fnmatch
 import os
 import time
@@ -54,7 +55,7 @@ def file_read_data(path: str) -> str:
         return file.read()
 
 
-def version_to_string(version: list[int | str]) -> str:
+def version_to_string(version: Sequence[int | str]) -> str:
     version_id = ""
     for elem in version:
         if len(version_id) != 0:

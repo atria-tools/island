@@ -7,6 +7,8 @@
 
 import os
 
+from death.ArgElement import ArgElement
+from death.Arguments import Arguments
 from realog import debug
 
 from island import (
@@ -19,11 +21,11 @@ from island import (
 from island.actions import status
 
 
-def help():
+def help() -> str:
     return "Get the status of all the repositories"
 
 
-def add_specific_arguments(_my_args, _section):
+def add_specific_arguments(_my_args: Arguments, _section: str) -> None:
     _my_args.add("r", "remote", haveParam=True, desc="Name of the remote server")
     _my_args.add(
         "t",
@@ -33,7 +35,7 @@ def add_specific_arguments(_my_args, _section):
     )
 
 
-def execute(_arguments):
+def execute(_arguments: list[ArgElement]) -> int | None:
     argument_remote_name = ""
     argument_display_tag = False
     for elem in _arguments:

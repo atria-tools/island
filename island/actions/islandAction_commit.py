@@ -7,6 +7,8 @@
 
 import os
 
+from death.ArgElement import ArgElement
+from death.Arguments import Arguments
 from realog import debug
 
 from island import (
@@ -18,17 +20,17 @@ from island import (
 )
 
 
-def help():
+def help() -> str:
     return "Commit in all repository"
 
 
-def add_specific_arguments(my_args, section):
+def add_specific_arguments(my_args: Arguments, section: str) -> None:
     my_args.add("m", "message", haveParam=True, desc="Message to commit data")
     my_args.add("a", "all", desc="Commit all elements")
     my_args.add("", "amend", desc="Ammend data at the previous commit")
 
 
-def execute(_arguments):
+def execute(_arguments: list[ArgElement]) -> int | None:
     argument_message = ""
     argument_amend = ""
     argument_all = ""
@@ -74,3 +76,4 @@ def execute(_arguments):
         cmd = "git commit " + argument_amend + argument_all + argument_message
         debug.debug("execute : " + cmd)
         multiprocess.run_command_direct(cmd, cwd=git_repo_path)
+    return None

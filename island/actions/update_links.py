@@ -10,10 +10,12 @@ import os
 from realog import debug
 
 from island import env, tools
+from island.config import Config
+from island.manifest import Manifest
 
 
 # Update the links:
-def update(configuration, mani, type_call):
+def update(configuration: Config, mani: Manifest, type_call: str) -> bool:
     """Remove the links of the last sync, then create those of the manifest.
 
     :return: True when a link could not be removed or created

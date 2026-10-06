@@ -7,6 +7,7 @@
 
 import os
 
+from death.ArgElement import ArgElement
 from realog import debug
 
 from island import (
@@ -18,15 +19,15 @@ from island import (
 )
 
 
-def help():
+def help() -> str:
     return "Write the command you want to be executed in every repository"
 
 
-def have_unknow_argument():
+def have_unknow_argument() -> bool:
     return True
 
 
-def execute(_arguments):
+def execute(_arguments: list[ArgElement]) -> int | None:
     cmd = ""
     for elem in _arguments:
         debug.info("Get data element: " + str(elem.get_arg()))
@@ -63,3 +64,4 @@ def execute(_arguments):
             debug.info("err=" + ret[2])
         else:
             debug.info("Execution ERROR")
+    return None

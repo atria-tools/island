@@ -7,6 +7,8 @@
 
 import os
 
+from death.ArgElement import ArgElement
+from death.Arguments import Arguments
 from realog import debug
 
 from island import (
@@ -20,15 +22,15 @@ from island import (
 from island.actions import update_links
 
 
-def help():
+def help() -> str:
     return "Syncronize all the repository referenced"
 
 
-def help_example():
+def help_example() -> str:
     return "island init https://git.heeroyui.org/atria-tools/island.git"
 
 
-def add_specific_arguments(my_args, section):
+def add_specific_arguments(my_args: Arguments, section: str) -> None:
     my_args.add(
         "d",
         "download",
@@ -37,7 +39,7 @@ def add_specific_arguments(my_args, section):
     )
 
 
-def execute(_arguments):
+def execute(_arguments: list[ArgElement]) -> int | None:
     just_download = False
     for elem in _arguments:
         if elem.get_option_name() == "download":
@@ -97,8 +99,7 @@ def execute(_arguments):
                 branch_name=elem.branch,
                 origin=elem.select_remote["name"],
             )
-            if ret[0] != 0:
-                # all is good, ready to get the system work corectly
+            if ret is False or ret.returncode != 0:
                 debug.info("'" + str(ret) + "'")
                 debug.error("Clone repository does not work ... ")
                 continue

@@ -5,6 +5,8 @@
 @license MPL v2.0 (see license file)
 """
 
+from death.ArgElement import ArgElement
+from death.Arguments import Arguments
 from realog import debug
 
 from island import (
@@ -15,21 +17,21 @@ from island import (
 )
 
 
-def help():
+def help() -> str:
     return "Select the git user name and email (set in all the repository), without argument display the current ones"
 
 
-def add_specific_arguments(my_args, section):
+def add_specific_arguments(my_args: Arguments, section: str) -> None:
     my_args.add("n", "name", haveParam=True, desc="Git user name")
     my_args.add("e", "email", haveParam=True, desc="Git user email")
     my_args.add("r", "remove", haveParam=False, desc="Remove the git user name and email (use the default ones of the user)")
 
 
-def help_example():
+def help_example() -> str:
     return 'island user --name "My Name" --email my.name@example.com'
 
 
-def execute(_arguments):
+def execute(_arguments: list[ArgElement]) -> int | None:
     user_name = ""
     user_email = ""
     remove = False
@@ -53,7 +55,7 @@ def execute(_arguments):
     if remove is False and user_name == "" and user_email == "":
         debug.info("user name:  '" + conf.get_user_name() + "'")
         debug.info("user email: '" + conf.get_user_email() + "'")
-        return
+        return None
 
     previous_config = commands.get_repository_config(conf)
     if remove is True or user_name != "":
@@ -67,4 +69,4 @@ def execute(_arguments):
         debug.info("Remove the git user in " + str(count) + " repository")
     else:
         debug.info("Set the git user '" + conf.get_user_name() + "' <" + conf.get_user_email() + "> in " + str(count) + " repository")
-    return
+    return None

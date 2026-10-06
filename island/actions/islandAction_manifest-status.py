@@ -5,6 +5,8 @@
 @license MPL v2.0 (see license file)
 """
 
+from death.ArgElement import ArgElement
+from death.Arguments import Arguments
 from realog import debug
 
 from island import (
@@ -16,11 +18,11 @@ from island import (
 from island.actions import status
 
 
-def help():
+def help() -> str:
     return "Display status spécifically of the manifest"
 
 
-def add_specific_arguments(_my_args, _section):
+def add_specific_arguments(_my_args: Arguments, _section: str) -> None:
     _my_args.add(
         "t",
         "tags",
@@ -29,7 +31,7 @@ def add_specific_arguments(_my_args, _section):
     )
 
 
-def execute(_arguments):
+def execute(_arguments: list[ArgElement]) -> int | None:
     argument_remote_name = ""
     argument_display_tag = False
     for elem in _arguments:

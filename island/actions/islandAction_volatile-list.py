@@ -5,6 +5,7 @@
 @license MPL v2.0 (see license file)
 """
 
+from death.ArgElement import ArgElement
 from realog import debug
 
 from island import (
@@ -17,7 +18,7 @@ def help() -> str:
     return "List all the volatile repository"
 
 
-def execute(_arguments):
+def execute(_arguments: list[ArgElement]) -> int | None:
     for elem in _arguments:
         debug.error("Wrong argument: '" + elem.get_option_name() + "' '" + elem.get_arg() + "'")
 
@@ -30,4 +31,4 @@ def execute(_arguments):
     for elem in volatiles:
         debug.info("\t" + elem["path"] + "\r\t\t\t\t" + elem["git_address"])
 
-    return
+    return None

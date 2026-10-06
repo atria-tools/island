@@ -7,6 +7,8 @@
 
 import os
 
+from death.ArgElement import ArgElement
+from death.Arguments import Arguments
 from realog import debug
 
 from island import (
@@ -18,15 +20,15 @@ from island import (
 from island.actions import status
 
 
-def help():
+def help() -> str:
     return "Push a delover (develop & master & tag) on the remotre server"
 
 
-def add_specific_arguments(my_args, section):
+def add_specific_arguments(my_args: Arguments, section: str) -> None:
     my_args.add("r", "remote", haveParam=True, desc="Name of the remote server")
 
 
-def execute(_arguments):
+def execute(_arguments: list[ArgElement]) -> int | None:
     argument_remote_name = ""
     for elem in _arguments:
         if elem.get_option_name() == "remote":
@@ -58,3 +60,4 @@ def execute(_arguments):
         debug.info("deliver-push: " + base_display)
         tools.wait_for_server_if_needed()
         status.deliver_push(elem, argument_remote_name, destination_branch, source_branch, base_display)
+    return None

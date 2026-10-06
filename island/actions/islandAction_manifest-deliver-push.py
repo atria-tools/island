@@ -7,6 +7,8 @@
 
 import os
 
+from death.ArgElement import ArgElement
+from death.Arguments import Arguments
 from realog import debug
 
 from island import (
@@ -18,15 +20,15 @@ from island import (
 from island.actions import status
 
 
-def help():
+def help() -> str:
     return "Push the manifest delivery"
 
 
-def add_specific_arguments(my_args, section):
+def add_specific_arguments(my_args: Arguments, section: str) -> None:
     pass
 
 
-def execute(_arguments):
+def execute(_arguments: list[ArgElement]) -> int | None:
     for elem in _arguments:
         debug.error("pull Wrong argument: '" + elem.get_option_name() + "' '" + elem.get_arg() + "'")
 
@@ -50,3 +52,4 @@ def execute(_arguments):
     source_branch = mani.deliver_develop
 
     status.deliver_push(elem, "origin", destination_branch, source_branch, base_display)
+    return None

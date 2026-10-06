@@ -5,6 +5,8 @@
 @license MPL v2.0 (see license file)
 """
 
+from death.ArgElement import ArgElement
+from death.Arguments import Arguments
 from realog import debug
 
 from island import (
@@ -16,11 +18,11 @@ from island import (
 from island.actions import status
 
 
-def help():
+def help() -> str:
     return "Manifest Ckeckout a specific branch of repository"
 
 
-def add_specific_arguments(my_args, section):
+def add_specific_arguments(my_args: Arguments, section: str) -> None:
     my_args.add("r", "remote", haveParam=True, desc="Name of the remote server")
     my_args.add_arg(
         "branch",
@@ -29,7 +31,7 @@ def add_specific_arguments(my_args, section):
     )
 
 
-def execute(_arguments):
+def execute(_arguments: list[ArgElement]) -> int | None:
     argument_remote_name = ""
     branch_to_checkout = ""
     for elem in _arguments:
