@@ -1,5 +1,5 @@
-Lutin
-=====
+Island
+======
 
 `island` is a generic source downloader and synchronizer is a FREE software tool.
 
@@ -38,6 +38,10 @@ Requirements: ``Python >= 2.7`` and ``pip``
 Just run:
 
   pip install island
+
+or with pipx run:
+
+  pipx install island
 
 Install pip on debian/ubuntu:
 
@@ -101,8 +105,13 @@ Create your development environment:
 python -m venv .venv
 # Activate the python virtual environment
 source .venv/bin/activate
-# Install the package in editable mode (dynamic use of files) 
+# Install the package in editable mode (dynamic use of files)
 pip install --editable .
+```
+
+or with pipx:
+```bash
+pipx install --editable .
 ```
 
 Run the application . ```island --help```
