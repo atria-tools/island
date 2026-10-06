@@ -9,8 +9,6 @@
 
 from realog import debug
 
-from . import env, tools
-
 
 class RepoConfig:
     def __init__(self):

@@ -7,19 +7,14 @@
 @license MPL v2.0 (see license file)
 """
 
-import errno
-import fnmatch
 import os
 import shlex
-import shutil
-import stat
 from pathlib import Path
 
 # Local import
 from realog import debug
 
 from . import (
-    env,
     multiprocess,
 )
 

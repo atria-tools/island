@@ -6,8 +6,6 @@
 @license MPL v2.0 (see license file)
 """
 
-import os
-
 from realog import debug
 
 from island import (
@@ -15,8 +13,6 @@ from island import (
     config,
     env,
     manifest,
-    multiprocess,
-    tools,
 )
 
 

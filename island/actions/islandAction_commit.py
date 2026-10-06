@@ -11,7 +11,6 @@ import os
 from realog import debug
 
 from island import (
-    commands,
     config,
     env,
     manifest,

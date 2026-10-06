@@ -7,7 +7,6 @@
 @license MPL v2.0 (see license file)
 """
 
-import json
 import copy
 import os
 from typing import List, Dict, Any

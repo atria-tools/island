@@ -7,8 +7,6 @@
 @license MPL v2.0 (see license file)
 """
 
-import copy
-import fnmatch
 import os
 import sys
 from typing import Union
@@ -23,7 +21,6 @@ from . import (
     commands,
     config,
     env,
-    host,
     tools,
 )
 
