@@ -185,3 +185,11 @@ def test_a_volatile_repository_is_listed_once_with_an_included_manifest(workspac
     run_island("volatile-add", SERVER + ":alpha.git", "volatile-alpha", cwd=workspace)
     lines = run_island("status", cwd=workspace).stdout.split("\n")
     assert len([line for line in lines if " : volatile-alpha" in line]) == 1
+
+
+def test_sync_local_skips_a_project_without_tracking_branch(workspace: Path) -> None:
+    git("checkout", "--quiet", "-b", "local-only", cwd=workspace / "alpha")
+    result = run_island("sync-local", cwd=workspace)
+    assert "Traceback" not in result.stderr, result.stderr
+    assert "no tracking branch" in result.stdout
+    assert "local sync partial warning on 2 repository" in result.stdout

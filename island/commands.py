@@ -193,10 +193,9 @@ def get_current_tracking_branch(path_repository: str) -> str | None:
     cmd = "git rev-parse --abbrev-ref --symbolic-full-name @{u}"
     debug.verbose("execute : " + cmd)
     return_value = multiprocess.run_command(cmd, cwd=path_repository)
-    if return_value[1] == "@{u}":
+    if return_value[0] != 0 or return_value[1] in ("", "@{u}"):
         debug.warning("in '" + path_repository + "' no tracking branch is specify")
         return None
-    multiprocess.generic_display_error(return_value, "get_current_tracking_branch", error_only=True)
     return return_value[1]
 
 

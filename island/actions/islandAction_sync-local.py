@@ -55,8 +55,9 @@ def execute(_arguments):
         debug.warning("Manifest is modify")
     else:
         ret_track = commands.get_current_tracking_branch(env.get_island_path_manifest())
-        is_forward = commands.is_forward(env.get_island_path_manifest(), ret_track)
-        if is_forward is True:
+        if ret_track is None:
+            debug.warning("sync-local: Not update ==> the MANIFEST has no tracking branch")
+        elif commands.is_forward(env.get_island_path_manifest(), ret_track) is True:
             # fetch the repository
             debug.warning(
                 "sync-local: Not update ==> the MANIFEST is forward the remote branch "
@@ -118,6 +119,10 @@ def execute(_arguments):
         # get tracking branch
         ret_track = commands.get_current_tracking_branch(git_repo_path)
         select_branch = commands.get_current_branch(git_repo_path)
+        if ret_track is None or select_branch is None:
+            debug.warning("sync-local: Not update ==> no tracking branch")
+            count_error += 1
+            continue
         debug.debug("sync-local: check: " + select_branch + " ==> " + ret_track)
         debug.verbose("Check forward:")
         is_forward = commands.is_forward(git_repo_path, ret_track)
@@ -138,7 +143,7 @@ def execute(_arguments):
             debug.info("sync-local: Reset to " + ret_track)
             commands.reset_hard(git_repo_path, ret_track)
         else:
-            debug.info("sync-local: Reset to " + ret_track)
+            debug.info("sync-local: Rebase to " + ret_track)
             commands.rebase(git_repo_path, ret_track)
     if count_error != 0:
         debug.info("        ***********************************************************")
