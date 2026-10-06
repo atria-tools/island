@@ -121,9 +121,10 @@ class _ManifestBase:
         self.includes: list[SubManifest] = []
         self.imports: list[SubManifest] = []
         self.links: list[dict[str, str]] = []
+        # the same defaults as an 'option' node that does not give them
         self.deliver_master = "master"
-        self.deliver_develop = "develop"
-        self.deliver_mode = "merge"
+        self.deliver_develop = "dev"
+        self.deliver_mode = "fast_forward"
         # load the manifest
         self._load()
         # check error in manifest (double path ...)

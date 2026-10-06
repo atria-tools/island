@@ -31,3 +31,10 @@ def test_tag_clear_removes_the_tags_and_keeps_the_imports(tmp_path: Path) -> Non
     content = file.read_text()
     assert "tag=" not in content
     assert '<import name="extra.repos"/>' in content
+
+
+def test_a_manifest_without_option_delivers_dev_on_master(tmp_path: Path) -> None:
+    file = tmp_path / "default.xml"
+    file.write_text('<?xml version="1.0" encoding="UTF-8"?>\n<manifest>\n\t<remote name="origin" fetch="git@island.test"/>\n</manifest>\n')
+    mani = manifest.Manifest(str(file))
+    assert (mani.deliver_develop, mani.deliver_master, mani.deliver_mode) == ("dev", "master", "fast_forward")
