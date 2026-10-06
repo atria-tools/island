@@ -299,7 +299,7 @@ def get_tracking_branch(path_repository, remote_name, select_branch):
 
 def merge_branch_on_master(path_repository, branch_name, merge_force=True, branch_destination="master"):
     if branch_name == None or branch_name == "":
-        raise "Missing branch name"
+        raise ValueError("Missing branch name")
     cmd = "git merge "
     if merge_force is True:
         cmd += "--no-ff "
@@ -366,7 +366,7 @@ def tag(path_repository, tag_name):
 
 def checkout(path_repository, branch_name):
     if branch_name == None or branch_name == "":
-        raise "Missing branch name"
+        raise ValueError("Missing branch name")
     cmd = "git checkout " + branch_name
     debug.verbose("execute : " + cmd)
     # TODO: check if the command work correctly
@@ -377,7 +377,7 @@ def checkout(path_repository, branch_name):
 
 def reset_hard(path_repository, destination):
     if destination == None or destination == "":
-        raise "Missing destination 'sha1' or 'branch name'"
+        raise ValueError("Missing destination 'sha1' or 'branch name'")
     cmd = "git reset --hard " + destination
     debug.verbose("execute : " + cmd)
     # TODO: check if the command work correctly
@@ -388,7 +388,7 @@ def reset_hard(path_repository, destination):
 
 def rebase(path_repository, destination):
     if destination == None or destination == "":
-        raise "Missing destination 'sha1' or 'branch name'"
+        raise ValueError("Missing destination 'sha1' or 'branch name'")
     cmd = "git rebase " + destination
     debug.verbose("execute : " + cmd)
     # TODO: check if the command work correctly
@@ -399,7 +399,7 @@ def rebase(path_repository, destination):
 
 def clone(path_repository, address, branch_name=None, origin=None):
     if address == None or address == "":
-        raise "Missing address"
+        raise ValueError("Missing address")
     cmd = "git clone " + address
     if branch_name != None and branch_name == "":
         cmd += " --branch " + branch_name
@@ -428,7 +428,7 @@ def fetch(path_repository, remote_name, prune=True):
 
 def pull(path_repository, remote_name, prune=True):
     if remote_name == None or remote_name == "":
-        raise "Missing remote_name"
+        raise ValueError("Missing remote_name")
     cmd = "git pull " + remote_name
     if prune is True:
         cmd += " --prune"
@@ -440,9 +440,9 @@ def pull(path_repository, remote_name, prune=True):
 
 def push(path_repository, remote_name, elements):
     if remote_name == None or remote_name == "":
-        raise "Missing remote_name"
+        raise ValueError("Missing remote_name")
     if len(elements) == 0:
-        raise "No elements to push on server"
+        raise ValueError("No elements to push on server")
     cmd = "git push " + remote_name
     for elem in elements:
         cmd += " " + elem
@@ -471,7 +471,7 @@ def submodule_sync(path_repository, remote_name):
 
 def get_forward(path_repository, branch_name):
     if branch_name == None or branch_name == "":
-        raise "get_fast_forward: Missing branch_name"
+        raise ValueError("Missing branch_name")
     select_branch = get_current_branch(path_repository)
     # get tracking branch
     ret_current_branch_sha1 = get_revision_list_to_branch(path_repository, select_branch)
@@ -490,7 +490,7 @@ def is_forward(path_repository, branch_name):
 
 def get_behind(path_repository, branch_name):
     if branch_name == None or branch_name == "":
-        raise "get_fast_forward: Missing branch_name"
+        raise ValueError("Missing branch_name")
     select_branch = get_current_branch(path_repository)
     # get tracking branch
     ret_current_branch_sha1 = get_revision_list_to_branch(path_repository, select_branch)
