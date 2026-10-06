@@ -17,7 +17,7 @@ from realog import debug
 from . import env
 
 
-list_actions = []
+list_actions: list[dict[str, str]] = []
 
 __base_action_name = env.get_system_base_name() + "Action_"
 

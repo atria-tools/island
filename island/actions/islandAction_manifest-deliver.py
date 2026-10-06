@@ -8,7 +8,6 @@
 import os
 
 from realog import debug
-import status
 
 from island import (
     commands,
@@ -17,6 +16,7 @@ from island import (
     manifest,
     tools,
 )
+from island.actions import status
 
 
 #

@@ -8,7 +8,6 @@
 import os
 
 from realog import debug
-import update_links
 
 from island import (
     commands,
@@ -17,6 +16,7 @@ from island import (
     manifest,
     tools,
 )
+from island.actions import update_links
 
 
 #

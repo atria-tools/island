@@ -49,8 +49,8 @@ ignore = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
-# 'help' is the function the action loader asks each action for, the actions of a workspace included
-"island/actions/islandAction_*.py" = ["A001"]
+# the file of an action is named after it (sync-local), and 'help' is the function the action loader asks it for
+"island/actions/islandAction_*.py" = ["A001", "N999"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["island"]

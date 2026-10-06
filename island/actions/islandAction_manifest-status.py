@@ -6,7 +6,6 @@
 """
 
 from realog import debug
-import status
 
 from island import (
     config,
@@ -14,6 +13,7 @@ from island import (
     manifest,
     tools,
 )
+from island.actions import status
 
 
 #

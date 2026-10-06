@@ -14,7 +14,7 @@ from realog import debug
 
 # Local import
 from . import (
-    actions,
+    action_loader,
     commands,
     config,
     env,
@@ -37,7 +37,7 @@ def init() -> None:
         os.path.join(tools.get_current_path(__file__), "actions"),
         base_name=env.get_system_base_name() + "*.py",
     )
-    actions.init(list_of_island_files)
+    action_loader.init(list_of_island_files)
     # import project actions files
     list_of_island_files = tools.import_path_local(
         env.get_island_root_path(),
@@ -45,7 +45,7 @@ def init() -> None:
         [".island", ".git", "archive"],
         base_name=env.get_system_base_name() + "*.py",
     )
-    actions.init(list_of_island_files)
+    action_loader.init(list_of_island_files)
     is_init = True
 
 
@@ -55,10 +55,10 @@ def usage(my_args) -> None:
     # Generic argument displayed :
     my_args.display()
     print("		Action available")
-    list_actions = actions.get_list_of_action()
+    list_actions = action_loader.get_list_of_action()
     for elem in list_actions:
         print(f"			{color['green']}{elem}{color['default']}")
-        print(f"					{actions.get_action_help(elem)}")
+        print(f"					{action_loader.get_action_help(elem)}")
     """
     print("		{color['green']}init{color['default']}")
     print("			initialize a 'island' interface with a manifest in a git ")
@@ -132,7 +132,7 @@ def main():
     # initialize the system ...
     init()
 
-    debug.verbose("List of actions: " + str(actions.get_list_of_action()))
+    debug.verbose("List of actions: " + str(action_loader.get_list_of_action()))
 
     my_args = arguments.Arguments()
     my_args.add_section("option", "Can be set one time in all case")
@@ -173,7 +173,7 @@ def main():
         + str(env.get_wait_between_sever_command())
         + ")",
     )
-    my_args.set_stop_at(actions.get_list_of_action())
+    my_args.set_stop_at(action_loader.get_list_of_action())
     local_argument = my_args.parse()
 
     # open configuration of island:
@@ -233,7 +233,7 @@ def main():
         usage(my_args)
 
     # TODO : move tin in actions ...
-    list_actions = actions.get_list_of_action()
+    list_actions = action_loader.get_list_of_action()
 
     action_to_do = new_argument_list[0].get_arg()
     new_argument_list = new_argument_list[1:]
@@ -251,6 +251,6 @@ def main():
     # select the ssh key of the workspace for all the git commands:
     commands.select_ssh_key(config.get_unique_config().get_ssh_key())
 
-    ret = actions.execute(action_to_do, my_args.get_last_parsed() + 1)
+    ret = action_loader.execute(action_to_do, my_args.get_last_parsed() + 1)
 
     exit(ret)
