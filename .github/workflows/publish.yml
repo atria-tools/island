@@ -1,9 +1,10 @@
 name: publish
 
 # A tag vX.Y.Z publishes island X.Y.Z on PyPI (trusted publishing: no token in the repository).
+# The environment pypi of the repository only accepts the tags v[0-9]*.[0-9]*.[0-9]* too.
 on:
   push:
-    tags: ["v*"]
+    tags: ["v[0-9]+.[0-9]+.[0-9]+"]
 
 jobs:
   build:
