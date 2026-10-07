@@ -1,0 +1,52 @@
+name: publish
+
+# A tag vX.Y.Z publishes island X.Y.Z on PyPI (trusted publishing: no token in the repository).
+on:
+  push:
+    tags: ["v*"]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: The tag is the version of version.txt
+        run: |
+          version="$(tr -d '[:space:]' < version.txt)"
+          if [ "v${version}" != "${GITHUB_REF_NAME}" ]; then
+            echo "the tag ${GITHUB_REF_NAME} is not the version of version.txt (${version})"
+            exit 1
+          fi
+      - name: Check
+        run: |
+          pip install --editable '.[dev]'
+          ruff check .
+          ruff format --check .
+          mypy
+          pytest
+      - name: Build
+        run: |
+          pip install build
+          python -m build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/project/island/
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+      - uses: pypa/gh-action-pypi-publish@release/v1
